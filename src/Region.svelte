@@ -3,20 +3,21 @@
 
   import ModuleWrapper from './ModuleWrapper.svelte';
 
-  // Function to check if a module is a MagicMirror (JavaScript-based) module with getDom()
+  // Check if it's a Svelte component or a MagicMirror module
+  const isSvelteComponent = (module) => {
+    return module.component && typeof module.component === 'function';
+  };
+
   const isMagicMirrorModule = (module) => {
     return module.component && typeof module.component.getDom === 'function';
   };
 
-  // Function to check if a module is a JavaScript-based component with render()
   const isJavaScriptModule = (module) => {
     return module.component && typeof module.component.render === 'function';
   };
 
-  // Function to check if a module is a valid Svelte component
-  const isSvelteComponent = (module) => {
-    return module.component && typeof module.component === 'function';
-  };
+  // Debugging: Log the modules
+  console.log("Region.svelte - modules:", modules);
 </script>
 
 <div class="region-container">
@@ -25,13 +26,14 @@
       <!-- Render MagicMirror module with getDom -->
       <ModuleWrapper {module} />
     {:else if isJavaScriptModule(module)}
-      <!-- Render JavaScript module with render function -->
+      <!-- Render JavaScript module -->
       <ModuleWrapper {module} />
     {:else if isSvelteComponent(module)}
-      <!-- If it's a Svelte component, render it using svelte:component -->
+      <!-- Render Svelte component -->
       <svelte:component this={module.component} {...module.props} />
     {:else}
-      <p>Error: Module cannot be rendered</p>
+      <!-- Error handling -->
+      <div>Error: Invalid module loaded in this region</div>
     {/if}
   {/each}
 </div>

@@ -20,5 +20,29 @@
     "path": "jsmodules/HelloWorldModule.js",
     "region": "center",
     "props": {}
+  },
+  {
+    "name": "NewsFeedTicker",
+    "path": "modules/ticker/NewsFeedTicker.js",
+    "region": "header",
+    "props": {
+      "feeds": [
+        {
+          "title": "New York Times",
+          "url": "https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml",
+          "customLogo": "modules/ticker/pics/NYT_logo_rss_250x40.png"
+        },
+        {
+          "title": "CBC World",
+          "url": "https://www.cbc.ca/webfeed/rss/rss-world",
+          "customLogo": "modules/ticker/pics/CBC_140x140.png"
+        },
+        {
+          "title": "BBC World News",
+          "url": "https://feeds.bbci.co.uk/news/world/rss.xml",
+          "customLogo": "modules/ticker/pics/bbc_news_120x60.gif"
+        }
+      ]
+    }    
   }
 ]

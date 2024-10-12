@@ -7,10 +7,11 @@
 
   onMount(async () => {
     modulesByRegion = await loadModules();
-    console.log(modulesByRegion); // Log the loaded modules to check
+    console.log(modulesByRegion); // Debug: Log the loaded modules to check
   });
 
   const regions = [
+    'header',  // Add header as a region
     'top_left',
     'top_center',
     'top_right',
@@ -23,22 +24,29 @@
     'bottom_center',
     'bottom_right'
   ];
+
+  // Debug: Log regions for visibility
+  console.log("App.svelte - Regions:", regions);
 </script>
 
 <div class="main-container">
+  {#if modulesByRegion['header']}
+  <!-- Render modules in the header region -->
+  <Region modules={modulesByRegion['header']} />
+{/if}
   <header>
-    <div class="scrolling-text">
-      2 hours ago: How Donald Trump could possibly go to jail with group who helped the Russian... (add more text here)
-    </div>
+
   </header>
 
   <div class="grid-container">
     {#each regions as region}
-      <div class="region {region}">
-        <div class="region-content"> <!-- Added region-content div -->
-          <Region modules={modulesByRegion[region] || []} />
+      {#if region !== 'header'}
+        <div class="region {region}">
+          <div class="region-content">
+            <Region modules={modulesByRegion[region] || []} />
+          </div>
         </div>
-      </div>
+      {/if}
     {/each}
   </div>
 </div>
