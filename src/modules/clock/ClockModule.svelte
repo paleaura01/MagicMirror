@@ -10,18 +10,15 @@
 
   let time = new Date();
 
-  // Debugging Logs: Log both the current minute and the calculated rotation
   onMount(() => {
     const interval = setInterval(() => {
       time = new Date();  // Update the time every second
-
-      // Log the minute value and the calculated rotation (deg)
-      console.log('Minute Value:', time.getMinutes());
-      console.log('Minute Hand Rotation (deg):', time.getMinutes() * 6);
     }, showSeconds ? 1000 : 60000);
 
     return () => clearInterval(interval);
   });
+
+  const padZero = (num) => num.toString().padStart(2, '0');
 
   // Function to format time (12-hour or 24-hour)
   const formatTime = (time) => {
@@ -38,9 +35,6 @@
     }
   };
 
-  const padZero = (num) => num.toString().padStart(2, '0');
-
-  // Function to format the date
   const formatDate = (date) => {
     const options = { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' };
     return date.toLocaleDateString(undefined, options);
@@ -81,7 +75,20 @@
       {#if showDate}
         <div class="date">{formatDate(time)}</div>
       {/if}
-      <div class="time">{formatTime(time)}</div>
+
+      <div class="time">
+        <div class="hours-minutes">
+          {formatTime(time).split(':')[0]}:{formatTime(time).split(':')[1]}
+        </div>
+        {#if showSeconds}
+          <div class="seconds">
+            {padZero(time.getSeconds())}
+          </div>
+        {/if}
+        <div class="am-pm">
+          {formatTime(time).split(' ')[1]}
+        </div>
+      </div>
     </div>
   {/if}
 </div>
