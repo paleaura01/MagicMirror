@@ -28,7 +28,7 @@
 <div class="main-container">
   <header>
     <div class="scrolling-text">
-      2 hours ago: How Donald Trump went to jail with group who helped the russian... (add more text here)
+      2 hours ago: How Donald Trump could possibly go to jail with group who helped the Russian... (add more text here)
     </div>
   </header>
 
