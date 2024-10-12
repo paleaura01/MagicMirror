@@ -1,3 +1,12 @@
+/* Set the background color to black and text color to white */
+body {
+  background-color: black;
+  color: white;
+  margin: 0;  /* Remove any margin around the body */
+  padding: 0; /* Remove any padding around the body */
+  overflow: hidden; /* Prevent body overflow causing scrollbar */
+}
+
 .grid-container {
   display: grid;
   grid-template-areas:
@@ -8,11 +17,35 @@
   grid-template-rows: 1fr 1fr 1fr;
   height: 100vh;
   width: 100vw;
+  border: none;
+  box-sizing: border-box; /* Ensure grid takes into account padding and border sizes */
 }
 
 .region {
   padding: 10px;
-  border: 1px solid #ccc;
+  border: none;
+  background-color: transparent;
+
+  /* Center content within each region using flexbox */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+
+  /* Ensure content doesn't overflow */
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+/* Make sure all text is white and background is transparent in child elements */
+.region * {
+  background-color: transparent !important;
+  color: white;
+  border: none !important;
+  max-width: 100%;  /* Ensure content doesn't exceed region's width */
+  max-height: 100%; /* Ensure content doesn't exceed region's height */
+  box-sizing: border-box; /* Prevent content from overflowing due to padding/borders */
 }
 
 /* Assign regions to the CSS grid */

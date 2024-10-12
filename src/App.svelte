@@ -26,7 +26,8 @@
 <div class="grid-container">
   {#each regions as region}
     <div class="region {region}">
-      <Region name={region} modules={modulesByRegion[region] || []} />
+      <!-- Stop passing the 'name' prop -->
+      <Region modules={modulesByRegion[region] || []} />
     </div>
   {/each}
 </div>

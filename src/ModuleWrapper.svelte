@@ -2,13 +2,16 @@
     import { onMount } from 'svelte';
   
     export let module;
-    export let props = {};
   
     let container;
   
     onMount(() => {
-      if (module && typeof module.render === 'function') {
-        module.render(container, props);
+      console.log('Module received in ModuleWrapper:', module);
+      if (module && module.component && typeof module.component.render === 'function') {
+        console.log('Rendering JavaScript module:', module);
+        module.component.render(container); // Call the module's render function
+      } else {
+        console.error('Module does not have a valid render function:', module);
       }
     });
   </script>
