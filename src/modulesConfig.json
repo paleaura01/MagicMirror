@@ -7,16 +7,13 @@
       "displayType": "both",
       "timeFormat": 12,
       "showDate": true,
-      "showSeconds": true,
-      "analogFace": "face-001",
-      "analogSize": "200px"
+      "showSeconds": true
     }
   },
   {
     "name": "WeatherModule",
-    "path": "modules/WeatherModule.js",
-    "region": "top_right",
-    "props": { "city": "Gastonia" }
+    "path": "modules/weather/WeatherModule.js",
+    "region": "top_right"
   },
   {
     "name": "HelloWorldModule",

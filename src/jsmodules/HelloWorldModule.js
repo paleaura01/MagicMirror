@@ -2,7 +2,7 @@ export default {
     render(container) {
       console.log('HelloWorldModule render function called');
       const element = document.createElement('div');
-      element.textContent = 'Hello, Sexy!';
+      element.textContent = 'Hello, Face!';
       element.style.fontSize = '3em';
       element.style.textAlign = 'center';
       element.style.color = '#fff';

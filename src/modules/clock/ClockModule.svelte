@@ -1,44 +1,25 @@
 <script>
-  import './clock_styles.css'
   import { onMount } from 'svelte';
+  import './clock_styles.css';
   import dayjs from 'dayjs';
+  import analogFaceSVG from './faces/face-009.svg';  // Directly import the SVG file
 
   // Props for customization
   export let displayType = "digital"; // "digital", "analog", or "both"
   export let timeFormat = 12; // 12 or 24-hour format
   export let showDate = true;
   export let showSeconds = true;
-  export let analogFace = "face-001"; // Use the face-001 as default
-  export let analogSize = "200px";
 
   let time = dayjs();
   let date = dayjs();
-  let svgFace = ""; // Store the SVG as a string here
 
   onMount(() => {
     const interval = setInterval(() => {
       time = dayjs();  // Update the time every second using dayjs
     }, showSeconds ? 1000 : 60000);
 
-    // Load the selected SVG face
-    loadSVG(analogFace);
-
     return () => clearInterval(interval);  // Clear the interval when the component is destroyed
   });
-
-  // Function to dynamically load the SVG based on the selected analogFace
-  const loadSVG = async (face) => {
-    try {
-      const response = await fetch(`/modules/clock/faces/${face}.svg`);
-      if (response.ok) {
-        svgFace = await response.text(); // Store the SVG content as string
-      } else {
-        console.error(`Error loading SVG: ${response.statusText}`);
-      }
-    } catch (error) {
-      console.error('Error fetching SVG:', error);
-    }
-  };
 
   // Function to format time (12-hour or 24-hour)
   const formatTime = (time) => {
@@ -51,13 +32,12 @@
   };
 </script>
 
-<!-- Adjusted layout with the clock first -->
 <div class="clock-grid">
   {#if displayType === "analog" || displayType === "both"}
-    <div class="clock-circle" style="width: {analogSize}; height: {analogSize};">
-      <!-- Inject the loaded SVG here -->
+    <div class="clock-circle">
+      <!-- Directly render the imported SVG here -->
       <div class="clock-face">
-        {@html svgFace} <!-- This will insert the SVG dynamically -->
+        <img src={analogFaceSVG}  alt="analogFaceSVG" />
       </div>
 
       <!-- Clock hands -->

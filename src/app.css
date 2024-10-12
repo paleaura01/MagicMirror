@@ -21,7 +21,7 @@ header {
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: black;
+  background-color: rgb(19, 21, 136);
   color: yellow; /* Color for ticker text */
   font-size: 1.2rem;
   white-space: nowrap;
@@ -32,14 +32,14 @@ header {
 /* For scrolling ticker effect */
 header .scrolling-text {
   position: absolute;
-  animation: scroll-text 30s linear infinite;
+  animation: scroll-text 60s linear infinite;
 }
 
 .scrolling-text {
   white-space: nowrap;
   overflow: hidden;
   display: inline-block;
-  animation: scroll 10s linear infinite; /* Adjust timing as needed */
+  animation: scroll 60s linear infinite; /* Adjust timing as needed */
 }
 
 @keyframes scroll-text {
@@ -60,6 +60,11 @@ header .scrolling-text {
   }
 }
 
+.main-container {
+  margin: 20px;
+  
+}
+
 /* Grid layout */
 .grid-container {
   display: grid;
@@ -70,13 +75,13 @@ header .scrolling-text {
     "bottom_left bottom_center bottom_right"; /* Updated grid structure */
   grid-template-columns: 1fr 1fr 1fr;
   grid-template-rows: 1fr 1fr 1fr 1fr; /* Adjusted for 4 rows */
-  height: calc(100vh - 40px); /* Ensure grid takes the full height minus the header */
+  height: calc(100vh - 80px); /* Ensure grid takes the full height minus the header */
   width: 100%;
 }
 
 /* Region styling */
 .region {
-  padding: 10px;
+  
   background-color: transparent;
   display: flex;
   justify-content: center;

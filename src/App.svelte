@@ -10,16 +10,15 @@
     console.log(modulesByRegion); // Log the loaded modules to check
   });
 
-  // Updated region names
   const regions = [
     'top_left',
     'top_center',
     'top_right',
-    'upper_left',    // Changed from 'center_left'
-    'center',        // This is the merged center box
-    'upper_right',   // Changed from 'center_right'
-    'lower_left',    // Changed from 'center_left'
-    'lower_right',   // Changed from 'center_right'
+    'upper_left',
+    'center',
+    'upper_right',
+    'lower_left',
+    'lower_right',
     'bottom_left',
     'bottom_center',
     'bottom_right'
@@ -36,7 +35,9 @@
   <div class="grid-container">
     {#each regions as region}
       <div class="region {region}">
-        <Region modules={modulesByRegion[region] || []} />
+        <div class="region-content"> <!-- Added region-content div -->
+          <Region modules={modulesByRegion[region] || []} />
+        </div>
       </div>
     {/each}
   </div>
