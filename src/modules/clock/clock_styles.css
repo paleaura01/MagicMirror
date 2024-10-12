@@ -35,38 +35,39 @@
 .clock-hour,
 .clock-minute,
 .clock-second {
-  background-color: white !important; /* Ensure clock hands are white */
+  background-color: white !important;
   position: absolute;
-  transform-origin: 50% 50%;
+  left: 50%;
+  top: 50%;
+  transform-origin: 50% 100%; /* Ensure the hands rotate from the base */
 }
 
 .clock-hour {
-  top: 50%;
-  left: 50%;
   width: 4px;
   height: 25px;
-  transform-origin: top;
+  margin-left: -2px;
+  margin-top: -25px;
   z-index: 3;
 }
 
 .clock-minute {
-  top: 50%;
-  left: 50%;
   width: 3px;
   height: 35px;
-  transform-origin: top;
+  margin-left: -1.5px;
+  margin-top: -35px;
   z-index: 2;
 }
 
 .clock-second {
-  top: 50%;
-  left: 50%;
   width: 2px;
   height: 40px;
-  background-color: rgb(87, 87, 87) !important; /* Optional: make the second hand a different color */
-  transform-origin: top;
+  margin-left: -1px;
+  margin-top: -40px;
+  background-color: rgb(87, 87, 87) !important;
   z-index: 1;
 }
+
+
 
 .clock-face::after {
   position: absolute;

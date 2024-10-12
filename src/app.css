@@ -32,14 +32,14 @@ header {
 /* For scrolling ticker effect */
 header .scrolling-text {
   position: absolute;
-  animation: scroll-text 60s linear infinite;
+  animation: scroll-text 30s linear infinite;
 }
 
 .scrolling-text {
   white-space: nowrap;
   overflow: hidden;
   display: inline-block;
-  animation: scroll 60s linear infinite; /* Adjust timing as needed */
+  animation: scroll 30s linear infinite; /* Adjust timing as needed */
 }
 
 @keyframes scroll-text {
