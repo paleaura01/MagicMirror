@@ -1,9 +1,16 @@
 [
   {
     "name": "ClockModule",
-    "path": "modules/ClockModule.js",
+    "path": "modules/clock/ClockModule.js", 
     "region": "top_left",
-    "props": {}
+    "props": {
+      "displayType": "both",
+      "timeFormat": 12,
+      "showDate": true,
+      "showSeconds": true,
+      "analogFace": "face-001",
+      "analogSize": "200px"
+    }
   },
   {
     "name": "WeatherModule",

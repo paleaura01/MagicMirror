@@ -2,85 +2,112 @@
 body {
   background-color: black;
   color: white;
-  margin: 0;  /* Remove any margin around the body */
-  padding: 0; /* Remove any padding around the body */
-  overflow: hidden; /* Prevent body overflow causing scrollbar */
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  height: 100vh; /* Ensure body takes up full viewport height */
 }
 
+.container {
+  height: 100%; /* Full viewport height for the entire container */
+  display: flex;
+  flex-direction: column; /* Stack the header and grid */
+}
+
+header {
+  width: 100%;
+  height: 40px;
+  border: none !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: black;
+  color: yellow; /* Color for ticker text */
+  font-size: 1.2rem;
+  white-space: nowrap;
+  overflow: hidden;
+  position: relative;
+}
+
+/* For scrolling ticker effect */
+header .scrolling-text {
+  position: absolute;
+  animation: scroll-text 30s linear infinite;
+}
+
+.scrolling-text {
+  white-space: nowrap;
+  overflow: hidden;
+  display: inline-block;
+  animation: scroll 10s linear infinite; /* Adjust timing as needed */
+}
+
+@keyframes scroll-text {
+  0% {
+    left: 100%;
+  }
+  100% {
+    left: -100%;
+  }
+}
+
+@keyframes scroll {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+/* Grid layout */
 .grid-container {
   display: grid;
   grid-template-areas:
     "top_left top_center top_right"
-    "center_left center center_right"
-    "bottom_left bottom_center bottom_right";
+    "upper_left center upper_right"
+    "lower_left center lower_right"
+    "bottom_left bottom_center bottom_right"; /* Updated grid structure */
   grid-template-columns: 1fr 1fr 1fr;
-  grid-template-rows: 1fr 1fr 1fr;
-  height: 100vh;
-  width: 100vw;
-  border: none;
-  box-sizing: border-box; /* Ensure grid takes into account padding and border sizes */
+  grid-template-rows: 1fr 1fr 1fr 1fr; /* Adjusted for 4 rows */
+  height: calc(100vh - 40px); /* Ensure grid takes the full height minus the header */
+  width: 100%;
 }
 
+/* Region styling */
 .region {
   padding: 10px;
-  border: none;
   background-color: transparent;
-
-  /* Center content within each region using flexbox */
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100%;
   width: 100%;
-
-  /* Ensure content doesn't overflow */
-  overflow: hidden;
   box-sizing: border-box;
 }
 
-/* Make sure all text is white and background is transparent in child elements */
+/* Ensure all text is white and background is transparent */
 .region * {
   background-color: transparent !important;
   color: white;
   border: none !important;
-  max-width: 100%;  /* Ensure content doesn't exceed region's width */
-  max-height: 100%; /* Ensure content doesn't exceed region's height */
-  box-sizing: border-box; /* Prevent content from overflowing due to padding/borders */
+  max-width: 100%;
+  max-height: 100%;
 }
 
 /* Assign regions to the CSS grid */
-.top_left {
-  grid-area: top_left;
-}
+.top_left { grid-area: top_left; }
+.top_center { grid-area: top_center; }
+.top_right { grid-area: top_right; }
 
-.top_center {
-  grid-area: top_center;
-}
+.upper_left { grid-area: upper_left; }
+.upper_right { grid-area: upper_right; }
 
-.top_right {
-  grid-area: top_right;
-}
+.lower_left { grid-area: lower_left; }
+.lower_right { grid-area: lower_right; }
 
-.center_left {
-  grid-area: center_left;
-}
+.center { grid-area: center; } /* This is now the merged center box */
 
-.center {
-  grid-area: center;
-}
-
-.center_right {
-  grid-area: center_right;
-}
-
-.bottom_left {
-  grid-area: bottom_left;
-}
-
-.bottom_center {
-  grid-area: bottom_center;
-}
-
-.bottom_right {
-  grid-area: bottom_right;
-}
+.bottom_left { grid-area: bottom_left; }
+.bottom_center { grid-area: bottom_center; }
+.bottom_right { grid-area: bottom_right; }
