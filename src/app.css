@@ -1,0 +1,53 @@
+.grid-container {
+  display: grid;
+  grid-template-areas:
+    "top_left top_center top_right"
+    "center_left center center_right"
+    "bottom_left bottom_center bottom_right";
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr 1fr;
+  height: 100vh;
+  width: 100vw;
+}
+
+.region {
+  padding: 10px;
+  border: 1px solid #ccc;
+}
+
+/* Assign regions to the CSS grid */
+.top_left {
+  grid-area: top_left;
+}
+
+.top_center {
+  grid-area: top_center;
+}
+
+.top_right {
+  grid-area: top_right;
+}
+
+.center_left {
+  grid-area: center_left;
+}
+
+.center {
+  grid-area: center;
+}
+
+.center_right {
+  grid-area: center_right;
+}
+
+.bottom_left {
+  grid-area: bottom_left;
+}
+
+.bottom_center {
+  grid-area: bottom_center;
+}
+
+.bottom_right {
+  grid-area: bottom_right;
+}
