@@ -22,8 +22,8 @@
     "props": {}
   },
   {
-    "name": "NewsFeedTicker",
-    "path": "modules/ticker/NewsFeedTicker.js",
+    "name": "TickerModule",
+    "path": "modules/ticker/TickerModule.js",
     "region": "header",
     "props": {
       "feeds": [

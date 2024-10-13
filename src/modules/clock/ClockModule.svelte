@@ -1,7 +1,7 @@
 <script>
   import { onMount } from 'svelte';
   import './clock_styles.css';
-  import analogFaceSVG from './faces/face-009.svg';
+  import analogFaceSVG from './pics/face-009.svg';
 
   export let displayType = "both"; // "digital", "analog", or "both"
   export let timeFormat = 12; // 12 or 24-hour format
