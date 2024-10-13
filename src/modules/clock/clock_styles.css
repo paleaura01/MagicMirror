@@ -1,21 +1,34 @@
-.clock-grid {
+/* For the top_left region itself */
+.top_left {
   display: flex;
-  padding-right: 260px;
-  padding-bottom: 100px;
-  gap: 15px;
-  flex-direction: row;
-  justify-content: flex-start; /* Align items to the left */
-  align-items: center; /* Center vertically */
+  justify-content: flex-start; /* Align items to the top-left corner */
+  align-items: flex-start;
+  padding: 0; /* Remove padding if necessary */
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box; /* Ensure no overflow from padding */
 }
 
-/* Analog clock styles remain unchanged */
+/* Clock grid */
+.clock-grid {
+  display: flex;
+  gap: 15px;
+  flex-direction: row;
+  justify-content: flex-start; /* Align clock to the left */
+  align-items: flex-start; /* Align clock to the top */
+  padding-top: 20px; /* Optional padding for space from the edges */
+  box-sizing: border-box; /* Ensure padding doesn't cause overflow */
+  width: auto; /* Ensure the clock only takes as much width as needed */
+  height: auto; /* Ensure the clock only takes as much height as needed */
+}
+
+/* Analog clock styles */
 .clock-circle {
-  position: relative;
+  position: relative; /* This is important to position the clock hands */
   border-radius: 50%;
-  background-color: white; /* Ensure the background color of the clock face is white */
+  background-color: white; /* Background color of the clock face */
   width: 100px;
   height: 100px;
-  background-size: 100%;
   flex-shrink: 0;
   overflow: hidden;
 }
@@ -31,6 +44,7 @@
   height: 100%;
 }
 
+/* Clock hands styles */
 .clock-hour,
 .clock-minute,
 .clock-second {
@@ -39,6 +53,7 @@
   left: 50%;
   top: 50%;
   transform-origin: 50% 100%; /* Ensure the hands rotate from the base */
+  transform: rotate(0deg); /* Default rotation, will be updated dynamically */
 }
 
 .clock-hour {
@@ -84,41 +99,39 @@
 .digital-clock {
   display: flex;
   flex-direction: column;
-  align-items: left;
+  align-items: flex-start; /* Align to the left */
   margin-left: 5px;
 }
 
 .time {
   font-family: 'Arial', sans-serif;
-  font-size: 80px;  /* Reduced the main time size */
+  font-size: 80px;
   font-weight: lighter;
   color: white;
   display: flex;
-  align-items: baseline;  /* Align the minutes and seconds */
+  align-items: baseline; /* Align the minutes and seconds */
 }
 
 .time .hours-minutes {
-  font-size: 60px;  /* Reduced the size for hours and minutes */
+  font-size: 60px;
 }
 
 .time .seconds {
-  font-size: 20px;  /* Reduced the size for seconds */
-  opacity: 0.7;  /* Keep the seconds less prominent */
+  font-size: 20px;
+  opacity: 0.7;
   margin-left: 5px;
   position: relative;
-  top: -30px;  /* Slightly above the minutes */
+  top: -30px;
 }
 
 .am-pm {
-  font-size: 35px;  /* Reduced the AM/PM size */
+  font-size: 35px;
   margin-left: 5px;
-  position: relative;
-  
 }
 
 .date {
   font-family: 'Arial', sans-serif;
-  font-size: 20px;  /* Reduced the size of the date */
+  font-size: 20px;
   color: rgb(138, 138, 138);
   margin-top: 10px;
 }

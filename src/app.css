@@ -23,7 +23,7 @@ body {
   display: grid;
   grid-template-areas:
     "top_left top_center top_right"
-    "upper_left center upper_right"
+    "top_left center upper_right"
     "lower_left center lower_right"
     "bottom_left bottom_center bottom_right"; /* Updated grid structure */
   grid-template-columns: 1fr 1fr 1fr;
@@ -53,11 +53,13 @@ body {
 }
 
 /* Assign regions to the CSS grid */
-.top_left { grid-area: top_left; }
+.top_left {
+  grid-area: top_left;
+  grid-row: span 2; /* Makes top_left span 2 rows */
+}
 .top_center { grid-area: top_center; }
 .top_right { grid-area: top_right; }
 
-.upper_left { grid-area: upper_left; }
 .upper_right { grid-area: upper_right; }
 
 .lower_left { grid-area: lower_left; }
@@ -67,4 +69,4 @@ body {
 
 .bottom_left { grid-area: bottom_left; }
 .bottom_center { grid-area: bottom_center; }
-.bottom_right { grid-area: bottom_right; }
+bottom_right { grid-area: bottom_right; }
