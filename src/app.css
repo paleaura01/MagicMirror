@@ -14,56 +14,6 @@ body {
   flex-direction: column; /* Stack the header and grid */
 }
 
-header {
-  width: 100%;
-  
-  border: none !important;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  background-color: rgb(19, 21, 136);
-  color: yellow;
-  font-size: 1.2rem;
-  white-space: nowrap;
-  position: relative;
-  overflow: visible; /* Allow overflow to be visible */
-}
-
-
-/* For scrolling ticker effect */
-header .scrolling-text {
-  position: absolute;
-  animation: scroll-text 30s linear infinite;
-  white-space: nowrap;
-  overflow: hidden;
-  display: inline-block;
-}
-
-.scrolling-text {
-  white-space: nowrap;
-  overflow: hidden;
-  display: inline-block;
-  animation: scroll 30s linear infinite; /* Adjust timing as needed */
-}
-
-@keyframes scroll-text {
-  0% {
-    left: 100%;
-  }
-  100% {
-    left: -100%;
-  }
-}
-
-@keyframes scroll {
-  from {
-    transform: translateX(100%);
-  }
-  to {
-    transform: translateX(-100%);
-  }
-}
-
 .main-container {
   margin: 20px;
 }
