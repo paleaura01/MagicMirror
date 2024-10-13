@@ -14,20 +14,20 @@
   // Since we need to import images dynamically, create a mapping
   let imageImports = {};
 
-  // Preload images from feeds
-  function preloadImages() {
-    feeds.forEach(feed => {
-      if (feed.customLogo) {
-        // Import the image and store it in the mapping
-        // Note: Adjust the path according to your project structure
-        import(`${feed.customLogo}`).then(module => {
-          imageImports[feed.customLogo] = module.default;
-        }).catch(error => {
-          console.error(`Failed to load image: ${feed.customLogo}`, error);
-        });
-      }
-    });
-  }
+// Preload images from feeds
+function preloadImages() {
+  feeds.forEach(feed => {
+    if (feed.customLogo) {
+      // Use @vite-ignore to prevent Vite from trying to analyze the dynamic import
+      import(/* @vite-ignore */ `${feed.customLogo}`).then(module => {
+        imageImports[feed.customLogo] = module.default;
+      }).catch(error => {
+        console.error(`Failed to load image: ${feed.customLogo}`, error);
+      });
+    }
+  });
+}
+
 
   // Fetch from your backend RSS proxy
   async function fetchRSSFeedFromServer(url) {
