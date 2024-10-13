@@ -1,29 +1,15 @@
 <script>
     import { onMount, onDestroy } from 'svelte';
     import './ticker_styles.css';
-
-    // Import all the logos from your pics folder
-    import NYTLogo from './pics/NYT_logo_rss_250x40.png';
-    import CBCLogo from './pics/CBC_140x140.png';
-    import BBCLogo from './pics/bbc_news_120x60.gif';
-
-    // You can keep one default logo if needed
-    import logoPNG from './pics/CBC_140x140.png';  // For default or fallback
-
+    import logoPNG from './pics/CBC_140x140.png';
+  
     export let feeds = [];
     let newsItems = [];
     let scrollingTextEl;
     let newsTickerEl;
-    let currentImage = ''; // To hold the currently displayed image
+    let currentImage = './pics/CBC_140x140.png'; // To hold the currently displayed image
     let currentNewsIndex = 0; // To keep track of the current feed index
-
-    // Mapping between feed titles and their corresponding logos
-    const logoMap = {
-        'New York Times': NYTLogo,
-        'CBC World': CBCLogo,
-        'BBC World News': BBCLogo
-    };
-
+  
     // Fetch from your backend RSS proxy
     async function fetchRSSFeedFromServer(url) {
       try {
@@ -39,7 +25,7 @@
         return [];
       }
     }
-
+  
     // Fetch the RSS feeds and process the items
     async function fetchNewsItems() {
       let fetchedNewsItems = [];
@@ -50,21 +36,22 @@
             fetchedNewsItems.push({
               title: item.title,
               link: item.link,
-              logo: logoMap[feed.title] || logoPNG // Fallback to logoPNG if no specific logo
+              logo: feed.customLogo || ''
             });
           });
         }
       }
-
-      // Ensure reactivity by directly updating newsItems
+  
+      // Ensure reactivity by directly updating `newsItems`
       newsItems = [...fetchedNewsItems];
       console.log("News items fetched and set:", newsItems);
-
+  
       // Update the displayed image after fetching the items
       updateImage();
+      // After setting newsItems, update the animation
       updateAnimation();
     }
-
+  
     // Function to cycle the images every 15 seconds
     function updateImage() {
       if (newsItems.length > 0) {
@@ -72,26 +59,26 @@
         currentNewsIndex = (currentNewsIndex + 1) % newsItems.length; // Cycle through the items
       }
     }
-
+  
     // Cycle images every 15 seconds
     const imageCycleInterval = setInterval(updateImage, 15000); 
-
+  
     // Fetch the news when the component mounts
     onMount(() => {
       fetchNewsItems();
-
+  
       // Update animation when window is resized
       window.addEventListener('resize', updateAnimation);
     });
-
+  
     onDestroy(() => {
       window.removeEventListener('resize', updateAnimation);
       clearInterval(imageCycleInterval); // Clear the interval on destroy
     });
-
+  
     // Format ticker text from the news items
     $: tickerText = newsItems.map(item => item.title).join(' • ');
-
+  
     // Function to update animation duration
     function updateAnimation() {
       // Use setTimeout to ensure DOM is updated
@@ -99,34 +86,32 @@
         if (scrollingTextEl && newsTickerEl) {
           const textWidth = scrollingTextEl.offsetWidth;
           const containerWidth = newsTickerEl.offsetWidth;
-
+  
           // Calculate total distance to scroll (textWidth + containerWidth)
           const totalDistance = textWidth + containerWidth;
-
+  
           // Set a desired scrolling speed (pixels per second)
           const speed = 300; // Adjust this value as needed
-
+  
           // Calculate animation duration
           const animationDuration = totalDistance / speed;
-
+  
           // Apply the animation duration to the scrolling text
           scrollingTextEl.style.animationDuration = `${animationDuration}s`;
         }
       }, 0);
     }
-</script>
-
-<!-- The Ticker with the separate Image -->
-<div class="news-ticker-container">
-  <!-- Logo display -->
-  <div class="ticker-logo-box">
-    {#if currentImage}
-      <img src={currentImage} alt="News Logo">
-    {/if}
-  </div>
-
-  <!-- Scrolling text below the logo -->
+  </script>
+  
   <div class="news-ticker" bind:this={newsTickerEl}>
+    <!-- Display the current logo image on the left side -->
+   
+        <div class="ticker-logo">
+            <img src={logoPNG} alt="News Logo">
+          </div>
+          
+    
+  
     <div class="scrolling-text" bind:this={scrollingTextEl}>
       {#if newsItems.length > 0}
         {tickerText}
@@ -135,5 +120,3 @@
       {/if}
     </div>
   </div>
-</div>
-
