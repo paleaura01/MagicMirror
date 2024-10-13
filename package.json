@@ -18,6 +18,7 @@
     "dayjs": "^1.11.13",
     "express": "^4.21.1",
     "feedme": "^2.0.2",
+    "leaflet": "^1.9.4",
     "node-fetch": "^3.3.2",
     "rss-parser": "^3.13.0"
   }

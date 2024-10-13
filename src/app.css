@@ -1,3 +1,5 @@
+
+
 /* Set the background color to black and text color to white */
 body {
   background-color: black;
@@ -35,9 +37,6 @@ body {
 /* Region styling */
 .region {
   background-color: transparent;
-  display: flex;
-  justify-content: center;
-  align-items: center;
   height: 100%;
   width: 100%;
   box-sizing: border-box;
@@ -48,8 +47,7 @@ body {
   background-color: transparent !important;
   color: white;
   border: none !important;
-  max-width: 100%;
-  max-height: 100%;
+  
 }
 
 /* Assign regions to the CSS grid */

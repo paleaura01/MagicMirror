@@ -2,7 +2,7 @@
   import Region from './Region.svelte';
   import { onMount } from 'svelte';
   import { loadModules } from './moduleLoader.js';
-
+  
   let modulesByRegion = {};
 
   onMount(async () => {
