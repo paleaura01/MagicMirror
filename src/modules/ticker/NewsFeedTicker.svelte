@@ -1,14 +1,34 @@
 <script>
     import { onMount, onDestroy } from 'svelte';
     import './ticker_styles.css';
-    import logoPNG from './pics/CBC_140x140.png';
+    // Remove the hardcoded logo import
+    import logoPNG from './pics/The-New-York-Times.jpg';
   
     export let feeds = [];
     let newsItems = [];
     let scrollingTextEl;
     let newsTickerEl;
-    let currentImage = './pics/CBC_140x140.png'; // To hold the currently displayed image
+    let currentImage = ''; // Initialize as empty
     let currentNewsIndex = 0; // To keep track of the current feed index
+  
+    // Since we need to import images dynamically, create a mapping
+    let imageImports = {};
+  
+    // Preload images from feeds
+    function preloadImages() {
+      feeds.forEach(feed => {
+        if (feed.customLogo) {
+          // Import the image and store it in the mapping
+          // Note: Adjust the path according to your project structure
+          // Svelte needs to know all import paths at compile time
+          import(`${feed.customLogo}`).then(module => {
+            imageImports[feed.customLogo] = module.default;
+          }).catch(error => {
+            console.error(`Failed to load image: ${feed.customLogo}`, error);
+          });
+        }
+      });
+    }
   
     // Fetch from your backend RSS proxy
     async function fetchRSSFeedFromServer(url) {
@@ -36,7 +56,7 @@
             fetchedNewsItems.push({
               title: item.title,
               link: item.link,
-              logo: feed.customLogo || ''
+              logo: imageImports[feed.customLogo] || ''
             });
           });
         }
@@ -61,14 +81,21 @@
     }
   
     // Cycle images every 15 seconds
-    const imageCycleInterval = setInterval(updateImage, 15000); 
+    let imageCycleInterval;
   
     // Fetch the news when the component mounts
     onMount(() => {
-      fetchNewsItems();
+      preloadImages(); // Preload images before fetching news
+      // Wait a bit to ensure images are loaded
+      setTimeout(() => {
+        fetchNewsItems();
   
-      // Update animation when window is resized
-      window.addEventListener('resize', updateAnimation);
+        // Start the image cycling interval
+        imageCycleInterval = setInterval(updateImage, 500);
+  
+        // Update animation when window is resized
+        window.addEventListener('resize', updateAnimation);
+      }, 500); // Adjust the delay as needed
     });
   
     onDestroy(() => {
@@ -91,7 +118,7 @@
           const totalDistance = textWidth + containerWidth;
   
           // Set a desired scrolling speed (pixels per second)
-          const speed = 300; // Adjust this value as needed
+          const speed = 100; // Adjust this value as needed
   
           // Calculate animation duration
           const animationDuration = totalDistance / speed;
@@ -105,12 +132,14 @@
   
   <div class="news-ticker" bind:this={newsTickerEl}>
     <!-- Display the current logo image on the left side -->
-   
-        <div class="ticker-logo">
-            <img src={logoPNG} alt="News Logo">
-          </div>
-          
-    
+    <div class="ticker-logo">
+      {#if currentImage}
+        <img src="{currentImage}" alt="News Logo">
+      {:else}
+        <!-- Fallback logo or placeholder -->
+        <img src={logoPNG} alt="Default Logo">
+      {/if}
+    </div>
   
     <div class="scrolling-text" bind:this={scrollingTextEl}>
       {#if newsItems.length > 0}
@@ -120,3 +149,4 @@
       {/if}
     </div>
   </div>
+  

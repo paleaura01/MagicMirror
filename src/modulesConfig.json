@@ -30,19 +30,20 @@
         {
           "title": "New York Times",
           "url": "https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml",
-          "customLogo": "modules/ticker/pics/NYT_logo_rss_250x40.png"
+          "customLogo": "./pics/The-New-York-Times.jpg"
         },
         {
           "title": "CBC World",
           "url": "https://www.cbc.ca/webfeed/rss/rss-world",
-          "customLogo": "modules/ticker/pics/CBC_140x140.png"
+          "customLogo": "./pics/CBC-News-Network.jpg"
         },
         {
           "title": "BBC World News",
           "url": "https://feeds.bbci.co.uk/news/world/rss.xml",
-          "customLogo": "modules/ticker/pics/bbc_news_120x60.gif"
+          "customLogo": "./pics/BBC-News.jpg"
         }
       ]
     }    
   }
+  
 ]
