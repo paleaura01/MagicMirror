@@ -16,8 +16,8 @@
     "region": "left",
     "props": {
       "config": {
-        "animationSpeedMs": 1000,
-        "extraDelayLastFrameMs": 2000,
+        "animationSpeedMs": 500,
+        "extraDelayLastFrameMs": 1500,
         "extraDelayCurrentFrameMs": 3000,
         "markers": [
           { "lat": 35.315931, "lng": -81.344469, "color": "red" }
