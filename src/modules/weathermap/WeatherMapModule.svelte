@@ -31,7 +31,6 @@
     function resetRadarLayers() {
         console.log("Resetting radar layers...");
 
-        // Clear all previous radar layers
         radarLayers.forEach(layer => {
             if (map.hasLayer(layer)) {
                 map.removeLayer(layer);
@@ -39,7 +38,6 @@
         });
         radarLayers = [];
 
-        // Clear animation timeout if it exists
         if (animationTimeoutId) {
             clearTimeout(animationTimeoutId);
             animationTimeoutId = null;
@@ -50,7 +48,6 @@
 
     // Function to add weather layers with logging and animation
     async function addWeatherLayers() {
-        // Prevent overlapping API calls
         if (apiCallInProgress) {
             console.log("API call already in progress. Skipping new request.");
             return;
@@ -74,9 +71,8 @@
                 const radarTimestamps = data.radar.past.map(frame => frame.time);
                 const tileSize = 256;
 
-                // Function to update radar layer for each timestamp
                 function updateRadarLayer(timestamp) {
-                    resetRadarLayers(); // Clear existing radar layers and timeouts
+                    resetRadarLayers();
 
                     const radarColor = config.radarColor || 8;
                     const radarUrlTemplate = `https://tilecache.rainviewer.com/v2/radar/${timestamp}/${tileSize}/{z}/{x}/{y}/${radarColor}/1_0.png`;
@@ -96,7 +92,6 @@
                     console.log(`Radar layer added for timestamp: ${timestamp}`);
                 }
 
-                // Animate radar frames
                 function animateRadar() {
                     let frameIndex = 0;
 
@@ -104,7 +99,6 @@
                         const timestamp = radarTimestamps[frameIndex];
                         updateRadarLayer(timestamp);
 
-                        // Calculate frame delay
                         let delay = config.animationSpeedMs;
                         if (frameIndex === 0) {
                             delay += config.extraDelayCurrentFrameMs;
@@ -132,6 +126,36 @@
         }
     }
 
+    // Add marker to the map
+    function addMarkers() {
+        if (config.markers && config.markers.length > 0) {
+            config.markers.forEach(marker => {
+                const iconUrl = markerIcons[marker.color] || markerRed;
+
+                const markerInstance = L.marker([marker.lat, marker.lng], {
+                    icon: L.icon({
+                        iconUrl: iconUrl,
+                        shadowUrl: markerShadow,
+                        iconSize: [25, 41],
+                        shadowSize: [41, 41],
+                        iconAnchor: [12, 41],
+                        shadowAnchor: [12, 41],
+                        popupAnchor: [0, -41]
+                    })
+                }).addTo(map);
+
+                markerInstance.on('add', () => {
+                    console.log("Marker added:", marker);
+                }).on('error', (error) => {
+                    console.error("Error adding marker:", marker, error);
+                });
+            });
+            console.log("All markers added to the map.");
+        } else {
+            console.warn("No markers found in the configuration.");
+        }
+    }
+
     onMount(() => {
         try {
             if (mapDiv && config) {
@@ -153,13 +177,12 @@
                 console.log("Map initialized. Adding weather layers...");
 
                 addWeatherLayers();
+                addMarkers(); // Add the marker after the map is initialized
 
-                // Clear old intervals before setting new interval
                 if (intervalId) {
                     clearInterval(intervalId);
                 }
 
-                // Set an interval to update weather radar every 2.5 minutes
                 intervalId = setInterval(() => {
                     console.log("Updating radar data...");
                     addWeatherLayers();
