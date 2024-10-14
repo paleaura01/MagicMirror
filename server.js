@@ -13,8 +13,15 @@ app.use((req, res, next) => {
   next();
 });
 
+// Utility function to log requests with timestamps
+const logRequest = (req, res, next) => {
+  const uniqueRequestTime = new Date().toISOString(); // Unique timestamp for each request
+  console.log(`[${uniqueRequestTime}] Proxy request for: ${req.query.url}`);
+  next();
+};
+
 // Proxy route to handle external API requests (RainViewer, etc.)
-app.get('/proxy', async (req, res) => {
+app.get('/proxy', logRequest, async (req, res) => {
   const apiUrl = req.query.url;
   if (!apiUrl) {
     return res.status(400).json({ error: 'No URL provided' });
@@ -34,6 +41,9 @@ app.get('/proxy', async (req, res) => {
       res.setHeader('Content-Type', contentType);
       res.send(buffer); // Send the buffer
     }
+
+    // Log after successful response
+    console.log(`[${new Date().toISOString()}] Response sent for: ${apiUrl}`);
   } catch (error) {
     console.error('Error fetching URL:', error);
     res.status(500).json({ error: 'Failed to fetch URL' });

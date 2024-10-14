@@ -63,7 +63,7 @@ function preloadImages() {
 
     // Ensure reactivity by directly updating `newsItems`
     newsItems = [...fetchedNewsItems];
-    console.log("News items fetched and set:", newsItems);
+    // console.log("News items fetched and set:", newsItems);
 
     // Update the displayed image after fetching the items
     updateImage();

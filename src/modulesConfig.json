@@ -16,7 +16,7 @@
     "region": "left",
     "props": {
       "config": {
-        "animationSpeedMs": 800,
+        "animationSpeedMs": 1000,
         "extraDelayLastFrameMs": 2000,
         "extraDelayCurrentFrameMs": 3000,
         "markers": [
