@@ -16,7 +16,7 @@
     "region": "left",
     "props": {
       "config": {
-        "animationSpeedMs": 500,
+        "animationSpeedMs": 800,
         "extraDelayLastFrameMs": 1500,
         "extraDelayCurrentFrameMs": 3000,
         "markers": [
@@ -25,11 +25,13 @@
         "mapPositions": [
           { "lat": 35.315931, "lng": -81.344469, "loops": 1 }
         ],
-        "mapUrl": "https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png",
+        "dayMapUrl":"https://tiles.stadiamaps.com/tiles/stamen_terrain/{z}/{x}/{y}{r}.png",
+        "nightMapUrl": "https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png",
         "mapHeight": "420px",
         "mapWidth": "420px",
         "zoom": 7,
-        "radarColor": 8,
+        "dayRadarColor": 2,
+        "nightRadarColor": 8,
         "maxHistoryFrames": -1,
         "maxForecastFrames": -1,
         "substitudeModules": [],

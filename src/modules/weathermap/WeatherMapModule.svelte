@@ -3,6 +3,7 @@
     import * as L from 'leaflet';
     import 'leaflet/dist/leaflet.css';
     import './weathermap_styles.css';
+    import dayjs from 'dayjs';
 
     // Import marker icons
     import markerRed from './pics/marker-icon-red.png';
@@ -26,6 +27,17 @@
     let apiCallInProgress = false;
     let animationTimeoutId;
     let intervalId;
+
+    // Determine if it is day or night based on current time
+    function isDaytime() {
+        const currentHour = dayjs().hour();
+        return currentHour >= 6 && currentHour < 18;
+    }
+
+    // Get appropriate radar color based on day or night
+    function getRadarColor() {
+        return isDaytime() ? config.dayRadarColor : config.nightRadarColor;
+    }
 
     // Clear all radar layers and animation timeouts before adding new data
     function resetRadarLayers() {
@@ -74,7 +86,7 @@
                 function updateRadarLayer(timestamp) {
                     resetRadarLayers();
 
-                    const radarColor = config.radarColor || 8;
+                    const radarColor = getRadarColor();
                     const radarUrlTemplate = `https://tilecache.rainviewer.com/v2/radar/${timestamp}/${tileSize}/{z}/{x}/{y}/${radarColor}/1_0.png`;
 
                     radarLayer = L.tileLayer(radarUrlTemplate, {
@@ -167,7 +179,7 @@
                     attributionControl: false,
                     zoomControl: false,
                     layers: [
-                        L.tileLayer(config.mapUrl, {
+                        L.tileLayer(isDaytime() ? config.dayMapUrl : config.nightMapUrl, {
                             maxZoom: 18,
                             attribution: '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org/copyright">OpenStreetMap contributors</a>',
                         }),
