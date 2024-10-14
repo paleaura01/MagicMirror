@@ -1,5 +1,3 @@
-
-
 /* Set the background color to black and text color to white */
 body {
   background-color: black;
@@ -24,10 +22,10 @@ body {
 .grid-container {
   display: grid;
   grid-template-areas:
-    "top_left top_center top_right"
-    "top_left center upper_right"
-    "lower_left center lower_right"
-    "bottom_left bottom_center bottom_right"; /* Updated grid structure */
+    "left top_center top_right"
+    "left center upper_right"
+    "left center lower_right"
+    "left bottom_center bottom_right"; /* Updated grid structure to merge left and bottom_left */
   grid-template-columns: 1fr 1fr 1fr;
   grid-template-rows: 1fr 1fr 1fr 1fr; /* Adjusted for 4 rows */
   height: calc(100vh - 80px); /* Ensure grid takes the full height minus the header */
@@ -47,24 +45,20 @@ body {
   background-color: transparent !important;
   color: white;
   border: none !important;
-  
 }
 
 /* Assign regions to the CSS grid */
-.top_left {
-  grid-area: top_left;
-  grid-row: span 2; /* Makes top_left span 2 rows */
+.left {
+  grid-area: left;
+  grid-row: span 4; /* Makes left span 4 rows to include bottom_left */
 }
 .top_center { grid-area: top_center; }
 .top_right { grid-area: top_right; }
 
 .upper_right { grid-area: upper_right; }
-
-.lower_left { grid-area: lower_left; }
 .lower_right { grid-area: lower_right; }
 
 .center { grid-area: center; } /* This is now the merged center box */
 
-.bottom_left { grid-area: bottom_left; }
 .bottom_center { grid-area: bottom_center; }
-bottom_right { grid-area: bottom_right; }
+.bottom_right { grid-area: bottom_right; }

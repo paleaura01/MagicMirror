@@ -16,7 +16,7 @@
   flex-direction: row;
   justify-content: flex-start; /* Align clock to the left */
   align-items: flex-start; /* Align clock to the top */
-  padding-top: 20px; /* Optional padding for space from the edges */
+  padding-top: 30px; /* Optional padding for space from the edges */
   box-sizing: border-box; /* Ensure padding doesn't cause overflow */
   width: auto; /* Ensure the clock only takes as much width as needed */
   height: auto; /* Ensure the clock only takes as much height as needed */

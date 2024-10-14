@@ -12,10 +12,9 @@
 
   const regions = [
     'header',  // Add header as a region
-    'top_left',
+    'left',
     'top_center',
     'top_right',
-    'upper_left',
     'center',
     'upper_right',
     'lower_left',

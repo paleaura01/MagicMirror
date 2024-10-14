@@ -2,7 +2,7 @@
   {
     "name": "ClockModule",
     "path": "modules/clock/ClockModule.js", 
-    "region": "top_left",
+    "region": "left",
     "props": {
       "displayType": "both",
       "timeFormat": 12,
@@ -13,29 +13,23 @@
   {
     "name": "WeatherMapModule",
     "path": "modules/weathermap/WeatherMapModule.js",
-    "region": "center",
+    "region": "left",
     "props": {
       "config": {
-        "animationSpeedMs": 400,
-        "colorScheme": 2,
-        "defaultZoomLevel": 8,
-        "displayTime": true,
-        "displayTimeline": true,
-        "displayClockSymbol": true,
-        "displayHoursBeforeRain": -1,
-        "extraDelayLastFrameMs": 1000,
+        "animationSpeedMs": 800,
+        "extraDelayLastFrameMs": 2000,
         "extraDelayCurrentFrameMs": 3000,
-        "invertColors": false,
         "markers": [
           { "lat": 35.315931, "lng": -81.344469, "color": "red" }
         ],
         "mapPositions": [
           { "lat": 35.315931, "lng": -81.344469, "loops": 1 }
         ],
-        "mapUrl": "https://a.tile.openstreetmap.de/{z}/{x}/{y}.png",
+        "mapUrl": "https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png",
         "mapHeight": "420px",
-        "mapWidth": "400px",
-        "zoom": 10,
+        "mapWidth": "420px",
+        "zoom": 7,
+        "radarColor": 8,
         "maxHistoryFrames": -1,
         "maxForecastFrames": -1,
         "substitudeModules": [],

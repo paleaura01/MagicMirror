@@ -4,138 +4,181 @@
     import 'leaflet/dist/leaflet.css';
     import './weathermap_styles.css';
 
+    // Import marker icons
+    import markerRed from './pics/marker-icon-red.png';
+    import markerBlue from './pics/marker-icon-blue.png';
+    import markerGreen from './pics/marker-icon-green.png';
+    import markerShadow from './pics/marker-shadow.png';
+
+    // Map color to icons
+    const markerIcons = {
+        red: markerRed,
+        blue: markerBlue,
+        green: markerGreen,
+    };
+
     export let config;
+
     let mapDiv;
     let map;
-    let currentLayer = null;
-    let radarFrames = [];
-    let frameIndex = 0;
-    let frameIntervals = [];
-    let isPaused = false;
+    let radarLayer;
+    const updateInterval = 150000; // 2.5 minutes in milliseconds
 
-    // Function to add radar and satellite layers with frame-based animation
+    // Function to add weather layers with logging and animation
     async function addWeatherLayers() {
         console.log("Fetching RainViewer weather data...");
 
         try {
-            const apiUrl = 'https://api.rainviewer.com/public/weather-maps.json';
+            const apiUrl = 'http://localhost:8080/proxy?url=' + encodeURIComponent('https://api.rainviewer.com/public/weather-maps.json');
+            console.log("Fetching from proxy API URL:", apiUrl);
+
             const response = await fetch(apiUrl);
-            const data = await response.json();
+            console.log("Response received, status:", response.status);
 
-            const host = data.host;
-
-            // Store the radar frames (past data)
-            if (data.radar.past.length > 0) {
-                radarFrames = data.radar.past;
-                console.log("Radar frames available:", radarFrames);
-
-                // Start the radar frame animation
-                advanceFrame();
-            } else {
-                console.warn("No radar data available.");
+            if (!response.ok) {
+                console.error("Failed to fetch RainViewer data. Status:", response.status);
+                return;
             }
 
-            // Handle satellite layer (as static layer for now)
-            if (data.satellite.infrared.length > 0) {
-                const satelliteFrame = data.satellite.infrared[data.satellite.infrared.length - 1];
-                const satellitePath = `/v2/satellite/${satelliteFrame.path}/256/{z}/{x}/{y}/0/0_0.png`;
+            const data = await response.json();
+            console.log("Weather data fetched:", data);
 
-                console.log("Satellite Path:", satellitePath);
+            if (data.radar.past.length > 0) {
+                const radarTimestamps = data.radar.past.map(frame => frame.time); // Get all past radar timestamps
+                const tileSize = 256;
 
-                // Add satellite layer
-                const satelliteLayer = L.tileLayer(`${host}${satellitePath}`, {
-                    tileSize: 256,
-                    opacity: 0.5,
-                });
+                // Function to update the radar layer for animation
+                function updateRadarLayer(timestamp) {
+                    if (radarLayer) {
+                        map.removeLayer(radarLayer);
+                    }
 
-                satelliteLayer.addTo(map);
+                    const radarColor = config.radarColor || 8; // Use radarColor from config, default to 8 if not set
 
-                satelliteLayer.on('tileload', (event) => {
-                    console.log('Satellite tile loaded:', event.tile);
-                });
+                    // Use the same zoom level as the map tile layer
+                    const radarUrlTemplate = `https://tilecache.rainviewer.com/v2/radar/${timestamp}/${tileSize}/{z}/{x}/{y}/${radarColor}/1_0.png`;
+                    radarLayer = L.tileLayer(radarUrlTemplate, {
+                        tileSize: tileSize,
+                        opacity: 1.0,
+                        zIndex: 1100,
+                        maxZoom: config.zoom, // Sync radar zoom level with map zoom level
+                        errorTileUrl: './pics/error-tile.png',
+                    }).on('tileerror', (error) => {
+                        console.error('Radar tile failed to load:', {
+                            url: radarUrlTemplate,
+                            coords: error.coords,
+                            details: error
+                        });
+                    }).on('tileloadstart', (event) => {
+                        console.log("Radar tile load started:", event.coords);
+                    }).on('tileload', (event) => {
+                        console.log("Radar tile loaded successfully:", event.coords);
+                    });
 
-                satelliteLayer.on('tileerror', (event) => {
-                    console.error('Satellite tile failed to load:', event);
-                });
+                    radarLayer.addTo(map);
+                    console.log("Radar layer updated to timestamp:", timestamp);
+                }
 
-                console.log("Satellite layer added to map.");
+                // Function to animate radar frames
+                function animateRadar() {
+                    let frameIndex = 0;
+
+                    function showNextFrame() {
+                        const isLastFrame = frameIndex === radarTimestamps.length - 1;
+                        const isFirstFrame = frameIndex === 0;
+                        const timestamp = radarTimestamps[frameIndex];
+                        updateRadarLayer(timestamp);
+
+                        // Calculate delay for the current frame
+                        let delay = config.animationSpeedMs;
+                        if (isFirstFrame) {
+                            delay += config.extraDelayCurrentFrameMs;
+                        } else if (isLastFrame) {
+                            delay += config.extraDelayLastFrameMs;
+                        }
+
+                        frameIndex = (frameIndex + 1) % radarTimestamps.length;  // Loop to the next frame
+
+                        // Loop animation or stop after one loop
+                        setTimeout(showNextFrame, delay);
+                    }
+
+                    showNextFrame();  // Start animation
+                }
+
+                console.log("Starting radar animation...");
+                animateRadar();  // Start the radar animation
             } else {
-                console.warn("No satellite data available.");
+                console.warn("No radar data available in the response.");
             }
         } catch (error) {
-            console.error('Error fetching RainViewer API:', error);
+            console.error('Error fetching or parsing RainViewer API data:', error);
         }
-    }
-
-    function loadFrame(frameIndex) {
-        const host = "https://tilecache.rainviewer.com";
-        const radarPath = `/v2/radar/${radarFrames[frameIndex].path}/256/{z}/{x}/{y}/1/1_0.png`;
-
-        // Remove current layer if it exists
-        if (currentLayer) {
-            map.removeLayer(currentLayer);
-        }
-
-        // Add new radar layer
-        currentLayer = L.tileLayer(`${host}${radarPath}`, {
-            tileSize: 256,
-            opacity: 0.6,
-        }).addTo(map);
-
-        currentLayer.on('tileload', (event) => {
-            console.log('Radar tile loaded:', event.tile);
-        });
-
-        currentLayer.on('tileerror', (event) => {
-            console.error('Radar tile failed to load:', event);
-        });
-
-        console.log("Radar layer updated for frame:", frameIndex);
-    }
-
-    function advanceFrame() {
-        if (isPaused) return;
-
-        // Load the current frame
-        loadFrame(frameIndex);
-
-        // Advance to the next frame
-        frameIndex = (frameIndex + 1) % radarFrames.length;
-
-        // Set the delay based on the config settings
-        const delay = frameIndex === radarFrames.length - 1
-            ? config.extraDelayLastFrameMs
-            : config.animationSpeedMs;
-
-        // Schedule the next frame
-        frameIntervals.push(setTimeout(advanceFrame, delay));
-    }
-
-    function stopAnimation() {
-        isPaused = true;
-        frameIntervals.forEach(clearTimeout);
-        frameIntervals = [];
     }
 
     onMount(() => {
-        if (mapDiv && config) {
-            console.log("Initializing Leaflet map...");
+        try {
+            if (mapDiv && config) {
+                console.log("Initializing Leaflet map...");
 
-            map = L.map(mapDiv, {
-                center: [config.mapPositions[0].lat, config.mapPositions[0].lng],
-                zoom: config.zoom || 10,
-                layers: [
-                    L.tileLayer(config.mapUrl, {
-                        maxZoom: 18,
-                        attribution: '&copy; OpenStreetMap contributors',
-                    }),
-                ],
-            });
+                map = L.map(mapDiv, {
+                    center: [config.mapPositions[0].lat, config.mapPositions[0].lng],
+                    zoom: config.zoom || 10, // Use the zoom level from config
+                    attributionControl: false,
+                    zoomControl: false, // Disable zoom control
+                    layers: [
+                        // Use mapUrl from config for the tile layer
+                        L.tileLayer(config.mapUrl, {
+                            maxZoom: 18,
+                            attribution: '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org/copyright">OpenStreetMap contributors</a>',
+                        }),
+                    ],
+                });
 
-            console.log("Map initialized. Adding weather layers...");
+                console.log("Map initialized. Adding weather layers...");
 
-            // Add weather layers (radar/satellite)
-            addWeatherLayers();
+                // Add weather layers (radar/satellite)
+                addWeatherLayers();
+
+                // Set an interval to update weather radar data every 2.5 minutes
+                setInterval(() => {
+                    console.log("Updating radar data...");
+                    addWeatherLayers();  // Call the function every 2.5 minutes
+                }, updateInterval);
+
+                // Add markers with error handling
+                if (config.markers && config.markers.length > 0) {
+                    config.markers.forEach(marker => {
+                        const iconUrl = markerIcons[marker.color] || markerRed;
+                        console.log("Adding marker:", marker);
+
+                        const markerInstance = L.marker([marker.lat, marker.lng], {
+                            icon: L.icon({
+                                iconUrl: iconUrl,
+                                shadowUrl: markerShadow,
+                                iconSize: [25, 41],
+                                shadowSize: [41, 41],
+                                iconAnchor: [12, 41],
+                                shadowAnchor: [12, 41],
+                                popupAnchor: [0, -41]
+                            })
+                        }).addTo(map);
+
+                        markerInstance.on('add', () => {
+                            console.log("Marker added:", marker);
+                        }).on('error', (error) => {
+                            console.error("Error adding marker:", marker, error);
+                        });
+                    });
+                    console.log("All markers added to the map.");
+                } else {
+                    console.warn("No markers found in the configuration.");
+                }
+            } else {
+                console.error("Map div or configuration is missing.");
+            }
+        } catch (error) {
+            console.error("Error during onMount execution:", error);
         }
     });
 </script>
