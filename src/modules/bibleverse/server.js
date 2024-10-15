@@ -2,12 +2,12 @@ import express from 'express';
 import cors from 'cors';
 import fs from 'fs';
 import path from 'path';
-import mammoth from 'mammoth'; // For parsing DOCX
+import mammoth from 'mammoth';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import { AutoTokenizer, AutoModelForSeq2SeqLM } from '@huggingface/transformers';
 
-// Get the directory path
+// Ensure correct directory paths
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
@@ -19,35 +19,43 @@ app.use(express.json());
 
 // API to fetch a random verse and translate it
 app.post('/api/verse', async (req, res) => {
-    const { llmpath, docxpath } = req.body;
+    const { llmpath, llmodelpath, tokenizerpath, docxpath } = req.body;
 
-    if (!llmpath || !docxpath) {
-        console.error('Missing input parameters: ', { llmpath, docxpath });
+    if (!llmpath || !llmodelpath || !tokenizerpath || !docxpath) {
+        console.error('Missing input parameters: ', { llmpath, llmodelpath, tokenizerpath, docxpath });
         return res.status(400).json({ error: 'Invalid input' });
     }
 
     try {
-        // Resolve model and DOCX paths
+        // Resolve paths from modulesConfig.json
         const modelPath = path.resolve(__dirname, `../../${llmpath}`);
+        const tokenizerPath = path.resolve(__dirname, `../../${tokenizerpath}`);
         const docxPath = path.resolve(__dirname, `../../${docxpath}`);
+        
         console.log(`Resolved model path: ${modelPath}`);
+        console.log(`Resolved tokenizer path: ${tokenizerPath}`);
         console.log(`Resolved DOCX path: ${docxPath}`);
 
-        // Ensure the model and DOCX file exist
+        // Ensure the DOCX file exists
         if (!fs.existsSync(docxPath)) {
             console.error(`DOCX file not found at path: ${docxPath}`);
             return res.status(404).json({ error: 'DOCX file not found' });
         }
 
-        const tokenizerPath = path.join(modelPath, 'tokenizer.json');
+        // Ensure the tokenizer and model files exist
+        if (!fs.existsSync(tokenizerPath)) {
+            console.error(`Tokenizer file not found at path: ${tokenizerPath}`);
+            return res.status(404).json({ error: 'Tokenizer file not found' });
+        }
+
         const modelFilePath = path.join(modelPath, 'pytorch_model.bin');
-        if (!fs.existsSync(tokenizerPath) || !fs.existsSync(modelFilePath)) {
-            console.error(`Model or tokenizer file not found. Tokenizer path: ${tokenizerPath}, Model path: ${modelFilePath}`);
-            return res.status(404).json({ error: 'Model or tokenizer files not found' });
+        if (!fs.existsSync(modelFilePath)) {
+            console.error(`Model file not found at path: ${modelFilePath}`);
+            return res.status(404).json({ error: 'Model file not found' });
         }
 
         // Load tokenizer and model locally
-        const tokenizer = await AutoTokenizer.from_pretrained(modelPath, {
+        const tokenizer = await AutoTokenizer.from_pretrained(tokenizerPath, {
             local_files_only: true
         });
         const model = await AutoModelForSeq2SeqLM.from_pretrained(modelPath, {
@@ -77,19 +85,21 @@ app.post('/api/verse', async (req, res) => {
 
 // API route for translation
 app.post('/api/translate', async (req, res) => {
-    const { text, sourceLang, targetLang, llmpath } = req.body;
+    const { text, sourceLang, targetLang, llmpath, tokenizerpath } = req.body;
 
-    if (!text || !sourceLang || !targetLang || !llmpath) {
-        console.error('Missing input parameters: ', { text, sourceLang, targetLang, llmpath });
+    if (!text || !sourceLang || !targetLang || !llmpath || !tokenizerpath) {
+        console.error('Missing input parameters: ', { text, sourceLang, targetLang, llmpath, tokenizerpath });
         return res.status(400).json({ error: 'Invalid input' });
     }
 
     try {
         const modelPath = path.resolve(__dirname, `../../${llmpath}`);
+        const tokenizerPath = path.resolve(__dirname, `../../${tokenizerpath}`);
+        console.log(`Resolved tokenizer path: ${tokenizerPath}`);
         console.log(`Resolved model path: ${modelPath}`);
 
         // Load the tokenizer and model locally
-        const tokenizer = await AutoTokenizer.from_pretrained(modelPath, {
+        const tokenizer = await AutoTokenizer.from_pretrained(tokenizerPath, {
             local_files_only: true
         });
         const model = await AutoModelForSeq2SeqLM.from_pretrained(modelPath, {
