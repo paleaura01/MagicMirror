@@ -2,12 +2,12 @@ import express from 'express';
 import cors from 'cors';
 import fs from 'fs';
 import path from 'path';
-import mammoth from 'mammoth';
+import mammoth from 'mammoth'; // For parsing DOCX
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import { AutoTokenizer, AutoModelForSeq2SeqLM } from '@huggingface/transformers';
 
-// Ensure correct directory paths
+// Get the directory path
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
@@ -27,38 +27,34 @@ app.post('/api/verse', async (req, res) => {
     }
 
     try {
-        // Resolve paths from modulesConfig.json
-        const modelPath = path.resolve(__dirname, `../../${llmpath}`);
-        const tokenizerPath = path.resolve(__dirname, `../../${tokenizerpath}`);
+        // Resolve the base directory for the model and tokenizer (directory, not file)
+        const modelDir = path.resolve(__dirname, `../../${llmpath}`);
+        const modelIndexPath = path.resolve(__dirname, `../../${llmodelpath}`);
+        const tokenizerFilePath = path.resolve(__dirname, `../../${tokenizerpath}`);
         const docxPath = path.resolve(__dirname, `../../${docxpath}`);
-        
-        console.log(`Resolved model path: ${modelPath}`);
-        console.log(`Resolved tokenizer path: ${tokenizerPath}`);
+
+        console.log(`Resolved model directory: ${modelDir}`);
+        console.log(`Resolved model index path: ${modelIndexPath}`);
+        console.log(`Resolved tokenizer path: ${tokenizerFilePath}`);
         console.log(`Resolved DOCX path: ${docxPath}`);
 
-        // Ensure the DOCX file exists
+        // Ensure the model and DOCX file exist
         if (!fs.existsSync(docxPath)) {
             console.error(`DOCX file not found at path: ${docxPath}`);
             return res.status(404).json({ error: 'DOCX file not found' });
         }
 
-        // Ensure the tokenizer and model files exist
-        if (!fs.existsSync(tokenizerPath)) {
-            console.error(`Tokenizer file not found at path: ${tokenizerPath}`);
-            return res.status(404).json({ error: 'Tokenizer file not found' });
+        // Validate tokenizer and model files exist
+        if (!fs.existsSync(tokenizerFilePath) || !fs.existsSync(modelIndexPath)) {
+            console.error(`Model index or tokenizer file not found. Tokenizer path: ${tokenizerFilePath}, Model index path: ${modelIndexPath}`);
+            return res.status(404).json({ error: 'Model index or tokenizer files not found' });
         }
 
-        const modelFilePath = path.join(modelPath, 'pytorch_model.bin');
-        if (!fs.existsSync(modelFilePath)) {
-            console.error(`Model file not found at path: ${modelFilePath}`);
-            return res.status(404).json({ error: 'Model file not found' });
-        }
-
-        // Load tokenizer and model locally
-        const tokenizer = await AutoTokenizer.from_pretrained(tokenizerPath, {
+        // Load tokenizer and model locally by pointing to the directory (not individual files)
+        const tokenizer = await AutoTokenizer.from_pretrained(modelDir, {
             local_files_only: true
         });
-        const model = await AutoModelForSeq2SeqLM.from_pretrained(modelPath, {
+        const model = await AutoModelForSeq2SeqLM.from_pretrained(modelDir, {
             local_files_only: true
         });
 
@@ -93,16 +89,17 @@ app.post('/api/translate', async (req, res) => {
     }
 
     try {
-        const modelPath = path.resolve(__dirname, `../../${llmpath}`);
-        const tokenizerPath = path.resolve(__dirname, `../../${tokenizerpath}`);
-        console.log(`Resolved tokenizer path: ${tokenizerPath}`);
-        console.log(`Resolved model path: ${modelPath}`);
+        // Resolve the base directory for the model and tokenizer
+        const modelDir = path.resolve(__dirname, `../../${llmpath}`);
+        const tokenizerFilePath = path.resolve(__dirname, `../../${tokenizerpath}`);
+        console.log(`Resolved model directory: ${modelDir}`);
+        console.log(`Resolved tokenizer path: ${tokenizerFilePath}`);
 
-        // Load the tokenizer and model locally
-        const tokenizer = await AutoTokenizer.from_pretrained(tokenizerPath, {
+        // Load the tokenizer and model locally from the directory (not individual files)
+        const tokenizer = await AutoTokenizer.from_pretrained(modelDir, {
             local_files_only: true
         });
-        const model = await AutoModelForSeq2SeqLM.from_pretrained(modelPath, {
+        const model = await AutoModelForSeq2SeqLM.from_pretrained(modelDir, {
             local_files_only: true
         });
 

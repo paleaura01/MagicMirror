@@ -1,10 +1,10 @@
 <script>
     import { onMount } from "svelte";
 
-    export let llmpath;  // Path to the LLM from modulesConfig.json
-    export let llmodelpath;  // Path to the model from modulesConfig.json
-    export let tokenizerpath;  // Path to the tokenizer from modulesConfig.json
-    export let docxpath;  // Path to the Tanakh DOCX from modulesConfig.json
+    export let llmpath; // Path to the LLM from modulesConfig.json
+    export let llmodelpath; // Path to the large model index file from modulesConfig.json
+    export let tokenizerpath; // Path to the tokenizer file from modulesConfig.json
+    export let docxpath; // Path to the Tanakh DOCX from modulesConfig.json
 
     let verse = null;
     let translatedVerse = null;
@@ -17,7 +17,7 @@
             const response = await fetch('http://localhost:8081/api/verse', {
                 method: 'POST',  // Changed to POST to match the server route
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ llmpath, llmodelpath, tokenizerpath, docxpath })  // Pass the paths to the server
+                body: JSON.stringify({ llmpath, llmodelpath, tokenizerpath, docxpath }) // Pass llmpath, llmodelpath, tokenizerpath, and docxpath to the server
             });
             const data = await response.json();
             verse = data.verse;
@@ -38,7 +38,7 @@
             const response = await fetch('http://localhost:8081/api/translate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ text: hebrewVerse, sourceLang: "heb", targetLang: "eng", llmpath, llmodelpath, tokenizerpath })  // Pass the paths to the server
+                body: JSON.stringify({ text: hebrewVerse, sourceLang: "heb", targetLang: "eng", llmpath, llmodelpath, tokenizerpath }) // Pass llmpath, llmodelpath, and tokenizerpath to the server
             });
             const data = await response.json();
             translatedVerse = data.translatedText;
