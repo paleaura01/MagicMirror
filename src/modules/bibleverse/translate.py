@@ -1,5 +1,3 @@
-# ./src/modules/bibleverse/translate.py
-
 import sys
 import warnings
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
