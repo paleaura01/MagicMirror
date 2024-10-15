@@ -1,3 +1,5 @@
+<!-- ./src/ModuleWrapper.svelte -->
+
 <script>
   import { onMount } from 'svelte';
 

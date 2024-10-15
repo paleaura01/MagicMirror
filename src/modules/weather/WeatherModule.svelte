@@ -1,3 +1,5 @@
+<!-- ./src/modules/weather/WeatherModule.svelte -->
+
 <script>
   import { onMount } from 'svelte';
   import './weather_styles.css';

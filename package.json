@@ -10,16 +10,28 @@
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^3.1.2",
+    "concurrently": "^8.0.1",
+    "nodemon": "^2.0.22",
     "svelte": "^4.2.19",
-    "vite": "^5.4.8"
+    "vite": "^5.4.8",
+    "wait-on": "^6.0.1"
   },
   "dependencies": {
+    "@huggingface/transformers": "^3.0.0-alpha.21",
+    "@tensorflow/tfjs": "^4.21.0",
     "cors": "^2.8.5",
     "dayjs": "^1.11.13",
+    "docx": "^9.0.2",
     "express": "^4.21.1",
     "feedme": "^2.0.2",
     "leaflet": "^1.9.4",
+    "mammoth": "^1.8.0",
     "node-fetch": "^3.3.2",
-    "rss-parser": "^3.13.0"
+    "openai": "^4.67.3",
+    "python-shell": "^5.0.0",
+    "rss-parser": "^3.13.0",
+    "simple-update-notifier": "^2.0.0",
+    "torch": "^0.2.7",
+    "transformers": "^3.1.0"
   }
 }

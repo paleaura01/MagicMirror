@@ -1,3 +1,5 @@
+// ./src/moduleLoader.js
+
 import modulesConfig from './modulesConfig.json';
 
 export async function loadModules() {
@@ -35,7 +37,7 @@ export async function loadModules() {
       });
 
       // Debug: Log the module being added to the region
-      console.log(`Adding module to region: ${config.region}`, mod.default);
+      // console.log(`Adding module to region: ${config.region}`, mod.default);
 
     } catch (error) {
       console.error(`Error loading module ${config.name}:`, error);
@@ -43,7 +45,7 @@ export async function loadModules() {
   }
 
   // Debug: Log the final structure of modulesByRegion
-  console.log("Final modulesByRegion:", modulesByRegion);
+  // console.log("Final modulesByRegion:", modulesByRegion);
 
   return modulesByRegion;
 }

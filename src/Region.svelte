@@ -1,9 +1,11 @@
+<!-- ./src/Region.svelte -->
+
 <script>
   export let modules = [];
   import ModuleWrapper from './ModuleWrapper.svelte';
 
   // Debugging: Log the modules
-  console.log("Region.svelte - modules:", modules);
+  // console.log("Region.svelte - modules:", modules);
 </script>
 
 <div class="region-container">

@@ -1,7 +1,8 @@
+<!-- ./src/modules/ticker/TickerModule.svelte -->
+
 <script>
   import { onMount, onDestroy } from 'svelte';
   import './ticker_styles.css';
-  // Remove the hardcoded logo import
   import logoPNG from './pics/The-New-York-Times.jpg'; // Fallback image if custom logos fail to load
 
   export let feeds = [];
@@ -14,30 +15,34 @@
   // Since we need to import images dynamically, create a mapping
   let imageImports = {};
 
-// Preload images from feeds
-function preloadImages() {
-  feeds.forEach(feed => {
-    if (feed.customLogo) {
-      // Use @vite-ignore to prevent Vite from trying to analyze the dynamic import
-      import(/* @vite-ignore */ `${feed.customLogo}`).then(module => {
-        imageImports[feed.customLogo] = module.default;
-      }).catch(error => {
-        console.error(`Failed to load image: ${feed.customLogo}`, error);
-      });
-    }
-  });
-}
-
+  // Preload images from feeds
+  function preloadImages() {
+    feeds.forEach(feed => {
+      if (feed.customLogo) {
+        // Use @vite-ignore to prevent Vite from trying to analyze the dynamic import
+        import(/* @vite-ignore */ `${feed.customLogo}`).then(module => {
+          imageImports[feed.customLogo] = module.default;
+        }).catch(error => {
+          console.error(`Failed to load image: ${feed.customLogo}`, error);
+        });
+      }
+    });
+  }
 
   // Fetch from your backend RSS proxy
   async function fetchRSSFeedFromServer(url) {
     try {
       const proxyUrl = `http://localhost:8080/rss?url=${encodeURIComponent(url)}`;
+      // console.log(`Fetching RSS feed from server: ${proxyUrl}`);
       const response = await fetch(proxyUrl);
+      // console.log(`Response from proxy for URL ${url}:`, response);
+
       if (!response.ok) {
         throw new Error(`Failed to fetch from server for URL: ${url}`);
       }
+
       const items = await response.json();
+      // console.log(`Items fetched from server for URL ${url}:`, items);
       return items;
     } catch (error) {
       console.error(`Failed to fetch RSS feed from server: ${url}`, error);
@@ -48,8 +53,13 @@ function preloadImages() {
   // Fetch the RSS feeds and process the items
   async function fetchNewsItems() {
     let fetchedNewsItems = [];
+    console.log("Fetching news items from feeds...");
+
     for (let feed of feeds) {
+      // console.log(`Fetching items for feed:`, feed);
       const fetchedItems = await fetchRSSFeedFromServer(feed.url);
+      // console.log(`Fetched items for feed ${feed.url}:`, fetchedItems);
+
       if (fetchedItems.length > 0) {
         fetchedItems.forEach(item => {
           fetchedNewsItems.push({
@@ -58,6 +68,8 @@ function preloadImages() {
             logo: imageImports[feed.customLogo] || logoPNG // Use fallback if custom logo is not found
           });
         });
+      } else {
+        console.log(`No items fetched for feed ${feed.url}`);
       }
     }
 
@@ -90,7 +102,7 @@ function preloadImages() {
       fetchNewsItems();
 
       // Start the image cycling interval
-      imageCycleInterval = setInterval(updateImage, 500); // Adjust the interval to 15 seconds
+      imageCycleInterval = setInterval(updateImage, 15000); // Adjust the interval to 15 seconds
 
       // Update animation when window is resized
       window.addEventListener('resize', updateAnimation);

@@ -1,3 +1,5 @@
+<!-- ./src/App.svelte -->
+
 <script>
   import Region from './Region.svelte';
   import { onMount } from 'svelte';
@@ -7,7 +9,7 @@
 
   onMount(async () => {
     modulesByRegion = await loadModules();
-    console.log(modulesByRegion); // Debug: Log the loaded modules to check
+    // console.log(modulesByRegion); // Debug: Log the loaded modules to check
   });
 
   const regions = [
@@ -25,7 +27,7 @@
   ];
 
   // Debug: Log regions for visibility
-  console.log("App.svelte - Regions:", regions);
+  // console.log("App.svelte - Regions:", regions);
 </script>
 
 <div class="main-container">

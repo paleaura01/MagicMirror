@@ -1,0 +1,34 @@
+/* ./src/modules/onthisday/onthisday_styles.css */
+
+/* Underline for the heading */
+.onthisday-container h2 {
+    margin: 0;
+    margin-top: 25px;
+    font-size: 1rem;
+    font-weight: 600;
+    font-family: 'Arial', sans-serif;
+    width: 100%;
+    opacity: 1;
+    color: rgba(255, 255, 255, 0.6) 
+}
+
+/* White border at the top of the event list */
+.onthisday-container ul {
+    list-style: none; /* Remove bullet points */
+    padding-left: 0;
+    margin-top: 0.5rem;
+    font-size: 0.9em;
+    font-family: 'Arial', sans-serif;
+    border-top: 2px solid rgba(255, 255, 255, 0.6) !important; /* Force white border */
+    padding-top: 10px;
+    
+}
+
+.onthisday-container li {
+    margin-bottom: 0.5rem;
+}
+
+.onthisday-container p {
+    font-size: 0.9rem;
+    color: #888;
+}

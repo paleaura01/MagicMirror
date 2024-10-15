@@ -1,3 +1,5 @@
+<!-- ./src/modules/clock/ClockModule.svelte -->
+
 <script>
   import { onMount } from 'svelte';
   import './clock_styles.css';

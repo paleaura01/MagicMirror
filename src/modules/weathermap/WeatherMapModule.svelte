@@ -1,3 +1,5 @@
+<!-- ./src/modules/weathermap/WeatherMapModule.svelte -->
+
 <script>
     import { onMount } from 'svelte';
     import * as L from 'leaflet';
@@ -41,7 +43,7 @@
 
     // Clear all radar layers and animation timeouts before adding new data
     function resetRadarLayers() {
-        console.log("Resetting radar layers...");
+        // console.log("Resetting radar layers...");
 
         radarLayers.forEach(layer => {
             if (map.hasLayer(layer)) {
@@ -55,7 +57,7 @@
             animationTimeoutId = null;
         }
 
-        console.log("Radar layers and animations cleared.");
+        // console.log("Radar layers and animations cleared.");
     }
 
     // Function to add weather layers with logging and animation
@@ -65,7 +67,7 @@
             return;
         }
 
-        console.log("Fetching RainViewer weather data...");
+        // console.log("Fetching RainViewer weather data...");
         apiCallInProgress = true;
 
         try {
@@ -101,7 +103,7 @@
 
                     radarLayer.addTo(map);
                     radarLayers.push(radarLayer);
-                    console.log(`Radar layer added for timestamp: ${timestamp}`);
+                    // console.log(`Radar layer added for timestamp: ${timestamp}`);
                 }
 
                 function animateRadar() {
@@ -162,7 +164,7 @@
                     console.error("Error adding marker:", marker, error);
                 });
             });
-            console.log("All markers added to the map.");
+            // console.log("All markers added to the map.");
         } else {
             console.warn("No markers found in the configuration.");
         }

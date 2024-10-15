@@ -13,26 +13,47 @@ app.use((req, res, next) => {
   next();
 });
 
-// Proxy route to handle external API requests (RainViewer, etc.)
+// Helper function to log API calls with timestamps
+const logApiCall = (url) => {
+  const timestamp = new Date().toISOString();
+  console.log(`[${timestamp}] API called: ${url}`);
+};
+
+// Proxy route to handle both RSS and HTML requests
 app.get('/proxy', async (req, res) => {
   const apiUrl = req.query.url;
   if (!apiUrl) {
     return res.status(400).json({ error: 'No URL provided' });
   }
 
+  logApiCall(apiUrl); // Log the API call with a timestamp
+
   try {
     const response = await fetch(apiUrl);
     const contentType = response.headers.get('content-type');
 
-    // Send different types of responses based on content type
-    if (contentType && contentType.includes('application/json')) {
+    // Check if the response is JSON (for APIs)
+    if (contentType.includes('application/json')) {
       const data = await response.json();
       res.json(data);
+
+    // Check if the response is an RSS feed
+    } else if (contentType.includes('application/rss+xml') || contentType.includes('application/xml')) {
+      const data = await response.text();
+      const parser = new FeedMe(true); // 'true' makes the parser output JSON
+      parser.write(data);
+      const rssData = parser.done();
+      res.json(rssData);
+
+    // Check if the response is HTML (for Wikipedia parsing)
+    } else if (contentType.includes('text/html')) {
+      const html = await response.text();
+      res.send(html); // Send raw HTML back, let the front-end parse it
     } else {
       const arrayBuffer = await response.arrayBuffer();
-      const buffer = Buffer.from(arrayBuffer); // Convert ArrayBuffer to Buffer
+      const buffer = Buffer.from(arrayBuffer);
       res.setHeader('Content-Type', contentType);
-      res.send(buffer); // Send the buffer
+      res.send(buffer);
     }
   } catch (error) {
     console.error('Error fetching URL:', error);
@@ -40,11 +61,17 @@ app.get('/proxy', async (req, res) => {
   }
 });
 
-// Function to fetch and parse RSS feed
-const fetchRSSFeed = async (url) => {
-  const items = [];
+// Dedicated route to fetch and parse RSS feeds
+app.get('/rss', async (req, res) => {
+  const feedUrl = req.query.url;
+  if (!feedUrl) {
+    return res.status(400).json({ error: 'No RSS feed URL provided' });
+  }
+
+  logApiCall(feedUrl); // Log the API call with a timestamp
+
   try {
-    const response = await fetch(url, {
+    const response = await fetch(feedUrl, {
       headers: {
         'User-Agent': 'Mozilla/5.0',
         'Cache-Control': 'no-cache',
@@ -53,41 +80,23 @@ const fetchRSSFeed = async (url) => {
 
     if (response.ok) {
       const data = await response.text();
-      const parser = new FeedMe();
+      const parser = new FeedMe(true); // 'true' makes the parser output JSON
+      parser.write(data);
+      const rssData = parser.done();
 
-      parser.on('item', (item) => {
-        const { title, link, description, pubdate } = item;
-        items.push({ title, link, description, pubdate });
-      });
-
-      parser.end(data);
+      // Ensure we send only the relevant parts of the RSS data
+      const items = rssData.items || [];
+      res.json(items);
     } else {
-      console.error(`Failed to fetch RSS feed: ${response.statusText}`);
+      res.status(response.status).json({ error: `Failed to fetch RSS feed: ${response.statusText}` });
     }
   } catch (error) {
     console.error(`Error fetching RSS feed: ${error.message}`);
-  }
-
-  return items;
-};
-
-// Route to proxy the RSS requests
-app.get('/rss', async (req, res) => {
-  const feedUrl = req.query.url;
-  if (!feedUrl) {
-    return res.status(400).json({ error: 'No RSS feed URL provided' });
-  }
-
-  try {
-    const items = await fetchRSSFeed(feedUrl);
-    res.json(items); // Send parsed RSS feed items as JSON
-  } catch (error) {
-    console.error('Error fetching RSS feed:', error);
     res.status(500).json({ error: 'Failed to fetch RSS feed' });
   }
 });
 
 // Start the server
 app.listen(port, () => {
-  console.log(`CORS proxy running on port ${port}`);
+  console.log(`✅ General Server is running on port ${port}`);
 });

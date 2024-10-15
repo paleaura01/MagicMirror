@@ -1,8 +1,10 @@
+/* ./src/modules/weathermap/weathermap_styles.css */
+
 .rain-map-wrapper {
   position: relative;
   overflow: hidden;
   background-color: transparent !important;
-  margin-top: 45px;
+  margin-top: 25px;
 }
 
 .rain-map-time-wrapper {

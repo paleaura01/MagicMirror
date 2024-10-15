@@ -1,3 +1,5 @@
+
+
 [
   {
     "name": "ClockModule",
@@ -16,9 +18,9 @@
     "region": "left",
     "props": {
       "config": {
-        "animationSpeedMs": 800,
-        "extraDelayLastFrameMs": 1500,
-        "extraDelayCurrentFrameMs": 3000,
+        "animationSpeedMs": 500,
+        "extraDelayLastFrameMs": 3500,
+        "extraDelayCurrentFrameMs": 200,
         "markers": [
           { "lat": 35.315931, "lng": -81.344469, "color": "red" }
         ],
@@ -73,5 +75,21 @@
         }
       ]
     }
+  },
+  {
+    "name": "OnThisDay",
+    "path": "modules/onthisday/OnThisDayModule.js",
+    "region": "left",
+    "props": {
+      "animationspeed": "1",
+      "updateInterval": 3600,
+      "maxWidth": "400px",
+      "textSize": "xsmall"
+    }
+  },
+  {
+    "name": "BibleVerse",
+    "path": "modules/bibleverse/BibleVerseModule.js",
+    "region": "top_center"
   }
 ]
