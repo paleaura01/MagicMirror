@@ -2,12 +2,11 @@ import express from 'express';
 import cors from 'cors';
 import fs from 'fs';
 import path from 'path';
-import mammoth from 'mammoth'; // For parsing DOCX
+import mammoth from 'mammoth';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import { AutoTokenizer, AutoModelForSeq2SeqLM } from '@huggingface/transformers';
 
-// Get the directory path
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
@@ -17,7 +16,6 @@ const port = 8081;
 app.use(cors());
 app.use(express.json());
 
-// API to fetch a random verse and translate it
 app.post('/api/verse', async (req, res) => {
     const { llmpath, llmodelpath, tokenizerpath, docxpath } = req.body;
 
@@ -27,7 +25,6 @@ app.post('/api/verse', async (req, res) => {
     }
 
     try {
-        // Resolve the base directory for the model and tokenizer (directory, not file)
         const modelDir = path.resolve(__dirname, `../../${llmpath}`);
         const modelIndexPath = path.resolve(__dirname, `../../${llmodelpath}`);
         const tokenizerFilePath = path.resolve(__dirname, `../../${tokenizerpath}`);
@@ -38,29 +35,19 @@ app.post('/api/verse', async (req, res) => {
         console.log(`Resolved tokenizer path: ${tokenizerFilePath}`);
         console.log(`Resolved DOCX path: ${docxPath}`);
 
-        // Ensure the model and DOCX file exist
         if (!fs.existsSync(docxPath)) {
             console.error(`DOCX file not found at path: ${docxPath}`);
             return res.status(404).json({ error: 'DOCX file not found' });
         }
 
-        // Validate tokenizer and model files exist
         if (!fs.existsSync(tokenizerFilePath) || !fs.existsSync(modelIndexPath)) {
-            console.error(`Model index or tokenizer file not found. Tokenizer path: ${tokenizerFilePath}, Model index path: ${modelIndexPath}`);
+            console.error(`Model index or tokenizer file not found.`);
             return res.status(404).json({ error: 'Model index or tokenizer files not found' });
         }
 
-        // Load tokenizer and model locally by pointing to the directory (not individual files)
-        const tokenizer = await AutoTokenizer.from_pretrained(modelDir, {
-            local_files_only: true
-        });
-        const model = await AutoModelForSeq2SeqLM.from_pretrained(modelDir, {
-            local_files_only: true
-        });
 
         console.log('Successfully loaded model and tokenizer.');
 
-        // Read the DOCX file and extract the text
         const result = await mammoth.extractRawText({ path: docxPath });
         const fullText = result.value;
         if (!fullText) {
@@ -68,18 +55,16 @@ app.post('/api/verse', async (req, res) => {
             return res.status(500).json({ error: 'No text found in DOCX file' });
         }
 
-        // Select a short verse
         const verse = fullText.split('\n').filter(line => line.trim()).slice(0, 1).join(' ');
         console.log(`Selected verse: ${verse}`);
 
         res.json({ verse });
     } catch (error) {
-        console.error('Error processing the request: ', error);
+        console.error('Error processing the request: ', error.message);
         res.status(500).json({ error: 'An error occurred', details: error.message });
     }
 });
 
-// API route for translation
 app.post('/api/translate', async (req, res) => {
     const { text, sourceLang, targetLang, llmpath, tokenizerpath } = req.body;
 
@@ -89,17 +74,19 @@ app.post('/api/translate', async (req, res) => {
     }
 
     try {
-        // Resolve the base directory for the model and tokenizer
         const modelDir = path.resolve(__dirname, `../../${llmpath}`);
         const tokenizerFilePath = path.resolve(__dirname, `../../${tokenizerpath}`);
+
         console.log(`Resolved model directory: ${modelDir}`);
         console.log(`Resolved tokenizer path: ${tokenizerFilePath}`);
 
-        // Load the tokenizer and model locally from the directory (not individual files)
-        const tokenizer = await AutoTokenizer.from_pretrained(modelDir, {
+        // Load the tokenizer and model locally
+        const tokenizer = await AutoTokenizer.from_pretrained(tokenizerFilePath, {
+            use_auth_token: false, // Prevents it from trying to fetch from Hugging Face
             local_files_only: true
         });
         const model = await AutoModelForSeq2SeqLM.from_pretrained(modelDir, {
+            use_auth_token: false,
             local_files_only: true
         });
 
@@ -113,12 +100,11 @@ app.post('/api/translate', async (req, res) => {
 
         res.json({ translatedText });
     } catch (error) {
-        console.error('Translation error: ', error);
+        console.error('Translation error: ', error.message);
         res.status(500).json({ error: 'Translation failed', details: error.message });
     }
 });
 
-// Start the server
 app.listen(port, () => {
     console.log(`📖 BibleVerse server is running on port ${port}`);
 });
