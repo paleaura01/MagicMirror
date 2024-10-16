@@ -46,6 +46,7 @@ app.post('/api/verse', async (req, res) => {
         }
 
 
+
         console.log('Successfully loaded model and tokenizer.');
 
         const result = await mammoth.extractRawText({ path: docxPath });
