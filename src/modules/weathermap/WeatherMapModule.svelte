@@ -29,6 +29,9 @@
     let animationTimeoutId;
     let intervalId;
 
+    // Caching for satellite tiles with coordinates
+    const tileCache = {};
+
     // Determine if it is day or night based on current time
     function isDaytime() {
         const currentHour = dayjs().hour();
@@ -132,22 +135,65 @@
         }
     }
 
-    // Function to add the satellite (infrared) layer
-    function addSatelliteLayer() {
-        const satelliteTileUrl = 'https://tilecache.rainviewer.com/v2/satellite/0230e89928cd/256/{z}/{x}/{y}/0/0_0.png';
+    // Function to add the satellite (infrared) layer with caching
+function addSatelliteLayer() {
+    const satelliteTileUrlTemplate = `https://tilecache.rainviewer.com/v2/satellite/current/256/{z}/{x}/{y}/0/0_0.png`;
 
-        satelliteLayer = L.tileLayer(satelliteTileUrl, {
-            tileSize: 256,
-            opacity: 0.5, // Adjust opacity to show both satellite and radar layers
-            zIndex: 1000, // Lower zIndex than the radar layer
-            maxZoom: config.zoom, // Use the same zoom level from the config
-            errorTileUrl: './pics/error-tile.png',
-        }).on('tileerror', (error) => {
+    satelliteLayer = L.tileLayer(satelliteTileUrlTemplate, {
+        tileSize: 256,
+        opacity: 0.5, // Adjust opacity to show both satellite and radar layers
+        zIndex: 1000, // Lower zIndex than the radar layer
+        maxZoom: config.zoom, // Use the same zoom level from the config
+        errorTileUrl: './pics/error-tile.png',
+    }).on('tileload', (event) => {
+        const coords = event.coords; // Get the coordinates from the event
+
+        // Generate tile URL based on coordinates
+        const tileUrl = satelliteTileUrlTemplate
+            .replace('{z}', coords.z)
+            .replace('{x}', coords.x)
+            .replace('{y}', coords.y);
+
+        // Cache the loaded tile with its corresponding timestamp
+        const timestamp = dayjs().unix();  // Get current Unix timestamp for caching
+        tileCache[tileUrl] = {
+            tileSrc: event.tile.src, // Store the tile URL
+            timestamp: timestamp // Cache the timestamp of the tile load
+        };
+
+        console.log('Caching tile:', tileUrl, 'with timestamp:', timestamp); // Log the caching event
+    }).on('tileerror', (error) => {
+        // Attempt to get coordinates from the target
+        const coords = error.target && error.target._tileCoords ? error.target._tileCoords : error.coords;
+
+        // Check if we have valid coordinates
+        if (coords && typeof coords.z !== 'undefined' && typeof coords.x !== 'undefined' && typeof coords.y !== 'undefined') {
+            // Generate tile URL based on coordinates
+            const tileUrl = satelliteTileUrlTemplate
+                .replace('{z}', coords.z)
+                .replace('{x}', coords.x)
+                .replace('{y}', coords.y);
+
             console.error('Satellite tile failed to load:', error);
-        });
 
-        satelliteLayer.addTo(map);
-    }
+            // Check if we have a cached tile
+            if (tileCache[tileUrl] && tileCache[tileUrl].timestamp === dayjs().unix()) {
+                console.log('Using cached tile for:', tileUrl, 'with matching timestamp');
+                error.target.src = tileCache[tileUrl].tileSrc; // Use cached tile if timestamp matches
+            } else {
+                console.warn('No cached tile available for:', tileUrl, 'or timestamp mismatch.');
+            }
+        } else {
+            console.warn('Tile error does not have valid coordinates:', error);
+        }
+    });
+
+    satelliteLayer.addTo(map);
+}
+
+
+
+
 
     // Add marker to the map
     function addMarkers() {
