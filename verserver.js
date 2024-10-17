@@ -21,7 +21,7 @@ app.use(express.json());
 // Helper function to log API calls
 const logApiCall = (url) => {
   const timestamp = new Date().toISOString();
-  // console.log(`[${timestamp}] API called: ${url}`);
+  console.log(`[${timestamp}] API called: ${url}`);
 };
 
 // Resolve __dirname for ESM
@@ -32,7 +32,7 @@ const __dirname = path.dirname(__filename);
 app.post('/api/verse', (req, res) => {
   let { textpath } = req.body;
 
-  // console.log('Received textpath:', textpath); // Log the received textpath
+  console.log('Received textpath:', textpath); // Log the received textpath
 
   if (!textpath) {
     console.error('No textpath provided');
@@ -42,15 +42,15 @@ app.post('/api/verse', (req, res) => {
   try {
     // Resolve the full path using the server's base directory
     const fullPath = path.resolve(__dirname, textpath);
-    // console.log('Resolved full path to directory:', fullPath);
+    console.log('Resolved full path to directory:', fullPath);
 
     // Check if the resolved path exists
     const pathExists = fs.existsSync(fullPath);
-    // console.log('Path exists:', pathExists);
+    console.log('Path exists:', pathExists);
 
     // Check if the path is a directory
     const isDirectory = pathExists && fs.lstatSync(fullPath).isDirectory();
-    // console.log('Is directory:', isDirectory);
+    console.log('Is directory:', isDirectory);
 
     if (!pathExists || !isDirectory) {
       console.error('Provided path is not a valid directory:', fullPath);
@@ -87,7 +87,7 @@ app.post('/api/verse', (req, res) => {
         const verses = data.split('\n').filter(line => line.trim() !== '');
         const randomVerse = verses[Math.floor(Math.random() * verses.length)];
 
-        // console.log('Selected verse:', randomVerse); // Log the selected verse
+        console.log('Selected verse:', randomVerse); // Log the selected verse
 
         // Respond with the randomly selected verse and file name
         res.json({ verse: randomVerse.trim(), fileName: randomFile });
@@ -103,8 +103,8 @@ app.post('/api/verse', (req, res) => {
 app.post('/api/translate', (req, res) => {
   const { text, sourceLang, targetLang } = req.body;
 
-  // console.log('Received text for translation:', text); // Log the text to be translated
-  // console.log('Source language:', sourceLang, 'Target language:', targetLang); // Log languages
+  console.log('Received text for translation:', text); // Log the text to be translated
+  console.log('Source language:', sourceLang, 'Target language:', targetLang); // Log languages
 
   if (!text || !sourceLang || !targetLang) {
     return res.status(400).json({ error: 'Missing required parameters for translation' });
@@ -125,7 +125,7 @@ app.post('/api/translate', (req, res) => {
     }
 
     const translatedText = stdout.trim();
-    // console.log('Translation result:', translatedText); // Log the translation result
+    console.log('Translation result:', translatedText); // Log the translation result
 
     // Respond with the translated text
     res.json({ translatedText });
