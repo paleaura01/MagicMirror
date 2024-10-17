@@ -1,7 +1,10 @@
+# ./src/modules/bibleverse/translate.py
+
 import os
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 import torch
 import sys
+
 
 # Force CPU usage and set environment variables for memory efficiency
 os.environ["TOKENIZERS_PARALLELISM"] = "false"

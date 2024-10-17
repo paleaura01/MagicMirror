@@ -1,3 +1,5 @@
+<!-- ./src/modules/bibleverse/BibleVerseModule.svelte -->
+
 <script>
     import { onMount } from "svelte";
     import './bibleverse_styles.css';
@@ -12,15 +14,27 @@
     let errorMessage = null;
 
     async function fetchVerse() {
+        if (!textpath) {
+            console.error('Textpath is undefined or empty');
+            errorMessage = 'Invalid textpath provided.';
+            return;
+        }
+
         try {
             const response = await fetch('http://localhost:8081/api/verse', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ textpath })
+                body: JSON.stringify({ textpath }) // Ensure proper textpath is sent
             });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Unknown error');
+            }
+
             const data = await response.json();
             verse = data.verse;
-            bookName = data.fileName.replace('.txt', ''); // Remove the .txt extension
+            bookName = data.fileName ? data.fileName.replace('.txt', '') : 'Unknown';
             if (verse) {
                 await translateVerse(verse);
             }
@@ -49,14 +63,14 @@
         }
     }
 
-    onMount(async () => {
-        await fetchVerse();
-        const interval = setInterval(async () => {
-            await fetchVerse();
-        }, 120000);
+    onMount(() => {
+    console.log('Textpath:', textpath); // Log to check if it's correct
+    fetchVerse();
+    const interval = setInterval(fetchVerse, 120000);
 
-        return () => clearInterval(interval);
-    });
+    return () => clearInterval(interval);
+});
+
 </script>
 
 <!-- Display the verse and its translation with the book name -->

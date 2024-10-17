@@ -1,5 +1,4 @@
 
-
 [
   {
     "name": "ClockModule",
@@ -31,7 +30,7 @@
         "nightMapUrl": "https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png",
         "mapHeight": "420px",
         "mapWidth": "420px",
-        "zoom": 5,
+        "zoom": 7,
         "dayRadarColor": 2,
         "nightRadarColor": 8,
         "maxHistoryFrames": -1,
@@ -94,7 +93,7 @@
     "props": {
       "targetlang": "eng",
       "sourcelang": "heb",
-      "textpath": "modules/bibleverse/docs/Full-Tanakh-With-Versification"
+      "textpath": "src/modules/bibleverse/docs/Full-Tanakh-With-Versification"
     }
   }
 ]
