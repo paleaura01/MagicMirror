@@ -1,87 +1,107 @@
 import express from 'express';
-import cors from 'cors';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
-import { exec } from 'child_process';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+import fetch from 'node-fetch';
+import FeedMe from 'feedme'; // For RSS parsing
 
 const app = express();
-const port = 8081;
+const port = process.env.PORT || 8080;
 
-app.use(cors());
-app.use(express.json());
-
-app.post('/api/verse', async (req, res) => {
-    const { textpath } = req.body;
-
-    if (!textpath) {
-        return res.status(400).json({ error: 'Missing text file path' });
-    }
-
-    try {
-        const folderPath = path.resolve(__dirname, `../../${textpath}`);
-        console.log(`Resolved Folder Path: ${folderPath}`);
-
-        if (!fs.existsSync(folderPath)) {
-            return res.status(404).json({ error: 'Text folder not found' });
-        }
-
-        const files = fs.readdirSync(folderPath).filter(file => file.endsWith('.txt'));
-
-        if (files.length === 0) {
-            return res.status(404).json({ error: 'No text files found in the directory' });
-        }
-
-        const randomFile = files[Math.floor(Math.random() * files.length)];
-        const filePath = path.join(folderPath, randomFile);
-        console.log(`Selected File: ${filePath}`);
-
-        const fileContent = fs.readFileSync(filePath, 'utf-8');
-
-        const verses = fileContent
-            .split('\n')
-            .filter(line => line.trim() && !line.startsWith('xxxx'));
-
-        if (verses.length === 0) {
-            return res.status(404).json({ error: 'No valid verses found in the file' });
-        }
-
-        const randomVerse = verses[Math.floor(Math.random() * verses.length)].trim();
-        console.log(`Selected Verse: ${randomVerse}`);
-
-        // Send the filename and the verse
-        res.json({ fileName: randomFile, verse: randomVerse });
-    } catch (error) {
-        console.error('Error processing the request:', error.message);
-        res.status(500).json({ error: 'An error occurred', details: error.message });
-    }
+// Enable CORS for all routes
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  next();
 });
 
+// Helper function to log API calls with timestamps
+const logApiCall = (url) => {
+  const timestamp = new Date().toISOString();
+  console.log(`[${timestamp}] API called: ${url}`);
+};
 
-app.post('/api/translate', (req, res) => {
-    const { text, sourceLang, targetLang, fileName } = req.body;
+// Proxy route to handle both RSS and HTML requests
+app.get('/proxy', async (req, res) => {
+  const apiUrl = req.query.url;
+  if (!apiUrl) {
+    return res.status(400).json({ error: 'No URL provided' });
+  }
 
-    if (!text || !sourceLang || !targetLang) {
-        return res.status(400).json({ error: 'Missing input parameters' });
-    }
+  logApiCall(apiUrl); // Log the API call with a timestamp
 
-    // Limit translation to one verse at a time, no reprocessing of the same content
-    const translateCmd = `python translate.py "${text}" ${sourceLang} ${targetLang}`;
-    exec(translateCmd, (error, stdout, stderr) => {
-        if (error) {
-           
-            return res.status(500).json({ error: 'Translation failed', details: stderr });
-        }
-        console.log(`Translation result: ${stdout}`);
-        res.json({ fileName, translatedText: stdout.trim() }); // Return the single result
+  try {
+    const response = await fetch(apiUrl, {
+      headers: {
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache',
+        'User-Agent': 'Mozilla/5.0' // Mimic a real browser user-agent
+      }
     });
+
+    const contentType = response.headers.get('content-type');
+
+    if (contentType.includes('application/json')) {
+      const data = await response.json();
+      res.json(data);
+    } else if (contentType.includes('application/rss+xml') || contentType.includes('application/xml')) {
+      const data = await response.text();
+      const parser = new FeedMe(true);
+      parser.write(data);
+      const rssData = parser.done();
+      res.json(rssData);
+    } else if (contentType.includes('text/html')) {
+      const html = await response.text();
+      res.setHeader('Cache-Control', 'no-cache'); // Prevent caching on client side
+      res.send(html); // Send raw HTML back
+    } else {
+      const arrayBuffer = await response.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+      res.setHeader('Content-Type', contentType);
+      res.setHeader('Cache-Control', 'no-cache'); // Prevent caching on client side
+      res.send(buffer);
+    }
+  } catch (error) {
+    console.error('Error fetching URL:', error);
+    res.status(500).json({ error: 'Failed to fetch URL' });
+  }
 });
 
 
+// Dedicated route to fetch and parse RSS feeds
+app.get('/rss', async (req, res) => {
+  const feedUrl = req.query.url;
+  if (!feedUrl) {
+    return res.status(400).json({ error: 'No RSS feed URL provided' });
+  }
+
+  logApiCall(feedUrl); // Log the API call with a timestamp
+
+  try {
+    const response = await fetch(feedUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0',
+        'Cache-Control': 'no-cache',
+      },
+    });
+
+    if (response.ok) {
+      const data = await response.text();
+      const parser = new FeedMe(true); // 'true' makes the parser output JSON
+      parser.write(data);
+      const rssData = parser.done();
+
+      // Ensure we send only the relevant parts of the RSS data
+      const items = rssData.items || [];
+      res.json(items);
+    } else {
+      res.status(response.status).json({ error: `Failed to fetch RSS feed: ${response.statusText}` });
+    }
+  } catch (error) {
+    console.error(`Error fetching RSS feed: ${error.message}`);
+    res.status(500).json({ error: 'Failed to fetch RSS feed' });
+  }
+});
+
+// Start the server
 app.listen(port, () => {
-    console.log(`📖 BibleVerse server is running on port ${port}`);
+  console.log(`✅ General Server is running on port ${port}`);
 });
