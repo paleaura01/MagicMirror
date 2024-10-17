@@ -1,9 +1,30 @@
 /* bibleverse_styles.css */
 
 .bibleverse-container {
-    padding: 10px;
     font-family: Arial, sans-serif;
+    margin-top: 5%;
+    margin-left: 15%;
+    margin-right: 15%;
 }
-h2 {
-    margin-bottom: 5px;
+
+.bibleverse-container h2 {
+    font-size: 1rem;
+    font-weight: 600;
+    font-family: 'Arial', sans-serif;
+    opacity: 1;
+    
+    color: rgba(255, 255, 255, 0.6) 
+    
+}
+
+
+
+.bibleverse-container h3 {
+    
+    margin-top: -5px;
+    border-top: 2px solid rgba(255, 255, 255, 0.6) !important; /* Force white border */
+
+    font-size: 0.9em;
+    padding-top: 10px;
+    font-weight: 400; 
 }

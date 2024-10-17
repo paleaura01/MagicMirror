@@ -1,27 +1,26 @@
 <script>
     import { onMount } from "svelte";
+    import './bibleverse_styles.css';
 
-    export let llmpath; // Path to the LLM from modulesConfig.json
-    export let llmodelpath; // Path to the large model index file from modulesConfig.json
-    export let tokenizerpath; // Path to the tokenizer file from modulesConfig.json
-    export let docxpath; // Path to the Tanakh DOCX from modulesConfig.json
+    export let sourcelang;
+    export let targetlang;
+    export let textpath;
 
     let verse = null;
+    let bookName = null; // Store the book name (text file name)
     let translatedVerse = null;
     let errorMessage = null;
 
-    // Fetches a verse from the BibleVerse server
     async function fetchVerse() {
-        console.log("Fetching verse from BibleVerse server...");
         try {
             const response = await fetch('http://localhost:8081/api/verse', {
-                method: 'POST',  // Changed to POST to match the server route
+                method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ llmpath, llmodelpath, tokenizerpath, docxpath }) // Pass llmpath, llmodelpath, tokenizerpath, and docxpath to the server
+                body: JSON.stringify({ textpath })
             });
             const data = await response.json();
             verse = data.verse;
-            console.log("Verse fetched: ", verse);
+            bookName = data.fileName.replace('.txt', ''); // Remove the .txt extension
             if (verse) {
                 await translateVerse(verse);
             }
@@ -31,42 +30,44 @@
         }
     }
 
-    // Calls the translation API to translate the fetched verse
     async function translateVerse(hebrewVerse) {
-        console.log("Starting translation...");
         try {
             const response = await fetch('http://localhost:8081/api/translate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ text: hebrewVerse, sourceLang: "heb", targetLang: "eng", llmpath, llmodelpath, tokenizerpath }) // Pass llmpath, llmodelpath, and tokenizerpath to the server
+                body: JSON.stringify({
+                    text: hebrewVerse,
+                    sourceLang: sourcelang,
+                    targetLang: targetlang
+                })
             });
             const data = await response.json();
             translatedVerse = data.translatedText;
-            console.log(`Translated verse: ${translatedVerse}`);
         } catch (error) {
-            console.error("Error during translation:", error);
+            console.error('Error during translation:', error);
             errorMessage = 'Translation failed. Please try again.';
         }
     }
 
-    // Fetches and translates the verse when the component mounts
     onMount(async () => {
-        console.log("Component mounted. Fetching and translating verse...");
         await fetchVerse();
+        const interval = setInterval(async () => {
+            await fetchVerse();
+        }, 120000);
+
+        return () => clearInterval(interval);
     });
 </script>
 
-<!-- Display the verse and its translation -->
-<div class="bibleverse-container" style="max-width: 400px;">
+<!-- Display the verse and its translation with the book name -->
+<div class="bibleverse-container">
     {#if errorMessage}
         <p>{errorMessage}</p>
     {/if}
 
     {#if verse && translatedVerse}
-        <h2>Hebrew Verse:</h2>
-        <p>{verse}</p>
-        <h2>English Translation:</h2>
-        <p>{translatedVerse}</p>
+        <h2>Tanakh Verse:</h2>
+        <h3>{translatedVerse}</h3>
     {:else}
         <p>Loading verse...</p>
     {/if}

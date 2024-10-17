@@ -1,8 +1,9 @@
 <script>
-    import './onthisday_styles.css'; 
+    import dayjs from 'dayjs';
+    import './onthisday_styles.css';
 
     export let animationspeed = 1; // Default animation speed
-    export let updateInterval = 3600; // Default update interval
+    export let updateInterval = 3600; // Default update interval (in seconds)
     export let maxWidth = '400px'; // Default max width for the module
     export let textSize = 'xsmall'; // Default text size for the module
 
@@ -12,22 +13,29 @@
     // Regex to match events that start with a 4-digit year followed by a description
     const yearEventRegex = /^\d{4}\s*–/;
 
+    // Get today's date in "MMMM DD" format (e.g., October 17)
+    const todayDate = dayjs().format('MMMM DD');
+
     // Function to fetch and parse "On This Day" events from Wikipedia
     async function loadEvents() {
-        console.log("Fetching events from the server...");
+        console.log("Fetching today's events from Wikipedia...");
         try {
-            const response = await fetch(`http://localhost:8080/proxy?url=${encodeURIComponent('https://en.wikipedia.org/wiki/Wikipedia:On_this_day')}`);
+            // Correct Wikipedia URL format for selected anniversaries
+            const wikiUrl = `https://en.wikipedia.org/wiki/Wikipedia:Selected_anniversaries/${dayjs().format('MMMM_DD')}`;
+            const response = await fetch(`http://localhost:8080/proxy?url=${encodeURIComponent(wikiUrl)}`);
             const html = await response.text(); // Fetch raw HTML
             const parser = new DOMParser();
             const doc = parser.parseFromString(html, "text/html");
 
-            // Extract the events using the same CSS selector logic
-            const eventElements = doc.querySelectorAll('#mp-right ul li');
+            // Adjusted CSS selector based on the screenshot you provided
+            const eventElements = doc.querySelectorAll('.mw-parser-output > ul > li');
             events = Array.from(eventElements)
                 .map(el => el.textContent.trim())
-                .filter(event => yearEventRegex.test(event))
+                .filter(event => yearEventRegex.test(event)) // Filter out invalid events
                 .slice(0, 6); // Limit to 6 events
-            title = 'On This Day';
+
+            // Set the title to include today's month and day with a round dot separator
+            title = `On This Day • ${todayDate}`;
         } catch (error) {
             console.error('Error loading events:', error);
         }

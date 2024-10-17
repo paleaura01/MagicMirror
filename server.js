@@ -29,30 +29,34 @@ app.get('/proxy', async (req, res) => {
   logApiCall(apiUrl); // Log the API call with a timestamp
 
   try {
-    const response = await fetch(apiUrl);
+    const response = await fetch(apiUrl, {
+      headers: {
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache',
+        'User-Agent': 'Mozilla/5.0' // Mimic a real browser user-agent
+      }
+    });
+
     const contentType = response.headers.get('content-type');
 
-    // Check if the response is JSON (for APIs)
     if (contentType.includes('application/json')) {
       const data = await response.json();
       res.json(data);
-
-    // Check if the response is an RSS feed
     } else if (contentType.includes('application/rss+xml') || contentType.includes('application/xml')) {
       const data = await response.text();
-      const parser = new FeedMe(true); // 'true' makes the parser output JSON
+      const parser = new FeedMe(true);
       parser.write(data);
       const rssData = parser.done();
       res.json(rssData);
-
-    // Check if the response is HTML (for Wikipedia parsing)
     } else if (contentType.includes('text/html')) {
       const html = await response.text();
-      res.send(html); // Send raw HTML back, let the front-end parse it
+      res.setHeader('Cache-Control', 'no-cache'); // Prevent caching on client side
+      res.send(html); // Send raw HTML back
     } else {
       const arrayBuffer = await response.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
       res.setHeader('Content-Type', contentType);
+      res.setHeader('Cache-Control', 'no-cache'); // Prevent caching on client side
       res.send(buffer);
     }
   } catch (error) {
@@ -60,6 +64,7 @@ app.get('/proxy', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch URL' });
   }
 });
+
 
 // Dedicated route to fetch and parse RSS feeds
 app.get('/rss', async (req, res) => {

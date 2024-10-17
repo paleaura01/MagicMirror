@@ -92,10 +92,9 @@
     "path": "modules/bibleverse/BibleVerseModule.js",
     "region": "top_center",
     "props": {
-      "llmpath": "llm/nllb-20-3.3B",
-      "llmodelpath": "llm/nllb-20-3.3B/pytorch_model.bin.index.json",
-      "tokenizerpath": "llm/nllb-20-3.3B/tokenizer.json",
-      "docxpath": "modules/bibleverse/docs/Tanakh.docx"
+      "targetlang": "eng",
+      "sourcelang": "heb",
+      "textpath": "modules/bibleverse/docs/Full-Tanakh-With-Versification"
     }
   }
 ]
