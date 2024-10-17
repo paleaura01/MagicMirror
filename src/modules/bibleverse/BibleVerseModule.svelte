@@ -1,5 +1,3 @@
-<!-- ./src/modules/bibleverse/BibleVerseModule.svelte -->
-
 <script>
     import { onMount } from "svelte";
     import './bibleverse_styles.css';
@@ -11,6 +9,7 @@
     let verse = null;
     let bookName = null; // Store the book name (text file name)
     let translatedVerse = null;
+    let verseReference = null; // For storing the formatted reference
     let errorMessage = null;
 
     async function fetchVerse() {
@@ -35,12 +34,24 @@
             const data = await response.json();
             verse = data.verse;
             bookName = data.fileName ? data.fileName.replace('.txt', '') : 'Unknown';
+            extractReference(); // Extract the verse reference
             if (verse) {
                 await translateVerse(verse);
             }
         } catch (error) {
             console.error('Error fetching verse:', error);
             errorMessage = 'Failed to fetch the verse. Please try again.';
+        }
+    }
+
+    function extractReference() {
+        // Extract the reference if it matches the pattern (e.g., "7 ׃1")
+        const match = verse.match(/(\d+)\s*׃\s*(\d+)/);
+        if (match) {
+            verseReference = `${match[1]}:${match[2]}`; // Format as "7:1"
+            verse = verse.replace(match[0], '').trim(); // Remove the reference from the verse text
+        } else {
+            verseReference = null; // Clear if no reference is found
         }
     }
 
@@ -64,13 +75,12 @@
     }
 
     onMount(() => {
-    console.log('Textpath:', textpath); // Log to check if it's correct
-    fetchVerse();
-    const interval = setInterval(fetchVerse, 120000);
+        console.log('Textpath:', textpath); // Log to check if it's correct
+        fetchVerse();
+        const interval = setInterval(fetchVerse, 120000);
 
-    return () => clearInterval(interval);
-});
-
+        return () => clearInterval(interval);
+    });
 </script>
 
 <!-- Display the verse and its translation with the book name -->
@@ -80,7 +90,7 @@
     {/if}
 
     {#if verse && translatedVerse}
-        <h2>Tanakh Verse:</h2>
+        <h2>Tanakh - {bookName}{#if verseReference} ({verseReference}){/if}:</h2>
         <h3>{translatedVerse}</h3>
     {:else}
         <p>Loading verse...</p>
