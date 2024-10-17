@@ -1,5 +1,3 @@
-<!-- ./src/modules/weathermap/WeatherMapModule.svelte -->
-
 <script>
     import { onMount } from 'svelte';
     import * as L from 'leaflet';
@@ -24,6 +22,7 @@
     let mapDiv;
     let map;
     let radarLayer;
+    let satelliteLayer;
     let radarLayers = [];
     const updateInterval = 150000; // 2.5 minutes in milliseconds
     let apiCallInProgress = false;
@@ -43,8 +42,6 @@
 
     // Clear all radar layers and animation timeouts before adding new data
     function resetRadarLayers() {
-        // console.log("Resetting radar layers...");
-
         radarLayers.forEach(layer => {
             if (map.hasLayer(layer)) {
                 map.removeLayer(layer);
@@ -56,8 +53,6 @@
             clearTimeout(animationTimeoutId);
             animationTimeoutId = null;
         }
-
-        // console.log("Radar layers and animations cleared.");
     }
 
     // Function to add weather layers with logging and animation
@@ -67,7 +62,6 @@
             return;
         }
 
-        // console.log("Fetching RainViewer weather data...");
         apiCallInProgress = true;
 
         try {
@@ -93,9 +87,9 @@
 
                     radarLayer = L.tileLayer(radarUrlTemplate, {
                         tileSize: tileSize,
-                        opacity: 1.0,
+                        opacity: 0.8, // Adjust opacity so that satellite layer can be seen underneath
                         zIndex: 1100,
-                        maxZoom: config.zoom,
+                        maxZoom: config.zoom, // Use the same zoom level from the config
                         errorTileUrl: './pics/error-tile.png',
                     }).on('tileerror', (error) => {
                         console.error('Radar tile failed to load:', error);
@@ -103,7 +97,6 @@
 
                     radarLayer.addTo(map);
                     radarLayers.push(radarLayer);
-                    // console.log(`Radar layer added for timestamp: ${timestamp}`);
                 }
 
                 function animateRadar() {
@@ -127,7 +120,6 @@
                     showNextFrame();
                 }
 
-                console.log("Starting radar animation...");
                 animateRadar();
             } else {
                 console.warn("No radar data available.");
@@ -138,6 +130,23 @@
             console.error("Error fetching radar data:", error);
             apiCallInProgress = false;
         }
+    }
+
+    // Function to add the satellite (infrared) layer
+    function addSatelliteLayer() {
+        const satelliteTileUrl = 'https://tilecache.rainviewer.com/v2/satellite/0230e89928cd/256/{z}/{x}/{y}/0/0_0.png';
+
+        satelliteLayer = L.tileLayer(satelliteTileUrl, {
+            tileSize: 256,
+            opacity: 0.5, // Adjust opacity to show both satellite and radar layers
+            zIndex: 1000, // Lower zIndex than the radar layer
+            maxZoom: config.zoom, // Use the same zoom level from the config
+            errorTileUrl: './pics/error-tile.png',
+        }).on('tileerror', (error) => {
+            console.error('Satellite tile failed to load:', error);
+        });
+
+        satelliteLayer.addTo(map);
     }
 
     // Add marker to the map
@@ -164,7 +173,6 @@
                     console.error("Error adding marker:", marker, error);
                 });
             });
-            // console.log("All markers added to the map.");
         } else {
             console.warn("No markers found in the configuration.");
         }
@@ -177,7 +185,7 @@
 
                 map = L.map(mapDiv, {
                     center: [config.mapPositions[0].lat, config.mapPositions[0].lng],
-                    zoom: config.zoom || 10,
+                    zoom: config.zoom || 10, // Use the config.zoom to set the map zoom level
                     attributionControl: false,
                     zoomControl: false,
                     layers: [
@@ -190,8 +198,9 @@
 
                 console.log("Map initialized. Adding weather layers...");
 
+                addSatelliteLayer(); // Add satellite layer beneath the radar layer
                 addWeatherLayers();
-                addMarkers(); // Add the marker after the map is initialized
+                addMarkers();
 
                 if (intervalId) {
                     clearInterval(intervalId);
