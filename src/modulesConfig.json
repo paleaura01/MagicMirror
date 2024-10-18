@@ -17,11 +17,11 @@
     "region": "left",
     "props": {
       "config": {
-        "animationSpeedMs": 70,
-        "extraDelayLastFrameMs": 2500,
+        "animationSpeedMs": 100,
+        "extraDelayLastFrameMs": 1500,
         "fadePreviousFrameOpacity": 0.25,
         "fadeCurrentFrameOpacity": 0.5,
-        "extraDelayCurrentFrameMs": 200,
+        "extraDelayCurrentFrameMs": 1500,
         "markers": [
           { "lat": 35.315931, "lng": -81.344469, "color": "red" }
         ],
@@ -35,7 +35,7 @@
         "zoom": 4,
         "dayRadarColor": 2,
         "nightRadarColor": 8,
-        "maxHistoryFrames": 124,
+        "maxHistoryFrames": 25,
         
         "substitudeModules": [],
         "updateIntervalInSeconds": 300
