@@ -180,7 +180,7 @@
                         attempts = 0; // Reset attempts on success
                         animationTimeoutId = setTimeout(showNextFrame, delay);
                     } else {
-                        console.warn(`Skipping animation for timestamp: ${timestamp} due to missing satellite data.`);
+                        // console.warn(`Skipping animation for timestamp: ${timestamp} due to missing satellite data.`);
                         frameIndex++;
                         attempts++;
 
@@ -234,42 +234,49 @@
     }
 
     onMount(() => {
-        try {
-            if (mapDiv && config) {
-                console.log("Initializing map...");
+    try {
+        if (mapDiv && config) {
+            console.log("Initializing map...");
 
-                map = L.map(mapDiv, {
-                    center: [config.mapPositions[0].lat, config.mapPositions[0].lng],
-                    zoom: config.zoom || 10,
-                    attributionControl: false,
-                    zoomControl: false,
-                    layers: [
-                        L.tileLayer(getMapUrl(), {
-                            maxZoom: 18,
-                            attribution: '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org/copyright">OpenStreetMap contributors</a>',
-                        }),
-                    ],
-                });
+            map = L.map(mapDiv, {
+                center: [config.mapPositions[0].lat, config.mapPositions[0].lng],
+                zoom: config.zoom || 10,
+                attributionControl: false,
+                zoomControl: false,
+                doubleClickZoom: false, // Disable double-click zoom
+                layers: [
+                    L.tileLayer(getMapUrl(), {
+                        maxZoom: 18,
+                        attribution: '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org/copyright">OpenStreetMap contributors</a>',
+                    }),
+                ],
+            });
 
-                // console.log("Map initialized. Adding weather layers...");
-                addWeatherLayers();
-                addMarkers();
+            // Center the map on double-click
+            map.on('dblclick', () => {
+                map.setView([config.mapPositions[0].lat, config.mapPositions[0].lng], config.zoom || 10);
+            });
 
-                if (intervalId) {
-                    clearInterval(intervalId);
-                }
+            // Add weather layers and markers
+            addWeatherLayers();
+            addMarkers();
 
-                intervalId = setInterval(() => {
-                    // console.log("Updating radar data...");
-                    addWeatherLayers();
-                }, updateInterval);
-            } else {
-                console.error("Map div or configuration is missing.");
+            if (intervalId) {
+                clearInterval(intervalId);
             }
-        } catch (error) {
-            console.error("Error during onMount:", error);
+
+            intervalId = setInterval(() => {
+                addWeatherLayers();
+            }, updateInterval);
+        } else {
+            console.error("Map div or configuration is missing.");
         }
-    });
+    } catch (error) {
+        console.error("Error during onMount:", error);
+    }
+});
+
+
 </script>
 
 <!-- Map Container -->
