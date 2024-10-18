@@ -30,7 +30,7 @@
         "nightMapUrl": "https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png",
         "mapHeight": "420px",
         "mapWidth": "420px",
-        "zoom": 7,
+        "zoom": 4,
         "dayRadarColor": 2,
         "nightRadarColor": 8,
         "maxHistoryFrames": -1,

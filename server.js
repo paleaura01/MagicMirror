@@ -19,7 +19,7 @@ const logApiCall = (url) => {
   console.log(`[${timestamp}] API called: ${url}`);
 };
 
-// Proxy route to handle both RSS and HTML requests
+// Proxy route to handle both RSS, JSON, HTML, and binary requests (e.g., images)
 app.get('/proxy', async (req, res) => {
   const apiUrl = req.query.url;
   if (!apiUrl) {
@@ -32,12 +32,12 @@ app.get('/proxy', async (req, res) => {
     const response = await fetch(apiUrl);
     const contentType = response.headers.get('content-type');
 
-    // Check if the response is JSON (for APIs)
+    // Handle JSON (for APIs)
     if (contentType.includes('application/json')) {
       const data = await response.json();
       res.json(data);
 
-    // Check if the response is an RSS feed
+    // Handle RSS feeds
     } else if (contentType.includes('application/rss+xml') || contentType.includes('application/xml')) {
       const data = await response.text();
       const parser = new FeedMe(true); // 'true' makes the parser output JSON
@@ -45,11 +45,20 @@ app.get('/proxy', async (req, res) => {
       const rssData = parser.done();
       res.json(rssData);
 
-    // Check if the response is HTML (for Wikipedia parsing)
+    // Handle HTML (for Wikipedia parsing)
     } else if (contentType.includes('text/html')) {
       const html = await response.text();
-      res.send(html); // Send raw HTML back, let the front-end parse it
+      res.send(html);
+
+    // Handle binary data (for satellite/radar tiles)
+    } else if (contentType.startsWith('image/') || contentType.includes('octet-stream')) {
+      const arrayBuffer = await response.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+      res.setHeader('Content-Type', contentType);
+      res.send(buffer);
+
     } else {
+      // Default: treat as binary
       const arrayBuffer = await response.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
       res.setHeader('Content-Type', contentType);

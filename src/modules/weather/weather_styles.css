@@ -1,10 +1,55 @@
-/* ./src/modules/weather/weather_styles.css */
-
 .weather {
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    background-color: #f9f9f9;
-    width: 250px;
-    
-  }
+  
+  right: 20px;
+  margin-top: 25px;
+  color: white;
+  font-family: Arial, sans-serif;
+  text-align: right; /* Align content to the right */
+}
+
+.top-info {
+  display: flex;
+  justify-content: flex-end; /* Align content to the right */
+  font-size: 0.9em;
+  margin-bottom: 10px;
+  color: #cccccc;
+}
+
+.wind-info,
+.sunrise-sunset {
+  display: flex;
+  align-items: center;
+  font-size: 1.2em;
+  margin-left: 5px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.wi {
+  margin-right: 5px;
+}
+
+.current-weather {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end; /* Align content to the right */
+  margin-bottom: 10px;
+}
+
+.weather-icon {
+  width: 130px;
+  height: 100px;
+  margin-right: 10px;
+}
+
+.temperature {
+  font-size: 2.8em; /* Increase the font size for visibility */
+  font-weight: 300; /* Thinner font weight for a sleek look */
+  margin: 0;
+  line-height: 1;
+}
+
+.feels-like {
+  font-size: 1.2em;
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: 5px;
+}
