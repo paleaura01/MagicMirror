@@ -22,8 +22,6 @@
 
     let mapDiv;
     let map;
-    let radarLayer;
-    let satelliteLayer;
     let radarLayers = [];
     let satelliteLayers = [];
     const updateInterval = 60000; // 1 minute in milliseconds
@@ -73,7 +71,7 @@
     // Clear all satellite layers before adding new data
     function resetSatelliteLayers() {
         satelliteLayers.forEach(layer => {
-            if (map.hasLayer(layer)) {
+            if (layer && map.hasLayer(layer)) {
                 map.removeLayer(layer);
             }
         });
@@ -103,20 +101,31 @@
             }
 
             const data = await response.json();
-            const radarTimestamps = data.radar.past.map(frame => frame.time);
             const tileSize = 256;
 
-            // Store satellite data paths to simplify validation
-            const satellitePaths = data.satellite.infrared.map(frame => frame.time);
+            // Filter frames to those that have both radar and satellite data
+            const radarFrames = data.radar.past;
+            const satelliteFrames = data.satellite.infrared;
 
-            function updateRadarLayer(timestamp) {
-                resetRadarLayers();
+            const frames = radarFrames.filter(radarFrame => {
+                // Find matching satellite frame
+                return satelliteFrames.some(satFrame => satFrame.time === radarFrame.time);
+            });
+
+            if (frames.length === 0) {
+                console.warn("No frames with both radar and satellite data found.");
+                apiCallInProgress = false;
+                return;
+            }
+
+            frames.forEach((frame) => {
+                const timestamp = frame.time;
                 const radarColor = getRadarColor();
                 const radarUrlTemplate = `https://tilecache.rainviewer.com/v2/radar/${timestamp}/${tileSize}/{z}/{x}/{y}/${radarColor}/1_0.png`;
 
-                radarLayer = L.tileLayer(radarUrlTemplate, {
+                const radarLayer = L.tileLayer(radarUrlTemplate, {
                     tileSize: tileSize,
-                    opacity: 0.8,
+                    opacity: 0, // Start with opacity 0
                     zIndex: 1100,
                     maxZoom: config.zoom,
                     errorTileUrl: './pics/error-tile.png',
@@ -126,76 +135,31 @@
 
                 radarLayer.addTo(map);
                 radarLayers.push(radarLayer);
-            }
 
-            function updateSatelliteLayer(timestamp) {
-                const satelliteFrame = data.satellite.infrared.find(frame => frame.time === timestamp);
+                // Now find the matching satellite frame
+                const satelliteFrame = satelliteFrames.find(satFrame => satFrame.time === timestamp);
 
-                if (!satelliteFrame || !satelliteFrame.path) {
+                if (satelliteFrame && satelliteFrame.path) {
+                    const satelliteUrlTemplate = `https://tilecache.rainviewer.com/v2/satellite/${satelliteFrame.path}/${tileSize}/{z}/{x}/{y}/0/0_0.png`;
+
+                    const satelliteLayer = L.tileLayer(satelliteUrlTemplate, {
+                        tileSize: tileSize,
+                        opacity: 0, // Start hidden
+                        zIndex: 1000,
+                        maxZoom: config.zoom,
+                        errorTileUrl: './pics/error-tile.png',
+                    }).on('tileerror', (error) => {
+                        console.error('Satellite tile failed to load:', error);
+                    });
+
+                    satelliteLayer.addTo(map);
+                    satelliteLayers.push(satelliteLayer);
+                } else {
                     console.warn(`No valid satellite data for timestamp: ${timestamp}`);
-                    return;
+                    // To keep arrays aligned, we can push null
+                    satelliteLayers.push(null);
                 }
-
-                const satelliteUrlTemplate = `https://tilecache.rainviewer.com/v2/satellite/${satelliteFrame.path}/${tileSize}/{z}/{x}/{y}/0/0_0.png`;
-
-                satelliteLayer = L.tileLayer(satelliteUrlTemplate, {
-                    tileSize: tileSize,
-                    opacity: 0.5,
-                    zIndex: 1000,
-                    maxZoom: config.zoom,
-                    errorTileUrl: './pics/error-tile.png',
-                }).on('tileerror', (error) => {
-                    console.error('Satellite tile failed to load:', error);
-                });
-
-                satelliteLayer.addTo(map);
-                satelliteLayers.push(satelliteLayer);
-            }
-
-            function animateLayers() {
-                let frameIndex = 0;
-                let attempts = 0;
-
-                function showNextFrame() {
-                    if (frameIndex >= radarTimestamps.length) {
-                        frameIndex = 0; // Restart from the first frame
-                    }
-
-                    const timestamp = radarTimestamps[frameIndex];
-                    // console.log(`Attempting to animate frame for timestamp: ${timestamp}`);
-
-                    if (satellitePaths.includes(timestamp)) {
-                        // console.log(`Animating radar and satellite for timestamp: ${timestamp}`);
-                        updateRadarLayer(timestamp);
-                        updateSatelliteLayer(timestamp);
-
-                        let delay = config.animationSpeedMs;
-                        if (frameIndex === 0) {
-                            delay += config.extraDelayCurrentFrameMs;
-                        } else if (frameIndex === radarTimestamps.length - 1) {
-                            delay += config.extraDelayLastFrameMs;
-                        }
-
-                        frameIndex++;
-                        attempts = 0; // Reset attempts on success
-                        animationTimeoutId = setTimeout(showNextFrame, delay);
-                    } else {
-                        // console.warn(`Skipping animation for timestamp: ${timestamp} due to missing satellite data.`);
-                        frameIndex++;
-                        attempts++;
-
-                        // If all frames are skipped, stop animation
-                        if (attempts >= radarTimestamps.length) {
-                            console.error("All frames skipped due to missing satellite data.");
-                            return;
-                        }
-
-                        showNextFrame(); // Try the next frame immediately
-                    }
-                }
-
-                showNextFrame();
-            }
+            });
 
             animateLayers();
             apiCallInProgress = false;
@@ -203,6 +167,44 @@
             console.error("Error fetching radar data:", error);
             apiCallInProgress = false;
         }
+    }
+
+    function animateLayers() {
+        let frameIndex = 0;
+
+        function showNextFrame() {
+            // Hide all radar layers
+            radarLayers.forEach((layer) => {
+                layer.setOpacity(0);
+            });
+
+            // Hide all satellite layers
+            satelliteLayers.forEach((layer) => {
+                if (layer) layer.setOpacity(0);
+            });
+
+            // Show the current radar layer
+            const radarLayer = radarLayers[frameIndex];
+            radarLayer.setOpacity(0.8); // Adjust opacity as needed
+
+            // Show the corresponding satellite layer if available
+            const satelliteLayer = satelliteLayers[frameIndex];
+            if (satelliteLayer) {
+                satelliteLayer.setOpacity(0.5); // Adjust opacity as needed
+            }
+
+            let delay = config.animationSpeedMs;
+            if (frameIndex === 0) {
+                delay += config.extraDelayCurrentFrameMs;
+            } else if (frameIndex === radarLayers.length - 1) {
+                delay += config.extraDelayLastFrameMs;
+            }
+
+            frameIndex = (frameIndex + 1) % radarLayers.length;
+            animationTimeoutId = setTimeout(showNextFrame, delay);
+        }
+
+        showNextFrame();
     }
 
     function addMarkers() {
@@ -234,49 +236,47 @@
     }
 
     onMount(() => {
-    try {
-        if (mapDiv && config) {
-            console.log("Initializing map...");
+        try {
+            if (mapDiv && config) {
+                console.log("Initializing map...");
 
-            map = L.map(mapDiv, {
-                center: [config.mapPositions[0].lat, config.mapPositions[0].lng],
-                zoom: config.zoom || 10,
-                attributionControl: false,
-                zoomControl: false,
-                doubleClickZoom: false, // Disable double-click zoom
-                layers: [
-                    L.tileLayer(getMapUrl(), {
-                        maxZoom: 18,
-                        attribution: '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org/copyright">OpenStreetMap contributors</a>',
-                    }),
-                ],
-            });
+                map = L.map(mapDiv, {
+                    center: [config.mapPositions[0].lat, config.mapPositions[0].lng],
+                    zoom: config.zoom || 10,
+                    attributionControl: false,
+                    zoomControl: false,
+                    doubleClickZoom: false, // Disable double-click zoom
+                    layers: [
+                        L.tileLayer(getMapUrl(), {
+                            maxZoom: 18,
+                            attribution: '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org/copyright">OpenStreetMap contributors</a>',
+                        }),
+                    ],
+                });
 
-            // Center the map on double-click
-            map.on('dblclick', () => {
-                map.setView([config.mapPositions[0].lat, config.mapPositions[0].lng], config.zoom || 10);
-            });
+                // Center the map on double-click
+                map.on('dblclick', () => {
+                    map.setView([config.mapPositions[0].lat, config.mapPositions[0].lng], config.zoom || 10);
+                });
 
-            // Add weather layers and markers
-            addWeatherLayers();
-            addMarkers();
-
-            if (intervalId) {
-                clearInterval(intervalId);
-            }
-
-            intervalId = setInterval(() => {
+                // Add weather layers and markers
                 addWeatherLayers();
-            }, updateInterval);
-        } else {
-            console.error("Map div or configuration is missing.");
+                addMarkers();
+
+                if (intervalId) {
+                    clearInterval(intervalId);
+                }
+
+                intervalId = setInterval(() => {
+                    addWeatherLayers();
+                }, updateInterval);
+            } else {
+                console.error("Map div or configuration is missing.");
+            }
+        } catch (error) {
+            console.error("Error during onMount:", error);
         }
-    } catch (error) {
-        console.error("Error during onMount:", error);
-    }
-});
-
-
+    });
 </script>
 
 <!-- Map Container -->
