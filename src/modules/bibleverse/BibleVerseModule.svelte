@@ -90,7 +90,8 @@
     {/if}
 
     {#if verse && translatedVerse}
-        <h2>Tanakh - {bookName}{#if verseReference} ({verseReference}){/if}:</h2>
+    <h2>Tanakh - {bookName} {#if verseReference}({verseReference}){/if}:</h2>
+
         <h3>{translatedVerse}</h3>
     {:else}
         <p>Loading verse...</p>

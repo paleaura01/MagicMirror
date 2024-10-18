@@ -17,11 +17,11 @@
     "region": "left",
     "props": {
       "config": {
-        "animationSpeedMs": 100,
+        "animationSpeedMs": 60,
         "extraDelayLastFrameMs": 1500,
         "fadePreviousFrameOpacity": 0.25,
-        "fadeCurrentFrameOpacity": 0.5,
-        "extraDelayCurrentFrameMs": 1500,
+        "fadeCurrentFrameOpacity": 1,
+        "extraDelayCurrentFrameMs": 0,
         "markers": [
           { "lat": 35.315931, "lng": -81.344469, "color": "red" }
         ],
@@ -32,7 +32,7 @@
         "nightMapUrl": "https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png",
         "mapHeight": "420px",
         "mapWidth": "420px",
-        "zoom": 4,
+        "zoom": 5,
         "dayRadarColor": 2,
         "nightRadarColor": 8,
         "maxHistoryFrames": 25,
