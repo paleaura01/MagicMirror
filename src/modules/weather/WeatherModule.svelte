@@ -2,7 +2,7 @@
   import { onMount } from 'svelte';
   import dayjs from 'dayjs';
   import './weather_styles.css';
-  import { sunriseSunsetStore } from '../../stores/weatherStore.js'; // Import the shared store
+  import { sunriseSunsetStore } from '../../stores/weatherStore.js';
 
   let weatherData = null;
   let error = null;
@@ -10,7 +10,6 @@
   const lat = 35.2080;
   const lon = -81.3673;
 
-  // Mapping weather codes to the appropriate icon file paths
   const iconMap = {
     "0": { day: "/src/modules/weather/icons/32.png", night: "/src/modules/weather/icons/31.png" },
     "1": { day: "/src/modules/weather/icons/34.png", night: "/src/modules/weather/icons/33.png" },
@@ -24,10 +23,14 @@
     "default": { day: "/src/modules/weather/icons/na.png", night: "/src/modules/weather/icons/na.png" }
   };
 
-  // Determine if it's currently daytime based on sunrise and sunset
   const isDaytime = (sunrise, sunset) => {
     const now = dayjs();
     return now.isAfter(dayjs(sunrise)) && now.isBefore(dayjs(sunset));
+  };
+
+  const isBeforeSunrise = (sunrise) => {
+    const now = dayjs();
+    return now.isBefore(dayjs(sunrise));
   };
 
   onMount(async () => {
@@ -46,6 +49,10 @@
       const sunrise = data.daily.sunrise[0];
       const sunset = data.daily.sunset[0];
       const isDay = isDaytime(sunrise, sunset);
+      
+      // Determine whether to show the sunrise or sunset icon
+      const showSunrise = isBeforeSunrise(sunrise) || (!isDay && dayjs().isAfter(dayjs(sunset)));
+
       const weatherCode = data.current_weather.weathercode.toString();
       const icon = iconMap[weatherCode] ? (isDay ? iconMap[weatherCode].day : iconMap[weatherCode].night) : iconMap["default"].day;
 
@@ -58,10 +65,9 @@
         sunset: dayjs(sunset).format('HH:mm'),
         weatherIcon: icon,
         description: getWeatherDescription(weatherCode),
-        showSunrise: !isDay
+        showSunrise
       };
 
-      // Update the shared store with sunrise and sunset times
       sunriseSunsetStore.set({
         sunrise: dayjs(sunrise),
         sunset: dayjs(sunset)
