@@ -1,5 +1,6 @@
 <script>
     import { onMount } from 'svelte';
+    import dayjs from 'dayjs';
     import './jeopardy_styles.css';
     let questions = [];
     let currentQuestion = {};
@@ -7,16 +8,44 @@
     let currentIndex = 0;
     let score = 0;
     let topScore = parseInt(localStorage.getItem('topScore')) || 0; // Retrieve the top score from localStorage
+    let lastResetDate = localStorage.getItem('lastResetDate') || dayjs().format('YYYY-MM-DD');
     let options = [];
     let selectedOption = null;
     let autoNextTimeout;
 
     onMount(async () => {
+        checkAndResetScore(); // Check if the score needs to be reset
+
         const res = await fetch('/src/modules/jeopardy/JEOPARDY_QUESTIONS1.json');
         questions = await res.json();
         shuffleQuestions();
         getNextQuestion();
+
+        // Schedule the next reset at midnight
+        scheduleMidnightReset();
     });
+
+    function checkAndResetScore() {
+        // Check if the last reset was on a different day
+        if (dayjs().isAfter(dayjs(lastResetDate), 'day')) {
+            score = 0; // Reset the total score
+            topScore = 0; // Reset the top score
+            localStorage.setItem('topScore', topScore);
+            lastResetDate = dayjs().format('YYYY-MM-DD'); // Update to today's date
+            localStorage.setItem('lastResetDate', lastResetDate);
+        }
+    }
+
+    function scheduleMidnightReset() {
+        const now = dayjs();
+        const midnight = now.add(1, 'day').startOf('day');
+        const timeUntilMidnight = midnight.diff(now);
+
+        setTimeout(() => {
+            checkAndResetScore();
+            scheduleMidnightReset(); // Schedule the next midnight reset
+        }, timeUntilMidnight);
+    }
 
     function shuffleQuestions() {
         for (let i = questions.length - 1; i > 0; i--) {
@@ -70,6 +99,7 @@
         if (score > topScore) {
             topScore = score;
             localStorage.setItem('topScore', topScore);
+            localStorage.setItem('lastResetDate', dayjs().format('YYYY-MM-DD')); // Update the reset date to today
         }
 
         showAnswer = true;
@@ -85,7 +115,6 @@
 <div class="jeopardy-container">
     <img src="/src/modules/jeopardy/pics/Jeopardy.jpg" alt="Jeopardy" class="jeopardy-image" />
     <div class="jeopardy-content">
-        
         <div class="score-value-container">
             <div class="top-score">Top Score: ${topScore}</div>
             <div class="score">Total Score: ${score}</div>
@@ -99,8 +128,8 @@
                 {selectedOption === null 
                     ? 'The Answer Is: ' + capitalizeFirstLetter(currentQuestion.answer)
                     : (selectedOption.isCorrect 
-                        ? 'The correct answer is: ' + capitalizeFirstLetter(currentQuestion.answer) 
-                        : 'The correct answer is: ' + capitalizeFirstLetter(currentQuestion.answer))}
+                        ? 'Correct! You got the right answer!: ' + capitalizeFirstLetter(currentQuestion.answer) 
+                        : 'Incorrect! The right answer is: ' + capitalizeFirstLetter(currentQuestion.answer))}
             </div>
         {:else}
             <div class="options">

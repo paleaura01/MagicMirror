@@ -45,13 +45,12 @@
       const tempCelsius = data.current_weather.temperature;
       const tempFahrenheit = (tempCelsius * 9/5) + 32;
       const feelsLike = calculateFeelsLike(tempFahrenheit, data.current_weather.windspeed, 50);
+      
+      const windspeedMph = (data.current_weather.windspeed * 2.23694).toFixed(1); // Convert wind speed to mph
 
       const sunrise = data.daily.sunrise[0];
       const sunset = data.daily.sunset[0];
       const isDay = isDaytime(sunrise, sunset);
-      
-      // Determine whether to show the sunrise or sunset icon
-      const showSunrise = isBeforeSunrise(sunrise) || (!isDay && dayjs().isAfter(dayjs(sunset)));
 
       const weatherCode = data.current_weather.weathercode.toString();
       const icon = iconMap[weatherCode] ? (isDay ? iconMap[weatherCode].day : iconMap[weatherCode].night) : iconMap["default"].day;
@@ -59,13 +58,13 @@
       weatherData = {
         temperature: tempFahrenheit.toFixed(1),
         feelsLike: feelsLike.toFixed(1),
-        windspeed: data.current_weather.windspeed.toFixed(1),
+        windspeed: windspeedMph,
         windDirection: getCardinalDirection(data.current_weather.winddirection),
         sunrise: dayjs(sunrise).format('HH:mm'),
         sunset: dayjs(sunset).format('HH:mm'),
         weatherIcon: icon,
         description: getWeatherDescription(weatherCode),
-        showSunrise
+        showSunrise: isBeforeSunrise(sunrise) || (!isDay && dayjs().isAfter(dayjs(sunset)))
       };
 
       sunriseSunsetStore.set({
@@ -110,10 +109,10 @@
   {:else if weatherData}
     <div class="top-info">
       <span class="wind-info">
-        <i class="wi wi-strong-wind"></i> {weatherData.windspeed} m/s {weatherData.windDirection}
+        <i class="wi wi-strong-wind"></i> {weatherData.windspeed} mph {weatherData.windDirection}
       </span>
       <span class="sunrise-sunset">
-        <i class={weatherData.showSunrise ? "wi wi-sunrise" : "wi wi-sunset"}></i> 
+        <i class="wi wi-sunrise"></i> 
         {weatherData.showSunrise ? weatherData.sunrise : weatherData.sunset}
       </span>
     </div>

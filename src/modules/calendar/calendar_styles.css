@@ -1,0 +1,153 @@
+.calendar-header {
+    text-align: center;
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 0px;
+    margin-top: 10px;
+    color: rgba(255, 255, 255, 0.6); /* Grey with 0.6 opacity */
+    position: relative; /* Position relative to allow pseudo-element positioning */
+    font-family: 'Arial', sans-serif;
+}
+
+.calendar-header::after {
+    content: '';
+    position: absolute;
+    bottom: -9px; /* Position the border slightly below the header */
+    left: 3.5%; /* Adjust this value to control the border width */
+    right: 3.5%; /* Adjust this value to control the border width */
+    height: 2px;
+    background-color: rgba(255, 255, 255, 0.6); /* Grey with 0.6 opacity */
+}
+
+
+.calendar-border {
+    width: 90%; /* Make the border slightly shorter than the calendar */
+    height: 7px;
+    background-color: rgba(255, 255, 255, 0.6); /* Grey with 0.6 opacity */
+    margin: 0 auto 10px; /* Center the border and add space below */
+}
+.calendar-wrapper {
+    max-width: 300px;
+    margin: 0 auto;
+    position: relative;
+    
+}
+.events-wrapper {
+    max-width: 300px;
+    margin: 20px auto 0;
+}
+.calendar-container {
+    margin-top: 10px;
+    color: #fff;
+}
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0;
+    row-gap: 3px;
+    margin-bottom: -15px;
+}
+.calendar-day-name {
+    text-align: center;
+    font-size: 12px;
+    font-weight: bold;
+    padding-bottom: 3px;
+}
+.calendar-day {
+    text-align: center;
+    padding: 4px;
+    font-size: 14px;
+    line-height: 1.2;
+    position: relative;
+    opacity: 1;
+    
+}
+.today {
+    background-color: rgba(255, 255, 255, 0.1);
+    font-weight: bold;
+}
+.today::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border: 2px solid rgba(200, 200, 200, 0.5);
+    border-radius: 4px;
+}
+.past-day {
+    color: rgba(200, 200, 200, 0.6);
+}
+/* Center the "Upcoming Holidays" header and add an underline */
+.upcoming-events-header {
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 15px;
+    text-align: center;
+    position: relative;
+    color: rgba(200, 200, 200, 0.6); /* Grey color with 0.6 opacity */
+    font-family: 'Arial', sans-serif;
+    
+}
+
+/* Adjust the layout of the event items */
+.event-list {
+    list-style: none;
+    padding: 0;
+    font-size: 12px;
+    font-family: 'Arial', sans-serif;
+}
+
+.event-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+    transition: opacity 0.3s;
+}
+
+/* Align the calendar icon to the right */
+.event-icon {
+    margin-left: 10px; /* Push the icon to the right */
+}
+
+/* Shift the "In 22 days" text slightly to the left */
+.event-time {
+    color: rgba(200, 200, 200, 0.6); /* Grey color with 0.6 opacity */
+    margin-right: 9px; /* Adjust this value to control the left shift */
+}
+
+.event-item.faded {
+    opacity: 0.3;
+}
+
+.event-time {
+    color: rgba(200, 200, 200, 0.6); /* Grey color with 0.6 opacity */
+}
+
+
+/* Updated calendar_styles.css */
+
+.calendar-module-wrapper {
+    width: 100%; /* Allow the module to use the available space */
+    display: flex;
+    justify-content: flex-end; /* Align to the right side */
+}
+
+.calendar-container {
+    width: 300px; /* Set a fixed width for the calendar container */
+    text-align: center;
+    margin-top: 20px;
+}
+
+.prev-month, .next-month {
+    cursor: pointer;
+    margin: 0 15px;
+    font-size: 16px;
+    color: rgba(255, 255, 255, 0.6);
+    user-select: none;
+}
+
+.prev-month:hover, .next-month:hover {
+    color: rgba(255, 255, 255, 0.9);
+}

@@ -110,6 +110,18 @@
     "path": "modules/jeopardy/Jeopardy.js",
     "region": "right",
     "props": {}
+  },
+  {
+    "name": "CalendarModule",
+    "path": "modules/calendar/CalendarModule.js",
+    "region": "right",
+    "props": {
+      "maximumEntries": 10,
+      "fade": true,
+      "fadePoint": 0.25,
+      "icsFilePath": "public/ical/US_Holidays.ics"
+    }
   }
+  
   
 ]

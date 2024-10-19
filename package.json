@@ -17,6 +17,8 @@
     "wait-on": "^6.0.1"
   },
   "dependencies": {
+    "@fortawesome/fontawesome-free": "^6.6.0",
+    "@fortawesome/free-solid-svg-icons": "^6.6.0",
     "@huggingface/transformers": "^3.0.0-alpha.21",
     "@tensorflow/tfjs": "^4.21.0",
     "axios": "^1.7.7",
@@ -33,6 +35,7 @@
     "python-shell": "^5.0.0",
     "rss-parser": "^3.13.0",
     "simple-update-notifier": "^2.0.0",
+    "svelte-fa": "^4.0.3",
     "torch": "^0.2.7",
     "transformers": "^3.1.0"
   }
