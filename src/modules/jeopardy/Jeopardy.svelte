@@ -85,10 +85,11 @@
 <div class="jeopardy-container">
     <img src="/src/modules/jeopardy/pics/Jeopardy.jpg" alt="Jeopardy" class="jeopardy-image" />
     <div class="jeopardy-content">
-        <div class="category">CATEGORY: {currentQuestion.category}</div>
+        
         <div class="score-value-container">
             <div class="top-score">Top Score: ${topScore}</div>
             <div class="score">Total Score: ${score}</div>
+            <div class="category">CATEGORY: {currentQuestion.category}</div>
             <div class="value">For: {currentQuestion.value}</div>
         </div>
         <div class="clue">The clue is: '{currentQuestion.question}'</div>

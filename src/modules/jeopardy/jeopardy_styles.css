@@ -36,13 +36,18 @@
     text-align: center;
 }
 
-.score, .top-score {
-    margin-top: 10px;
+.score, .top-score  {
+    
     font-weight: bold;
 }
 
 .top-score {
     text-underline-position: below;
     text-decoration: underline; /* Underlines the Total Score */
-
+    padding-bottom: 5px;
 }
+
+.value {
+    font-weight: bold
+}
+
