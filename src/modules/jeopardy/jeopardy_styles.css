@@ -1,0 +1,48 @@
+.jeopardy-container {
+    width: 300px;
+    text-align: center;
+    margin-top: 20px;
+    margin-left: auto; /* Aligns the container to the right */
+    margin-right: 0;   /* Makes sure there's no extra margin on the right */
+}
+
+.jeopardy-image {
+    width: 50%;
+    margin-bottom: 10px;
+}
+
+.category, .value, .clue, .answer, .score, .top-score {
+    font-size: 14px;
+    margin-bottom: 5px;
+}
+
+.answer {
+    font-weight: bold;
+}
+
+.options {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    margin-top: 10px;
+}
+
+.options button {
+    padding: 2px 2px;
+    font-size: 14px;
+    cursor: pointer;
+    margin: 2px;
+    flex: 1 1 45%;
+    text-align: center;
+}
+
+.score, .top-score {
+    margin-top: 10px;
+    font-weight: bold;
+}
+
+.top-score {
+    text-underline-position: below;
+    text-decoration: underline; /* Underlines the Total Score */
+
+}

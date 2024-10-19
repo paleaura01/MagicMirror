@@ -12,18 +12,14 @@
     // console.log(modulesByRegion); // Debug: Log the loaded modules to check
   });
 
+  // Update the regions to reflect the combined 'right' region
   const regions = [
     'header',  // Add header as a region
     'left',
     'top_center',
-    'top_right',
+    'right',    // Use the combined 'right' region
     'center',
-    'upper_right',
-    'lower_left',
-    'lower_right',
-    'bottom_left',
-    'bottom_center',
-    'bottom_right'
+    'bottom_center'
   ];
 
   // Debug: Log regions for visibility
@@ -34,7 +30,7 @@
   {#if modulesByRegion['header']}
   <!-- Render modules in the header region -->
   <Region modules={modulesByRegion['header']} />
-{/if}
+  {/if}
   <header>
 
   </header>

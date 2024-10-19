@@ -24,10 +24,10 @@ body {
 .grid-container {
   display: grid;
   grid-template-areas:
-    "left top_center top_right"
-    "left center upper_right"
-    "left center lower_right"
-    "left bottom_center bottom_right"; /* Updated grid structure to merge left and bottom_left */
+    "left top_center right"
+    "left center right"
+    "left center right"
+    "left bottom_center right"; /* Combined all right sections into a single right area */
   grid-template-columns: 1fr 1fr 1fr;
   grid-template-rows: 1fr 1fr 1fr 1fr; /* Adjusted for 4 rows */
   height: calc(100vh - 80px); /* Ensure grid takes the full height minus the header */
@@ -52,15 +52,10 @@ body {
 /* Assign regions to the CSS grid */
 .left {
   grid-area: left;
-  grid-row: span 4; /* Makes left span 4 rows to include bottom_left */
+  grid-row: span 4; /* Makes left span 4 rows to include all rows */
 }
 .top_center { grid-area: top_center; }
-.top_right { grid-area: top_right; }
-
-.upper_right { grid-area: upper_right; }
-.lower_right { grid-area: lower_right; }
+.right { grid-area: right; } /* Use the combined right region */
 
 .center { grid-area: center; } /* This is now the merged center box */
-
 .bottom_center { grid-area: bottom_center; }
-.bottom_right { grid-area: bottom_right; }
