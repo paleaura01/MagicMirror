@@ -31,11 +31,14 @@
     "leaflet": "^1.9.4",
     "mammoth": "^1.8.0",
     "node-fetch": "^3.3.2",
+    "ol": "^10.2.1",
     "openai": "^4.67.3",
+    "pip": "^0.0.1",
     "python-shell": "^5.0.0",
     "rss-parser": "^3.13.0",
     "simple-update-notifier": "^2.0.0",
     "svelte-fa": "^4.0.3",
+    "three": "^0.169.0",
     "torch": "^0.2.7",
     "transformers": "^3.1.0"
   }

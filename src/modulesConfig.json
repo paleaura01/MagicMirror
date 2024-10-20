@@ -121,7 +121,14 @@
       "fadePoint": 0.25,
       "icsFilePath": "public/ical/US_Holidays.ics"
     }
+  },
+  {
+    "name": "GlobeModule",
+    "path": "modules/globe/GlobeModule.js",
+    "region": "center",
+    "props": {}
   }
+  
   
   
 ]
