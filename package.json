@@ -20,6 +20,7 @@
     "@fortawesome/fontawesome-free": "^6.6.0",
     "@fortawesome/free-solid-svg-icons": "^6.6.0",
     "@huggingface/transformers": "^3.0.0-alpha.21",
+    "@nasaworldwind/worldwind": "^0.11.0",
     "@tensorflow/tfjs": "^4.21.0",
     "axios": "^1.7.7",
     "cors": "^2.8.5",

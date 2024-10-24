@@ -5,6 +5,9 @@ import FeedMe from 'feedme'; // For RSS parsing
 const app = express();
 const port = process.env.PORT || 8080;
 
+// Serve static files from the "public" directory
+app.use(express.static('public'));
+
 // Enable CORS for all routes
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');

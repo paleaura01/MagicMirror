@@ -1,100 +1,121 @@
 <script>
-    import { onMount } from "svelte";
-    import * as THREE from "three";
+    import { onMount, onDestroy } from "svelte";
 
     let globeContainer;
-    let globeScene, globeCamera, globeRenderer, globeMesh;
+    let globe;
+    let worldWindLoaded = false;
+    const worldWindScriptUrl = "https://files.worldwind.arc.nasa.gov/artifactory/web/0.9.0/worldwind.min.js";
 
+    // Load WorldWind script
+    async function loadWorldWind() {
+        return new Promise((resolve, reject) => {
+            if (window.WorldWind) {
+                worldWindLoaded = true;
+                resolve();
+                return;
+            }
+
+            const script = document.createElement("script");
+            script.src = worldWindScriptUrl;
+            script.onload = () => {
+                console.log("[Debug] WorldWind script loaded successfully.");
+                worldWindLoaded = true;
+                resolve();
+            };
+            script.onerror = () => reject(new Error("Failed to load WorldWind script."));
+            document.body.appendChild(script);
+        });
+    }
+
+    // Initialize the globe
     function initializeGlobe() {
-        console.log('[Debug] Initializing globe...');
-
-        if (!globeContainer) {
-            console.error('[Error] Globe container is not available.');
+        if (!globeContainer || !worldWindLoaded || !globeContainer.isConnected || !(globeContainer instanceof HTMLCanvasElement)) {
+            console.error("[Error] Globe container is not available, WorldWind is not loaded, or globeContainer is not a valid canvas element.");
             return;
         }
 
-        globeScene = new THREE.Scene();
-        console.log('[Debug] Scene created:', globeScene);
+        try {
+            console.log("[Debug] Attempting to create WorldWind instance.");
+            globe = new WorldWind.WorldWindow(globeContainer.id);
 
-        globeCamera = new THREE.PerspectiveCamera(
-            45,
-            window.innerWidth / window.innerHeight,
-            0.1,
-            3000
-        );
-        globeCamera.position.set(0, 0, 2000);
-        globeCamera.lookAt(0, 0, 0);
-        console.log('[Debug] Camera created and positioned:', globeCamera.position);
+            globe.addLayer(new WorldWind.BMNGOneImageLayer());
+            globe.addLayer(new WorldWind.BingAerialWithLabelsLayer());
 
-        globeRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-        globeRenderer.setSize(window.innerWidth, window.innerHeight);
-        globeRenderer.setPixelRatio(window.devicePixelRatio);
-        globeRenderer.domElement.style.position = 'fixed';
-        globeRenderer.domElement.style.top = '0';
-        globeRenderer.domElement.style.left = '0';
-        globeRenderer.domElement.style.width = '100%';
-        globeRenderer.domElement.style.height = '100%';
-        globeContainer.appendChild(globeRenderer.domElement);
-        console.log('[Debug] Renderer created and attached to container:', globeRenderer);
+            const placemarkLayer = new WorldWind.RenderableLayer("Placemarks");
+            globe.addLayer(placemarkLayer);
 
-        const originalUrl = 'https://wvs.earthdata.nasa.gov/api/v1/snapshot?REQUEST=GetSnapshot&LAYERS=MODIS_Terra_CorrectedReflectance_TrueColor&CRS=EPSG:4326&FORMAT=image/jpeg&WIDTH=4096&HEIGHT=2048&BBOX=-180,-90,180,90&TIME=2024-10-19';
-        const proxyUrl = `http://localhost:8080/proxy?url=${encodeURIComponent(originalUrl)}`;
-        console.log('[Debug] Loading texture from proxy URL:', proxyUrl);
+            const placemarkAttributes = new WorldWind.PlacemarkAttributes(null);
+            placemarkAttributes.imageScale = 0.1;
+            placemarkAttributes.imageSource = WorldWind.configuration.baseUrl + "images/pushpins/plain-red.png";
 
-        const textureLoader = new THREE.TextureLoader();
-        textureLoader.load(
-            proxyUrl,
-            (texture) => {
-                console.log('[Debug] Texture loaded successfully:', texture);
+            const position = new WorldWind.Position(37.7749, -122.4194, 0);
+            const placemark = new WorldWind.Placemark(position, false, placemarkAttributes);
+            placemarkLayer.addRenderable(placemark);
 
-                // Set texture mapping mode to spherical mapping
-                texture.mapping = THREE.EquirectangularReflectionMapping;
-
-                const geometry = new THREE.SphereGeometry(50, 64, 64);
-                const material = new THREE.MeshBasicMaterial({ map: texture });
-                globeMesh = new THREE.Mesh(geometry, material);
-                globeMesh.scale.set(8.8, 8.8, 8.8);
-                globeScene.add(globeMesh);
-                console.log('[Debug] Globe mesh created, scaled, and added to scene:', globeMesh);
-            },
-            undefined,
-            (error) => {
-                console.error('[Error] Failed to load texture:', error);
-            }
-        );
-
-        function animate() {
+            // Start animating the globe
             requestAnimationFrame(animate);
-            if (globeMesh) {
-                globeMesh.rotation.y += 0.005;
-            }
-            globeRenderer.render(globeScene, globeCamera);
+            console.log("[Debug] Globe initialized.");
+        } catch (e) {
+            console.error("[Error] Failed to initialize WorldWind:", e);
         }
-
-        console.log('[Debug] Starting animation loop...');
-        animate();
-
-        window.addEventListener('resize', onWindowResize, false);
     }
 
-    function onWindowResize() {
-        console.log('[Debug] Window resized. Updating camera and renderer size.');
-        globeCamera.aspect = window.innerWidth / window.innerHeight;
-        globeCamera.updateProjectionMatrix();
-        globeRenderer.setSize(window.innerWidth, window.innerHeight);
+    // Animation loop
+    function animate() {
+        if (globe) {
+            globe.redraw();
+            requestAnimationFrame(animate);
+        }
     }
 
-    onMount(() => {
-        console.log('[Debug] Component mounted. Checking if globe container is ready...');
-        if (globeContainer) {
-            initializeGlobe();
-        } else {
-            console.error('[Error] Globe container is undefined during onMount.');
+    // Observe changes in the DOM
+    function observeGlobeContainer() {
+        const observer = new MutationObserver((mutationsList) => {
+            for (const mutation of mutationsList) {
+                if (mutation.type === "childList" && globeContainer && globeContainer.isConnected && globeContainer instanceof HTMLCanvasElement) {
+                    console.log("[Debug] Globe container is now connected and is a canvas element.");
+                    initializeGlobe();
+                    observer.disconnect();
+                    break;
+                }
+            }
+        });
+
+        observer.observe(document.body, { childList: true, subtree: true });
+    }
+
+    // onMount lifecycle function
+    onMount(async () => {
+        console.log("[Debug] onMount triggered. Loading WorldWind...");
+        try {
+            await loadWorldWind();
+
+            // If globeContainer is not a canvas, create one
+            if (!(globeContainer instanceof HTMLCanvasElement)) {
+                const newCanvas = document.createElement("canvas");
+                newCanvas.id = "globeCanvas";
+                globeContainer.replaceWith(newCanvas);
+                globeContainer = newCanvas;
+                console.log("[Debug] Created a new canvas element for WorldWind.");
+            }
+
+            observeGlobeContainer(); // Use MutationObserver to detect when the globe container is available
+        } catch (error) {
+            console.error("[Error] Initialization failed:", error);
+        }
+    });
+
+    // Clean up resources when the component is destroyed
+    onDestroy(() => {
+        if (globe) {
+            globe.dispose();
+            globe = null;
+            console.log("[Debug] Globe disposed.");
         }
     });
 </script>
 
-<div bind:this={globeContainer} class="globe-container"></div>
+<div bind:this={globeContainer} id="globeCanvas" class="globe-container"></div>
 
 <style>
     .globe-container {
