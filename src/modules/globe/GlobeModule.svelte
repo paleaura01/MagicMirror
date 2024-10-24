@@ -79,9 +79,10 @@
     .image-container {
         width: 100%;
         height: 100%;
-        background-size: cover;
+        background-size: 35%; /* Scale down the globe to about 85% of its original size */
+        background-repeat: no-repeat;
         background-position: center;
-        position: absolute;
+        position: fixed;
         top: 0;
         left: 0;
         transition: background-image 0.5s ease-in-out; /* Smooth transition */
