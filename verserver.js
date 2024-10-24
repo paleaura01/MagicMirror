@@ -10,8 +10,14 @@ const port = process.env.PORT || 8081;
 // CORS Middleware
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, sentry-trace, baggage'); // Add necessary headers
+
+  if (req.method === 'OPTIONS') {
+    res.sendStatus(200); // Respond with 200 to preflight requests
+    return;
+  }
+
   next();
 });
 
@@ -32,7 +38,7 @@ const __dirname = path.dirname(__filename);
 app.post('/api/verse', (req, res) => {
   let { textpath } = req.body;
 
-  console.log('Received textpath:', textpath); // Log the received textpath
+  console.log('Received textpath:', textpath);
 
   if (!textpath) {
     console.error('No textpath provided');
@@ -40,15 +46,12 @@ app.post('/api/verse', (req, res) => {
   }
 
   try {
-    // Resolve the full path using the server's base directory
     const fullPath = path.resolve(__dirname, textpath);
     console.log('Resolved full path to directory:', fullPath);
 
-    // Check if the resolved path exists
     const pathExists = fs.existsSync(fullPath);
     console.log('Path exists:', pathExists);
 
-    // Check if the path is a directory
     const isDirectory = pathExists && fs.lstatSync(fullPath).isDirectory();
     console.log('Is directory:', isDirectory);
 
@@ -57,7 +60,6 @@ app.post('/api/verse', (req, res) => {
       return res.status(400).json({ error: `Provided path is not a valid directory: ${fullPath}` });
     }
 
-    // Read files in the directory and filter for text files
     fs.readdir(fullPath, (err, files) => {
       if (err) {
         console.error('Error reading directory:', err);
@@ -70,26 +72,22 @@ app.post('/api/verse', (req, res) => {
         return res.status(400).json({ error: 'No text files found in directory' });
       }
 
-      // Select a random text file
       const randomFile = txtFiles[Math.floor(Math.random() * txtFiles.length)];
       const filePath = path.join(fullPath, randomFile);
 
-      console.log('Selected file:', randomFile); // Log the selected file
+      console.log('Selected file:', randomFile);
 
-      // Read the selected text file
       fs.readFile(filePath, 'utf8', (err, data) => {
         if (err) {
           console.error('Error reading text file:', err);
           return res.status(500).json({ error: 'Error reading text file' });
         }
 
-        // Split the file content by lines and select a random verse
         const verses = data.split('\n').filter(line => line.trim() !== '');
         const randomVerse = verses[Math.floor(Math.random() * verses.length)];
 
-        console.log('Selected verse:', randomVerse); // Log the selected verse
+        console.log('Selected verse:', randomVerse);
 
-        // Respond with the randomly selected verse and file name
         res.json({ verse: randomVerse.trim(), fileName: randomFile });
       });
     });
@@ -103,14 +101,13 @@ app.post('/api/verse', (req, res) => {
 app.post('/api/translate', (req, res) => {
   const { text, sourceLang, targetLang } = req.body;
 
-  console.log('Received text for translation:', text); // Log the text to be translated
-  console.log('Source language:', sourceLang, 'Target language:', targetLang); // Log languages
+  console.log('Received text for translation:', text);
+  console.log('Source language:', sourceLang, 'Target language:', targetLang);
 
   if (!text || !sourceLang || !targetLang) {
     return res.status(400).json({ error: 'Missing required parameters for translation' });
   }
 
-  // Call translate.py using exec
   const pythonScript = path.join(__dirname, 'translate.py');
   const command = `python ${pythonScript} "${text}" ${sourceLang} ${targetLang}`;
 
@@ -125,9 +122,8 @@ app.post('/api/translate', (req, res) => {
     }
 
     const translatedText = stdout.trim();
-    console.log('Translation result:', translatedText); // Log the translation result
+    console.log('Translation result:', translatedText);
 
-    // Respond with the translated text
     res.json({ translatedText });
   });
 });

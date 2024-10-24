@@ -6,17 +6,16 @@
     let images = [];
     let currentFrame = 0;
     let animationInterval;
+    let refreshInterval;
 
-    const numImages = 24; // Total images for 24 hours at 10-minute intervals
-    const timeStepMinutes = 60; // Time step in minutes
+    const numImages = 24; // Total images for the last 24 hours
     const frameDelay = 1000; // Delay in milliseconds between frame changes
-    const restartFrame = 10; // The frame at which the animation should restart
+    const refreshDelay = 600000; // 10 minutes in milliseconds
 
-    // Generate Himawari image URL for a specific frame index
-    function getHimawariImageUrl(frameIndex) {
-        const now = dayjs().utc();
-        // Calculate the time for the specific frame index
-        const frameTime = now.subtract(timeStepMinutes * frameIndex, 'minute');
+    // Generate Himawari image URL for a specific hour index
+    function getHimawariImageUrl(hourIndex) {
+        const now = dayjs().utc().startOf('hour'); // Current hour in UTC
+        const frameTime = now.subtract(hourIndex + 1, 'hour'); // Subtract to get the previous hour, excluding the current hour
         const year = frameTime.format("YYYY");
         const month = frameTime.format("MM");
         const day = frameTime.format("DD");
@@ -28,28 +27,38 @@
 
     // Fetch image URLs for animation
     async function fetchImages() {
+        images = []; // Clear previous images
         for (let i = 0; i < numImages; i++) {
             const imageUrl = getHimawariImageUrl(i);
+            console.log(`[Debug] Fetching image: ${imageUrl}`); // Log the URL being fetched
             const img = new Image();
             img.src = imageUrl;
-            img.onload = () => {
-                images.push(img);
-            };
+
+            // Wait for the image to load or fail
+            const loadPromise = new Promise((resolve) => {
+                img.onload = () => {
+                    images.push(img);
+                    console.log(`[Debug] Image loaded successfully: ${imageUrl}`);
+                    resolve(true);
+                };
+                img.onerror = () => {
+                    console.error(`[Error] Failed to load image: ${imageUrl}`);
+                    resolve(false);
+                };
+            });
+
+            await loadPromise;
         }
     }
 
-    // Start animation loop with controlled restart frame
+    // Start animation loop
     function startAnimation() {
         animationInterval = setInterval(() => {
             if (images.length > 0) {
                 mapDiv.style.backgroundImage = `url(${images[currentFrame].src})`;
 
-                // If the current frame reaches the restart frame, go back to the first frame
-                if (currentFrame >= restartFrame) {
-                    currentFrame = 0;
-                } else {
-                    currentFrame++;
-                }
+                // Move to the next frame or loop back to the first frame
+                currentFrame = (currentFrame + 1) % images.length;
             }
         }, frameDelay);
     }
@@ -59,15 +68,31 @@
         clearInterval(animationInterval);
     }
 
+    // Refresh images every 10 minutes
+    function startImageRefresh() {
+        refreshInterval = setInterval(async () => {
+            console.log("[Debug] Refreshing images...");
+            await fetchImages();
+            currentFrame = 0; // Reset to the first frame after refreshing images
+        }, refreshDelay);
+    }
+
+    // Stop image refresh
+    function stopImageRefresh() {
+        clearInterval(refreshInterval);
+    }
+
     // Lifecycle hooks
     onMount(async () => {
         console.log("[Debug] onMount triggered. Fetching Himawari images...");
         await fetchImages();
         startAnimation();
+        startImageRefresh();
     });
 
     onDestroy(() => {
         stopAnimation();
+        stopImageRefresh();
     });
 </script>
 

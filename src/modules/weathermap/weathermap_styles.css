@@ -63,3 +63,4 @@
 .rain-map-wrapper.inverted-colors .leaflet-tile-pane .leaflet-layer:first-child {
   filter: invert(100%) hue-rotate(180deg);
 }
+
