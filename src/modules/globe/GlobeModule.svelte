@@ -1,130 +1,89 @@
 <script>
     import { onMount, onDestroy } from "svelte";
+    import dayjs from 'dayjs';
 
-    let globeContainer;
-    let globe;
-    let worldWindLoaded = false;
-    const worldWindScriptUrl = "https://files.worldwind.arc.nasa.gov/artifactory/web/0.9.0/worldwind.min.js";
+    let mapDiv;
+    let images = [];
+    let currentFrame = 0;
+    let animationInterval;
 
-    // Load WorldWind script
-    async function loadWorldWind() {
-        return new Promise((resolve, reject) => {
-            if (window.WorldWind) {
-                worldWindLoaded = true;
-                resolve();
-                return;
-            }
+    const numImages = 12; // Total images for 24 hours at 10-minute intervals
+    const timeStepMinutes = 60; // Time step in minutes
+    const frameDelay = 1000; // Delay in milliseconds between frame changes
+    const restartFrame = 10; // The frame at which the animation should restart
 
-            const script = document.createElement("script");
-            script.src = worldWindScriptUrl;
-            script.onload = () => {
-                console.log("[Debug] WorldWind script loaded successfully.");
-                worldWindLoaded = true;
-                resolve();
+    // Generate Himawari image URL for a specific frame index
+    function getHimawariImageUrl(frameIndex) {
+        const now = dayjs().utc();
+        // Calculate the time for the specific frame index
+        const frameTime = now.subtract(timeStepMinutes * frameIndex, 'minute');
+        const year = frameTime.format("YYYY");
+        const month = frameTime.format("MM");
+        const day = frameTime.format("DD");
+        const hour = frameTime.format("HH");
+        const timestamp = `${year}${month}${day}${hour}0000`; // Format timestamp for URL
+
+        return `https://rammb-slider.cira.colostate.edu/data/imagery/${year}/${month}/${day}/himawari---full_disk/geocolor/${timestamp}/00/000_000.png`;
+    }
+
+    // Fetch image URLs for animation
+    async function fetchImages() {
+        for (let i = 0; i < numImages; i++) {
+            const imageUrl = getHimawariImageUrl(i);
+            const img = new Image();
+            img.src = imageUrl;
+            img.onload = () => {
+                images.push(img);
             };
-            script.onerror = () => reject(new Error("Failed to load WorldWind script."));
-            document.body.appendChild(script);
-        });
-    }
-
-    // Initialize the globe
-    function initializeGlobe() {
-        if (!globeContainer || !worldWindLoaded || !globeContainer.isConnected || !(globeContainer instanceof HTMLCanvasElement)) {
-            console.error("[Error] Globe container is not available, WorldWind is not loaded, or globeContainer is not a valid canvas element.");
-            return;
-        }
-
-        try {
-            console.log("[Debug] Attempting to create WorldWind instance.");
-            globe = new WorldWind.WorldWindow(globeContainer.id);
-
-            globe.addLayer(new WorldWind.BMNGOneImageLayer());
-            globe.addLayer(new WorldWind.BingAerialWithLabelsLayer());
-
-            const placemarkLayer = new WorldWind.RenderableLayer("Placemarks");
-            globe.addLayer(placemarkLayer);
-
-            const placemarkAttributes = new WorldWind.PlacemarkAttributes(null);
-            placemarkAttributes.imageScale = 0.1;
-            placemarkAttributes.imageSource = WorldWind.configuration.baseUrl + "images/pushpins/plain-red.png";
-
-            const position = new WorldWind.Position(37.7749, -122.4194, 0);
-            const placemark = new WorldWind.Placemark(position, false, placemarkAttributes);
-            placemarkLayer.addRenderable(placemark);
-
-            // Start animating the globe
-            requestAnimationFrame(animate);
-            console.log("[Debug] Globe initialized.");
-        } catch (e) {
-            console.error("[Error] Failed to initialize WorldWind:", e);
         }
     }
 
-    // Animation loop
-    function animate() {
-        if (globe) {
-            globe.redraw();
-            requestAnimationFrame(animate);
-        }
-    }
+    // Start animation loop with controlled restart frame
+    function startAnimation() {
+        animationInterval = setInterval(() => {
+            if (images.length > 0) {
+                mapDiv.style.backgroundImage = `url(${images[currentFrame].src})`;
 
-    // Observe changes in the DOM
-    function observeGlobeContainer() {
-        const observer = new MutationObserver((mutationsList) => {
-            for (const mutation of mutationsList) {
-                if (mutation.type === "childList" && globeContainer && globeContainer.isConnected && globeContainer instanceof HTMLCanvasElement) {
-                    console.log("[Debug] Globe container is now connected and is a canvas element.");
-                    initializeGlobe();
-                    observer.disconnect();
-                    break;
+                // If the current frame reaches the restart frame, go back to the first frame
+                if (currentFrame >= restartFrame) {
+                    currentFrame = 0;
+                } else {
+                    currentFrame++;
                 }
             }
-        });
-
-        observer.observe(document.body, { childList: true, subtree: true });
+        }, frameDelay);
     }
 
-    // onMount lifecycle function
+    // Stop animation
+    function stopAnimation() {
+        clearInterval(animationInterval);
+    }
+
+    // Lifecycle hooks
     onMount(async () => {
-        console.log("[Debug] onMount triggered. Loading WorldWind...");
-        try {
-            await loadWorldWind();
-
-            // If globeContainer is not a canvas, create one
-            if (!(globeContainer instanceof HTMLCanvasElement)) {
-                const newCanvas = document.createElement("canvas");
-                newCanvas.id = "globeCanvas";
-                globeContainer.replaceWith(newCanvas);
-                globeContainer = newCanvas;
-                console.log("[Debug] Created a new canvas element for WorldWind.");
-            }
-
-            observeGlobeContainer(); // Use MutationObserver to detect when the globe container is available
-        } catch (error) {
-            console.error("[Error] Initialization failed:", error);
-        }
+        console.log("[Debug] onMount triggered. Fetching Himawari images...");
+        await fetchImages();
+        startAnimation();
     });
 
-    // Clean up resources when the component is destroyed
     onDestroy(() => {
-        if (globe) {
-            globe.dispose();
-            globe = null;
-            console.log("[Debug] Globe disposed.");
-        }
+        stopAnimation();
     });
 </script>
 
-<div bind:this={globeContainer} id="globeCanvas" class="globe-container"></div>
+<!-- HTML -->
+<div bind:this={mapDiv} class="image-container"></div>
 
+<!-- CSS -->
 <style>
-    .globe-container {
-        position: fixed;
+    .image-container {
+        width: 100%;
+        height: 100%;
+        background-size: cover;
+        background-position: center;
+        position: absolute;
         top: 0;
         left: 0;
-        width: 100vw;
-        height: 100vh;
-        z-index: 100;
-        pointer-events: none;
+        transition: background-image 0.5s ease-in-out; /* Smooth transition */
     }
 </style>
