@@ -7,7 +7,7 @@
     let currentFrame = 0;
     let animationInterval;
 
-    const numImages = 12; // Total images for 24 hours at 10-minute intervals
+    const numImages = 24; // Total images for 24 hours at 10-minute intervals
     const timeStepMinutes = 60; // Time step in minutes
     const frameDelay = 1000; // Delay in milliseconds between frame changes
     const restartFrame = 10; // The frame at which the animation should restart
