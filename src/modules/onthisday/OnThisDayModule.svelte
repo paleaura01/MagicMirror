@@ -9,12 +9,10 @@
 
     let events = null;
     let title = null;
+    let currentDay = dayjs().format('MMMM DD'); // Track the current day
 
     // Regex to match events that start with a 4-digit year followed by a description
     const yearEventRegex = /^\d{4}\s*–/;
-
-    // Get today's date in "MMMM DD" format (e.g., October 17)
-    const todayDate = dayjs().format('MMMM DD');
 
     // Function to fetch and parse "On This Day" events from Wikipedia
     async function loadEvents() {
@@ -35,9 +33,18 @@
                 .slice(0, 6); // Limit to 6 events
 
             // Set the title to include today's month and day with a round dot separator
-            title = `On This Day • ${todayDate}`;
+            title = `On This Day • ${currentDay}`;
         } catch (error) {
             console.error('Error loading events:', error);
+        }
+    }
+
+    // Function to check if the day has changed and update events accordingly
+    function checkDayChange() {
+        const today = dayjs().format('MMMM DD');
+        if (today !== currentDay) {
+            currentDay = today;
+            loadEvents(); // Reload events for the new day
         }
     }
 
@@ -46,6 +53,9 @@
 
     // Set an interval to reload events based on the update interval
     setInterval(loadEvents, updateInterval * 1000);
+
+    // Set an interval to check if the day has changed
+    setInterval(checkDayChange, 60000); // Check every minute
 </script>
 
 <!-- Style the wrapper based on passed props -->
