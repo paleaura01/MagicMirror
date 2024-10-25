@@ -10,7 +10,7 @@
 
     const numImages = 1; // Total images for the last 24 hours
     const frameDelay = 1000; // Delay in milliseconds between frame changes
-    const refreshDelay = 100000; // 1 minutes in milliseconds
+    const refreshDelay = 300000; // 5 minutes in milliseconds
     const fadeDuration = 500; // Fade duration in milliseconds
 
     // Generate GOES-16 image URL for a specific hour index
@@ -27,6 +27,19 @@
 
         return `https://rammb-slider.cira.colostate.edu/data/imagery/${year}/${month}/${day}/goes-16---full_disk/geocolor/${timestamp}/00/000_000.png`;
     }
+
+    // Generate Himawari image URL for a specific hour index
+    // function getHimawariImageUrl(hourIndex) {
+    //     const now = dayjs().utc().startOf('hour'); // Current hour in UTC
+    //     const frameTime = now.subtract(hourIndex + 1, 'hour'); // Subtract to get the previous hour, excluding the current hour
+    //     const year = frameTime.format("YYYY");
+    //     const month = frameTime.format("MM");
+    //     const day = frameTime.format("DD");
+    //     const hour = frameTime.format("HH");
+    //     const timestamp = `${year}${month}${day}${hour}0000`; // Format timestamp for URL
+
+    //     return `https://rammb-slider.cira.colostate.edu/data/imagery/${year}/${month}/${day}/himawari---full_disk/geocolor/${timestamp}/00/000_000.png`;
+    // }
 
     // Fetch image URLs for animation
     async function fetchImages() {

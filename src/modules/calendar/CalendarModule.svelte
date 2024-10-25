@@ -127,35 +127,40 @@
         generateCalendarDays();
     }
 
-    // Function to get the appropriate icon for each holiday
-    function getEventIcon(title) {
-        switch (title) {
-            case 'Veterans Day':
-                return faMedal;
-            case 'Thanksgiving':
-                return faDrumstickBite;
-            case 'Christmas':
-                return faTree;
-            case "New Year's Day":
-                return faGlassCheers;
-            case 'Martin Luther King Jr. Day':
-                return faUserTie;
-            case "Presidents' Day":
-                return faMonument;
-            case 'Good Friday':
-                return faPray;
-            case 'Easter':
-                return faChurch;
-            case 'Memorial Day':
-                return faFlagUsa;
-            case "Mother's Day":
-                return faHandHoldingHeart;
-            case "Father's Day":
-                return faHandHoldingHeart;
-            default:
-                return faCalendarAlt;
-        }
+   // Function to get the appropriate icon for each holiday
+function getEventIcon(title) {
+    switch (title) {
+        case 'Veterans Day':
+            return faMedal;
+        case 'Thanksgiving Day':
+            return faDrumstickBite;
+        case 'Christmas':
+            return faTree;
+        case "New Year's Day":
+            return faGlassCheers;
+        case 'M L King Day': // Match the exact title from the .ics file
+            return faUserTie;
+        case "Presidents' Day":
+            return faMonument;
+        case 'Good Friday':
+            return faPray;
+        case 'Easter Sunday':
+            return faChurch; // Match the exact title from the .ics file
+        case 'Memorial Day':
+            return faFlagUsa;
+        case 'Juneteenth':
+            return faFlagUsa;
+        case 'Independence Day':
+            return faFlagUsa;
+        case "Labor Day":
+            return faUserTie;
+        case "Columbus Day":
+            return faMonument;
+        default:
+            return faCalendarAlt;
     }
+}
+
 </script>
 
 <!-- Outer wrapper to ensure module has its own space -->
