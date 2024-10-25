@@ -11,17 +11,21 @@
   const lon = -81.3673;
 
   const iconMap = {
-    "0": { day: "/src/modules/weather/icons/32.png", night: "/src/modules/weather/icons/31.png" },
-    "1": { day: "/src/modules/weather/icons/34.png", night: "/src/modules/weather/icons/33.png" },
-    "2": { day: "/src/modules/weather/icons/28.png", night: "/src/modules/weather/icons/27.png" },
-    "3": { day: "/src/modules/weather/icons/4.png", night: "/src/modules/weather/icons/4.png" },
-    "9": { day: "/src/modules/weather/icons/9.png", night: "/src/modules/weather/icons/45.png" },
-    "10": { day: "/src/modules/weather/icons/12.png", night: "/src/modules/weather/icons/45.png" },
-    "11": { day: "/src/modules/weather/icons/3.png", night: "/src/modules/weather/icons/47.png" },
-    "13": { day: "/src/modules/weather/icons/14.png", night: "/src/modules/weather/icons/46.png" },
-    "50": { day: "/src/modules/weather/icons/22.png", night: "/src/modules/weather/icons/22.png" },
-    "default": { day: "/src/modules/weather/icons/na.png", night: "/src/modules/weather/icons/na.png" }
-  };
+    "0": { day: "/src/modules/weatherforecast/icons/36.png", night: "/src/modules/weatherforecast/icons/31.png" }, // Clear sky
+    "1": { day: "/src/modules/weatherforecast/icons/34.png", night: "/src/modules/weatherforecast/icons/33.png" }, // Mainly clear
+    "2": { day: "/src/modules/weatherforecast/icons/30.png", night: "/src/modules/weatherforecast/icons/27.png" }, // Partly cloudy
+    "3": { day: "/src/modules/weatherforecast/icons/26.png", night: "/src/modules/weatherforecast/icons/26.png" }, // Overcast
+    "9": { day: "/src/modules/weatherforecast/icons/11.png", night: "/src/modules/weatherforecast/icons/45.png" }, // Light rain showers
+    "10": { day: "/src/modules/weatherforecast/icons/12.png", night: "/src/modules/weatherforecast/icons/45.png" }, // Moderate rain showers
+    "11": { day: "/src/modules/weatherforecast/icons/35.png", night: "/src/modules/weatherforecast/icons/35.png" }, // Thunderstorms
+    "13": { day: "/src/modules/weatherforecast/icons/14.png", night: "/src/modules/weatherforecast/icons/46.png" }, // Snow showers
+    "50": { day: "/src/modules/weatherforecast/icons/22.png", night: "/src/modules/weatherforecast/icons/22.png" }, // Fog
+    "51": { day: "/src/modules/weatherforecast/icons/24.png", night: "/src/modules/weatherforecast/icons/24.png" }, // Drizzle
+    "53": { day: "/src/modules/weatherforecast/icons/9.png", night: "/src/modules/weatherforecast/icons/9.png" }, // Rain
+    "19": { day: "/src/modules/weatherforecast/icons/20.png", night: "/src/modules/weatherforecast/icons/20.png" }, // Mist
+    "44": { day: "/src/modules/weatherforecast/icons/na.png", night: "/src/modules/weatherforecast/icons/na.png" }, // Not available
+    "default": { day: "/src/modules/weatherforecast/icons/na.png", night: "/src/modules/weatherforecast/icons/na.png" } // Default
+};
 
   const isDaytime = (sunrise, sunset) => {
     const now = dayjs();
