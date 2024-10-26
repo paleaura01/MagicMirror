@@ -99,7 +99,9 @@
                 {#each forecastData as dayForecast}
                     <div class="forecast-day">
                         <div class="forecast-day-name">{dayForecast.day}</div>
+                        <div class="icon-container">
                         <img src={dayForecast.icon} alt="Weather Icon" class="forecast-icon" />
+                        </div>
                         <div class="forecast-temp">
                             <div class="max-temp">{dayForecast.maxTemp}°</div>
                             <div class="min-temp">{dayForecast.minTemp}°</div>
