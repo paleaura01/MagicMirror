@@ -1,6 +1,7 @@
 <script>
     import { onMount, onDestroy } from "svelte";
     import dayjs from 'dayjs';
+    import './globe_styles.css';
 
     let mapDiv;
     let images = [];
@@ -131,34 +132,4 @@
 <!-- HTML -->
 <div bind:this={mapDiv} class="image-container"></div>
 
-<!-- CSS -->
-<style>
-    .image-container {
-        width: 100%;
-        height: 100%;
-        background-size: 33%;
-        background-repeat: no-repeat;
-        background-position: center;
-        position: fixed;
-        top: 0;
-        left: 0;
-        transition: background-image 0.5s ease-in-out;
-    }
 
-    .fade-overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-size: 33%;
-        background-repeat: no-repeat;
-        background-position: center;
-        opacity: 0;
-        transition: opacity 0.5s ease-in-out;
-    }
-
-    .fade-overlay {
-        opacity: 1;
-    }
-</style>

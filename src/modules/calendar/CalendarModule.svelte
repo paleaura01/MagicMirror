@@ -1,11 +1,8 @@
-<!-- CalendarModule.svelte -->
-
 <script>
     import { onMount } from 'svelte';
     import dayjs from 'dayjs';
     import './calendar_styles.css';
 
-    // Import Font Awesome component and icons
     import Fa from 'svelte-fa';
     import { 
         faMedal, 
@@ -21,10 +18,10 @@
         faCalendarAlt 
     } from '@fortawesome/free-solid-svg-icons';
 
-    export let maximumEntries = 5;
-    export let icsFilePath = '/ical/US_Holidays.ics';
-    export let fade = true;
-    export let fadePoint = 0.5;
+    export const maximumEntries = 5;
+    export const icsFilePath = '/ical/US_Holidays.ics';
+    export const fade = true;
+    export const fadePoint = 0.5;
     let events = [];
     let currentMonth = dayjs().month();
     let currentYear = dayjs().year();
@@ -108,7 +105,6 @@
         return baseOpacity - index * fadeStep;
     }
 
-    // Functions to navigate months
     function goToPreviousMonth() {
         currentMonth -= 1;
         if (currentMonth < 0) {
@@ -127,49 +123,60 @@
         generateCalendarDays();
     }
 
-   // Function to get the appropriate icon for each holiday
-function getEventIcon(title) {
-    switch (title) {
-        case 'Veterans Day':
-            return faMedal;
-        case 'Thanksgiving Day':
-            return faDrumstickBite;
-        case 'Christmas':
-            return faTree;
-        case "New Year's Day":
-            return faGlassCheers;
-        case 'M L King Day': // Match the exact title from the .ics file
-            return faUserTie;
-        case "Presidents' Day":
-            return faMonument;
-        case 'Good Friday':
-            return faPray;
-        case 'Easter Sunday':
-            return faChurch; // Match the exact title from the .ics file
-        case 'Memorial Day':
-            return faFlagUsa;
-        case 'Juneteenth':
-            return faFlagUsa;
-        case 'Independence Day':
-            return faFlagUsa;
-        case "Labor Day":
-            return faUserTie;
-        case "Columbus Day":
-            return faMonument;
-        default:
-            return faCalendarAlt;
+    function getEventIcon(title) {
+        switch (title) {
+            case 'Veterans Day':
+                return faMedal;
+            case 'Thanksgiving Day':
+                return faDrumstickBite;
+            case 'Christmas':
+                return faTree;
+            case "New Year's Day":
+                return faGlassCheers;
+            case 'M L King Day':
+                return faUserTie;
+            case "Presidents' Day":
+                return faMonument;
+            case 'Good Friday':
+                return faPray;
+            case 'Easter Sunday':
+                return faChurch;
+            case 'Memorial Day':
+                return faFlagUsa;
+            case 'Juneteenth':
+                return faFlagUsa;
+            case 'Independence Day':
+                return faFlagUsa;
+            case "Labor Day":
+                return faUserTie;
+            case "Columbus Day":
+                return faMonument;
+            default:
+                return faCalendarAlt;
+        }
     }
-}
-
 </script>
 
-<!-- Outer wrapper to ensure module has its own space -->
 <div class="calendar-module-wrapper">
     <div class="calendar-container">
         <div class="calendar-header">
-            <span class="prev-month" on:click={goToPreviousMonth}>&lt;</span>
+            <span 
+                role="button" 
+                tabindex="0" 
+                on:click={goToPreviousMonth} 
+                on:keydown={(e) => e.key === 'Enter' && goToPreviousMonth()}
+            >
+                &lt;
+            </span>
             {dayjs().month(currentMonth).year(currentYear).format('MMMM YYYY')}
-            <span class="next-month" on:click={goToNextMonth}>&gt;</span>
+            <span 
+                role="button" 
+                tabindex="0" 
+                on:click={goToNextMonth} 
+                on:keydown={(e) => e.key === 'Enter' && goToNextMonth()}
+            >
+                &gt;
+            </span>
         </div>
 
         <div class="calendar-border"></div>
