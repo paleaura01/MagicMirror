@@ -53,3 +53,11 @@
   color: rgba(255, 255, 255, 0.6);
   margin-top: 5px;
 }
+
+.humidity-info {
+  font-size: 1.2em;
+  margin-left: 10px;
+  font-family: Arial, sans-serif;
+  margin-right:  5px;
+  color: rgba(255, 255, 255, 0.6);
+}

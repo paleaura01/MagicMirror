@@ -115,6 +115,7 @@
                     zIndex: 1100 + index,
                     maxZoom: config.zoom,
                     errorTileUrl: './pics/error-tile.png',
+                    interactive: false // Set interactive to false
                 }).addTo(map);
                 radarLayers.push(radarLayer);
 
@@ -128,6 +129,7 @@
                         zIndex: 1000 + index,
                         maxZoom: config.zoom,
                         errorTileUrl: './pics/error-tile.png',
+                        interactive: false // Set interactive to false
                     }).addTo(map);
                     satelliteLayers.push(satelliteLayer);
                 } else {
@@ -158,6 +160,7 @@
             zIndex: 900,
             maxZoom: config.zoom,
             errorTileUrl: './pics/error-tile.png',
+            interactive: false // Set interactive to false
         }).addTo(map);
 
         const baseSatelliteFrame = satelliteFrames.find(satFrame => satFrame.time === baseTimestamp);
@@ -170,6 +173,7 @@
                 zIndex: 800,
                 maxZoom: config.zoom,
                 errorTileUrl: './pics/error-tile.png',
+                interactive: false // Set interactive to false
             }).addTo(map);
         }
     }

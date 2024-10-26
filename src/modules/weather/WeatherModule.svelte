@@ -27,7 +27,7 @@
     "63": { day: "/src/modules/weatherforecast/icons/12.png", night: "/src/modules/weatherforecast/icons/45.png" }, // Light rain
     "65": { day: "/src/modules/weatherforecast/icons/9.png", night: "/src/modules/weatherforecast/icons/9.png" },
     "default": { day: "/src/modules/weatherforecast/icons/na.png", night: "/src/modules/weatherforecast/icons/na.png" } // Default
-};
+  };
 
   const isDaytime = (sunrise, sunset) => {
     const now = dayjs();
@@ -41,18 +41,19 @@
 
   onMount(async () => {
     try {
-      const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&timezone=auto&daily=sunrise,sunset`);
+      const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=relative_humidity_2m&timezone=auto&daily=sunrise,sunset`);
       const data = await response.json();
 
-      if (!data.current_weather) {
+      if (!data.current_weather || !data.hourly) {
         throw new Error("Weather data not available");
       }
 
       const tempCelsius = data.current_weather.temperature;
       const tempFahrenheit = (tempCelsius * 9/5) + 32;
       const feelsLike = calculateFeelsLike(tempFahrenheit, data.current_weather.windspeed, 50);
-      
+
       const windspeedMph = (data.current_weather.windspeed * 2.23694).toFixed(1); // Convert wind speed to mph
+      const humidity = data.hourly.relative_humidity_2m[0]; // Get the first available hourly humidity value
 
       const sunrise = data.daily.sunrise[0];
       const sunset = data.daily.sunset[0];
@@ -65,6 +66,7 @@
         temperature: tempFahrenheit.toFixed(1),
         feelsLike: feelsLike.toFixed(1),
         windspeed: windspeedMph,
+        humidity: `${humidity}%`, // Include the percentage symbol
         windDirection: getCardinalDirection(data.current_weather.winddirection),
         sunrise: dayjs(sunrise).format('HH:mm'),
         sunset: dayjs(sunset).format('HH:mm'),
@@ -116,6 +118,9 @@
     <div class="top-info">
       <span class="wind-info">
         <i class="wi wi-strong-wind"></i> {weatherData.windspeed} mph {weatherData.windDirection}
+      </span>
+      <span class="humidity-info">
+        <i class="wi wi-humidity"></i> {weatherData.humidity}
       </span>
       <span class="sunrise-sunset">
         <i class="wi wi-sunrise"></i> 
