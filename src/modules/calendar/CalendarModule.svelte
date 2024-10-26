@@ -18,10 +18,8 @@
         faCalendarAlt 
     } from '@fortawesome/free-solid-svg-icons';
 
-    export const maximumEntries = 5;
-    export const icsFilePath = '/ical/US_Holidays.ics';
-    export const fade = true;
-    export const fadePoint = 0.5;
+    export let maximumEntries = 10;
+    export let icsFilePath = '/ical/US_Holidays.ics';
     let events = [];
     let currentMonth = dayjs().month();
     let currentYear = dayjs().year();
@@ -133,13 +131,13 @@
                 return faTree;
             case "New Year's Day":
                 return faGlassCheers;
-            case 'M L King Day':
+            case 'Martin Luther King Jr. Day':
                 return faUserTie;
             case "Presidents' Day":
                 return faMonument;
             case 'Good Friday':
                 return faPray;
-            case 'Easter Sunday':
+            case 'Easter':
                 return faChurch;
             case 'Memorial Day':
                 return faFlagUsa;
@@ -157,12 +155,14 @@
     }
 </script>
 
+
 <div class="calendar-module-wrapper">
     <div class="calendar-container">
         <div class="calendar-header">
             <span 
                 role="button" 
                 tabindex="0" 
+                class="prev-month" 
                 on:click={goToPreviousMonth} 
                 on:keydown={(e) => e.key === 'Enter' && goToPreviousMonth()}
             >
@@ -172,6 +172,7 @@
             <span 
                 role="button" 
                 tabindex="0" 
+                class="next-month" 
                 on:click={goToNextMonth} 
                 on:keydown={(e) => e.key === 'Enter' && goToNextMonth()}
             >
@@ -183,13 +184,13 @@
 
         <div class="calendar-wrapper">
             <div class="calendar-grid">
-                <div class="calendar-day-name" each>Sun</div>
-                <div class="calendar-day-name" each>Mon</div>
-                <div class="calendar-day-name" each>Tue</div>
-                <div class="calendar-day-name" each>Wed</div>
-                <div class="calendar-day-name" each>Thu</div>
-                <div class="calendar-day-name" each>Fri</div>
-                <div class="calendar-day-name" each>Sat</div>
+                <div class="calendar-day-name">Sun</div>
+                <div class="calendar-day-name">Mon</div>
+                <div class="calendar-day-name">Tue</div>
+                <div class="calendar-day-name">Wed</div>
+                <div class="calendar-day-name">Thu</div>
+                <div class="calendar-day-name">Fri</div>
+                <div class="calendar-day-name">Sat</div>
                 {#each days as day}
                     <div class="calendar-day {isToday(day) ? 'today' : ''} {isPastDay(day) ? 'past-day' : ''}">
                         {day || ''}

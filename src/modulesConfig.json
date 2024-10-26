@@ -117,9 +117,7 @@
     "region": "right",
     "props": {
       "maximumEntries": 10,
-      "fade": true,
-      "fadePoint": 0.25,
-      "icsFilePath": "public/ical/US_Holidays.ics"
+      "icsFilePath": "/ical/US_Holidays.ics"
     }
   },
   {
