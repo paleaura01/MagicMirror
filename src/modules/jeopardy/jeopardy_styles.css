@@ -29,13 +29,15 @@
 }
 
 .options button {
-    padding: 2px 2px;
-    font-size: 14px;
+    position: relative;
+    z-index: 1;
     cursor: pointer;
-    margin: 2px;
+    padding: 5px 10px;
+    font-size: 14px;
+    text-transform: capitalize;
     flex: 1 1 45%;
-    text-align: center;
 }
+
 
 .score, .top-score  {
     
