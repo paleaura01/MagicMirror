@@ -61,8 +61,8 @@
       const currentItemsSet = new Set(currentFeedItems.map(item => item.title));
 
       if (newItemsSet.size !== currentItemsSet.size || [...newItemsSet].some(item => !currentItemsSet.has(item))) {
-        console.log(`Updating news items from source: ${feed.url}`);
-        console.log(`New items from ${feed.url}:`, feedNewsItems.map(item => item.title));
+        // console.log(`Updating news items from source: ${feed.url}`);
+        // console.log(`New items from ${feed.url}:`, feedNewsItems.map(item => item.title));
         hasUpdates = true;
       }
 

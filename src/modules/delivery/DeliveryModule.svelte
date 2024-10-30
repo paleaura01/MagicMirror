@@ -20,7 +20,7 @@
           description = data.description;
         }
       } catch (err) {
-        console.error('Error fetching USPS data:', err);
+        // console.error('Error fetching USPS data:', err);
         error = 'Failed to fetch USPS data.';
       } finally {
         loading = false;

@@ -12,6 +12,9 @@ export async function loadModules() {
   };
 
   for (const config of modulesConfig) {
+    // Skip entries that contain "Comment-Source" to avoid loading non-modules
+    if (config["Comment-Source"]) continue;
+
     try {
       const modulePath = `./${config.path}`;
       const importer = modules[modulePath];
@@ -29,7 +32,7 @@ export async function loadModules() {
 
       // Check if it's a pure JavaScript module with render() or a Svelte component exported via JS
       const isJavaScriptModule = mod.default && typeof mod.default.render === 'function';
-      
+
       // For Svelte components, the JS file will export the Svelte component as `default`
       modulesByRegion[config.region].push({
         component: mod.default,  // Always use 'default' since JS exports the Svelte component or renderable module

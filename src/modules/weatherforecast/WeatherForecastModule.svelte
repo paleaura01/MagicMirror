@@ -76,7 +76,7 @@
                 const weatherCode = data.daily.weathercode[index].toString();
 
                 // Log the weather code for each day
-                console.log(`[Debug] Weather code for ${dayjs(date).format('dddd')}: ${weatherCode}`);
+                // console.log(`[Debug] Weather code for ${dayjs(date).format('dddd')}: ${weatherCode}`);
 
                 const icon = iconMap[weatherCode] ? (isDay ? iconMap[weatherCode].day : iconMap[weatherCode].night) : iconMap["default"].day;
 

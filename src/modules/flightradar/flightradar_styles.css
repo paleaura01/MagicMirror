@@ -1,1 +1,41 @@
 /* ./src/modules/flightradar/flightradar_styles.css */
+
+.flight-map-wrapper {
+    position: relative;
+    overflow: hidden;
+    background-color: transparent;
+    height: var(--mapHeight, 300px);
+    width: var(--mapWidth, 100%);
+    margin-top: 20px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+  }
+  
+  .leaflet-container {
+    height: 100%;
+    width: 100%;
+    background-color: #f3f4f6;
+  }
+  
+  .flight-popup {
+    font-size: 0.9em;
+  }
+  
+  .no-flights-message {
+    text-align: center;
+    font-size: 1.2em;
+    color: #777;
+    margin-top: 20px;
+  }
+  
+  .flight-module .module-header {
+    font-size: 1.2em;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+  }
+  
+  .flight-module .module-header .logo {
+    margin-right: 8px;
+  }
+  

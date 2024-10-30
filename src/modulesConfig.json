@@ -134,7 +134,7 @@
   {
     "name": "DeliveryModule",
     "path": "modules/delivery/DeliveryModule.js",
-    "region": "bottom_center",
+    "region": "",
     "props": {
 
     }
@@ -142,6 +142,7 @@
   {
     "name": "ReloadModule",
     "path": "modules/reload/ReloadModule.js",
+    "region": "",
     "props": {
 
       "modules": [
@@ -165,12 +166,18 @@
     "path": "modules/flightradar/FlightRadarModule.js",
     "region": "center",
     "props": {
-
+      "lat": 35.315931,
+      "lon": -81.344469,
+      "zoom": 5,
+      "units": "imperial",
+      "showMap": "always",
+      "showTable": true,
+      "noFlightsMessage": "No flights currently in the area.",
+      "dayMapUrl": "https://tiles.stadiamaps.com/tiles/stamen_terrain/{z}/{x}/{y}{r}.png",
+      "nightMapUrl": "https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png",
+      "mapHeight": "300px",
+      "mapWidth": "100%",
+      "updateInterval": 120000
     }
   }
-  
-
-  
-  
-  
 ]
