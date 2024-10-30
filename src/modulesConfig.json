@@ -128,13 +128,13 @@
   {
     "name": "GlobeModule",
     "path": "modules/globe/GlobeModule.js",
-    "region": "",
+    "region": "center",
     "props": {}
   },
   {
     "name": "DeliveryModule",
     "path": "modules/delivery/DeliveryModule.js",
-    "region": "",
+    "region": "bottom_center",
     "props": {
 
     }
@@ -164,7 +164,7 @@
   {
     "name": "FlightRadarModule",
     "path": "modules/flightradar/FlightRadarModule.js",
-    "region": "center",
+    "region": "",
     "props": {
       "lat": 35.315931,
       "lon": -81.344469,
