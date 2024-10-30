@@ -1,3 +1,6 @@
+<!-- ./src/modules/calendar/CalendarModule.svelte -->
+
+
 <script>
     import { onMount } from 'svelte';
     import dayjs from 'dayjs';
@@ -122,37 +125,38 @@
     }
 
     function getEventIcon(title) {
-        switch (title) {
-            case 'Veterans Day':
-                return faMedal;
-            case 'Thanksgiving Day':
-                return faDrumstickBite;
-            case 'Christmas':
-                return faTree;
-            case "New Year's Day":
-                return faGlassCheers;
-            case 'Martin Luther King Jr. Day':
-                return faUserTie;
-            case "Presidents' Day":
-                return faMonument;
-            case 'Good Friday':
-                return faPray;
-            case 'Easter':
-                return faChurch;
-            case 'Memorial Day':
-                return faFlagUsa;
-            case 'Juneteenth':
-                return faFlagUsa;
-            case 'Independence Day':
-                return faFlagUsa;
-            case "Labor Day":
-                return faUserTie;
-            case "Columbus Day":
-                return faMonument;
-            default:
-                return faCalendarAlt;
-        }
+    switch (title) {
+        case 'Veterans Day':
+            return faMedal;
+        case 'Thanksgiving Day':
+            return faDrumstickBite;
+        case 'Christmas':
+            return faTree;
+        case "New Year's Day":
+            return faGlassCheers;
+        case 'M L King Day': // Updated to match iCal data
+            return faUserTie;
+        case "Presidents' Day":
+            return faMonument;
+        case 'Good Friday':
+            return faPray;
+        case 'Easter Sunday': // Updated to match iCal data
+            return faChurch;
+        case 'Memorial Day':
+            return faFlagUsa;
+        case 'Juneteenth':
+            return faFlagUsa;
+        case 'Independence Day':
+            return faFlagUsa;
+        case "Labor Day":
+            return faUserTie;
+        case "Columbus Day":
+            return faMonument;
+        default:
+            return faCalendarAlt;
     }
+}
+
 </script>
 
 

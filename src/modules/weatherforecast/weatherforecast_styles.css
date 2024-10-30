@@ -48,12 +48,12 @@
 }
 
 .icon-container {
-    --icon-offset: -3px; /* Moves the icon 10px to the right */
+    --icon-offset: -2px; /* Moves the icon 10px to the right */
 }
 
 .forecast-icon {
     
-    width: 57px;
+    width: 50px;
     height: 40px;
     margin-bottom: 5px;
     transform: translateX(var(--icon-offset, 0));

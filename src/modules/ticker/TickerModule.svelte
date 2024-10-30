@@ -3,23 +3,22 @@
 <script>
   import { onMount, onDestroy } from 'svelte';
   import './ticker_styles.css';
-  import logoPNG from './pics/The-New-York-Times.jpg'; // Fallback image if custom logos fail to load
+  import logoPNG from './pics/The-New-York-Times.jpg';
 
   export let feeds = [];
   let newsItems = [];
   let scrollingTextEl;
   let newsTickerEl;
-  let currentImage = ''; // Initialize as empty
-  let currentNewsIndex = 0; // To keep track of the current feed index
+  let currentImage = '';
+  let currentNewsIndex = 0;
 
-  // Since we need to import images dynamically, create a mapping
   let imageImports = {};
+  let imageCycleInterval;
+  let apiUpdateInterval;
 
-  // Preload images from feeds
   function preloadImages() {
     feeds.forEach(feed => {
       if (feed.customLogo) {
-        // Use @vite-ignore to prevent Vite from trying to analyze the dynamic import
         import(/* @vite-ignore */ `${feed.customLogo}`).then(module => {
           imageImports[feed.customLogo] = module.default;
         }).catch(error => {
@@ -29,20 +28,14 @@
     });
   }
 
-  // Fetch from your backend RSS proxy
   async function fetchRSSFeedFromServer(url) {
     try {
       const proxyUrl = `http://localhost:8080/rss?url=${encodeURIComponent(url)}`;
-      // console.log(`Fetching RSS feed from server: ${proxyUrl}`);
       const response = await fetch(proxyUrl);
-      // console.log(`Response from proxy for URL ${url}:`, response);
-
       if (!response.ok) {
         throw new Error(`Failed to fetch from server for URL: ${url}`);
       }
-
       const items = await response.json();
-      // console.log(`Items fetched from server for URL ${url}:`, items);
       return items;
     } catch (error) {
       console.error(`Failed to fetch RSS feed from server: ${url}`, error);
@@ -50,113 +43,97 @@
     }
   }
 
-  // Fetch the RSS feeds and process the items
   async function fetchNewsItems() {
-    let fetchedNewsItems = [];
-    console.log("Fetching news items from feeds...");
+    let allNewsItems = [];
+    let hasUpdates = false;
 
     for (let feed of feeds) {
-      // console.log(`Fetching items for feed:`, feed);
       const fetchedItems = await fetchRSSFeedFromServer(feed.url);
-      // console.log(`Fetched items for feed ${feed.url}:`, fetchedItems);
+      const feedNewsItems = fetchedItems.map(item => ({
+        title: item.title,
+        link: item.link,
+        logo: imageImports[feed.customLogo] || logoPNG,
+      }));
 
-      if (fetchedItems.length > 0) {
-        fetchedItems.forEach(item => {
-          fetchedNewsItems.push({
-            title: item.title,
-            link: item.link,
-            logo: imageImports[feed.customLogo] || logoPNG // Use fallback if custom logo is not found
-          });
-        });
-      } else {
-        console.log(`No items fetched for feed ${feed.url}`);
+      // Check if the news items for this feed are different
+      const currentFeedItems = newsItems.filter(item => item.logo === (imageImports[feed.customLogo] || logoPNG));
+      const newItemsSet = new Set(feedNewsItems.map(item => item.title));
+      const currentItemsSet = new Set(currentFeedItems.map(item => item.title));
+
+      if (newItemsSet.size !== currentItemsSet.size || [...newItemsSet].some(item => !currentItemsSet.has(item))) {
+        console.log(`Updating news items from source: ${feed.url}`);
+        console.log(`New items from ${feed.url}:`, feedNewsItems.map(item => item.title));
+        hasUpdates = true;
       }
+
+      allNewsItems = [...allNewsItems, ...feedNewsItems];
     }
 
-    // Ensure reactivity by directly updating `newsItems`
-    newsItems = [...fetchedNewsItems];
-    // console.log("News items fetched and set:", newsItems);
-
-    // Update the displayed image after fetching the items
-    updateImage();
-    // After setting newsItems, update the animation
-    updateAnimation();
+    // Only update the ticker if there are new or changed items
+    if (hasUpdates) {
+      newsItems = [...allNewsItems];
+      updateImage();
+      updateTickerText(); // Update the ticker text content
+      // Do not call updateAnimation()
+    } else {
+      console.log("No new items to update in ticker.");
+    }
   }
 
-  // Function to cycle the images every 15 seconds
   function updateImage() {
     if (newsItems.length > 0) {
       currentImage = newsItems[currentNewsIndex].logo;
-      currentNewsIndex = (currentNewsIndex + 1) % newsItems.length; // Cycle through the items
+      currentNewsIndex = (currentNewsIndex + 1) % newsItems.length;
     }
   }
 
-  // Cycle images every 15 seconds
-  let imageCycleInterval;
+  function updateTickerText() {
+    if (scrollingTextEl && newsItems.length > 0) {
+      const newTickerText = newsItems.map(item => item.title).join(' • ') + ' • ';
+      // Append the text twice for continuous scroll
+      scrollingTextEl.innerHTML = newTickerText + newTickerText;
+    } else {
+      scrollingTextEl.innerHTML = 'No news available.';
+    }
+  }
 
-  // Fetch the news when the component mounts
-  onMount(() => {
-    preloadImages(); // Preload images before fetching news
-    // Wait a bit to ensure images are loaded
-    setTimeout(() => {
-      fetchNewsItems();
-
-      // Start the image cycling interval
-      imageCycleInterval = setInterval(updateImage, 15000); // Adjust the interval to 15 seconds
-
-      // Update animation when window is resized
-      window.addEventListener('resize', updateAnimation);
-    }, 500); // Adjust the delay as needed
-  });
-
-  onDestroy(() => {
-    window.removeEventListener('resize', updateAnimation);
-    clearInterval(imageCycleInterval); // Clear the interval on destroy
-  });
-
-  // Format ticker text from the news items
-  $: tickerText = newsItems.map(item => item.title).join(' • ');
-
-  // Function to update animation duration
   function updateAnimation() {
-    // Use setTimeout to ensure DOM is updated
     setTimeout(() => {
-      if (scrollingTextEl && newsTickerEl) {
-        const textWidth = scrollingTextEl.offsetWidth;
-        const containerWidth = newsTickerEl.offsetWidth;
-
-        // Calculate total distance to scroll (textWidth + containerWidth)
-        const totalDistance = textWidth + containerWidth;
-
-        // Set a desired scrolling speed (pixels per second)
-        const speed = 100; // Adjust this value as needed
-
-        // Calculate animation duration
-        const animationDuration = totalDistance / speed;
-
-        // Apply the animation duration to the scrolling text
+      if (scrollingTextEl) {
+        const animationDuration = 3000; // Fixed duration in seconds
         scrollingTextEl.style.animationDuration = `${animationDuration}s`;
       }
     }, 0);
   }
+
+  onMount(() => {
+    preloadImages();
+    setTimeout(() => {
+      fetchNewsItems();
+
+      imageCycleInterval = setInterval(updateImage, 15000);
+      apiUpdateInterval = setInterval(fetchNewsItems, 180000); // Update every 3 minutes
+
+      window.addEventListener('resize', updateAnimation);
+      updateAnimation(); // Call it here
+    }, 500);
+  });
+
+  onDestroy(() => {
+    window.removeEventListener('resize', updateAnimation);
+    clearInterval(imageCycleInterval);
+    clearInterval(apiUpdateInterval);
+  });
 </script>
 
 <div class="news-ticker" bind:this={newsTickerEl}>
-  <!-- Display the current logo image on the left side -->
   <div class="ticker-logo">
     {#if currentImage}
       <img src={currentImage} alt="News Logo">
     {:else}
-      <!-- Fallback logo or placeholder -->
       <img src={logoPNG} alt="Default Logo">
     {/if}
   </div>
 
-  <div class="scrolling-text" bind:this={scrollingTextEl}>
-    {#if newsItems.length > 0}
-      {tickerText}
-    {:else}
-      No news available.
-    {/if}
-  </div>
+  <div class="scrolling-text" bind:this={scrollingTextEl}></div>
 </div>

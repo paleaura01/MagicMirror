@@ -1,3 +1,5 @@
+<!-- ./src/modules/onthisday/OnThisDayModule.svelte -->
+
 <script>
     import dayjs from 'dayjs';
     import './onthisday_styles.css';

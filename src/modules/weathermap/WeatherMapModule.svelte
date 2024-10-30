@@ -1,3 +1,6 @@
+<!-- ./src/modules/weathermap/WeatherMapModule.svelte -->
+
+
 <script>
     import { onMount } from 'svelte';
     import * as L from 'leaflet';
@@ -115,7 +118,6 @@
                     zIndex: 1100 + index,
                     maxZoom: config.zoom,
                     errorTileUrl: './pics/error-tile.png',
-                    interactive: false // Set interactive to false
                 }).addTo(map);
                 radarLayers.push(radarLayer);
 
@@ -129,7 +131,6 @@
                         zIndex: 1000 + index,
                         maxZoom: config.zoom,
                         errorTileUrl: './pics/error-tile.png',
-                        interactive: false // Set interactive to false
                     }).addTo(map);
                     satelliteLayers.push(satelliteLayer);
                 } else {
@@ -160,7 +161,6 @@
             zIndex: 900,
             maxZoom: config.zoom,
             errorTileUrl: './pics/error-tile.png',
-            interactive: false // Set interactive to false
         }).addTo(map);
 
         const baseSatelliteFrame = satelliteFrames.find(satFrame => satFrame.time === baseTimestamp);
@@ -169,11 +169,10 @@
             const baseSatelliteUrlTemplate = `https://tilecache.rainviewer.com/v2/satellite/${baseSatelliteFrame.path}/${tileSize}/{z}/{x}/{y}/0/0_0.png`;
             baseSatelliteLayer = L.tileLayer(baseSatelliteUrlTemplate, {
                 tileSize,
-                opacity: 0.3,
+                opacity: 1,
                 zIndex: 800,
                 maxZoom: config.zoom,
                 errorTileUrl: './pics/error-tile.png',
-                interactive: false // Set interactive to false
             }).addTo(map);
         }
     }

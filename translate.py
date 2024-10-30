@@ -1,4 +1,4 @@
-# ./src/modules/bibleverse/translate.py
+# ./translate.py
 
 import os
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM

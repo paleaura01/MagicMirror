@@ -1,3 +1,5 @@
+<!-- ./src/modules/globe/GlobeModule.svelte -->
+
 <script>
     import { onMount, onDestroy } from "svelte";
     import dayjs from 'dayjs';
@@ -11,60 +13,76 @@
 
     const numImages = 1; // Total images for the last 24 hours
     const frameDelay = 1000; // Delay in milliseconds between frame changes
-    const refreshDelay = 300000; // 5 minutes in milliseconds
+    const refreshDelay = 120000; // 1 minutes in milliseconds
     const fadeDuration = 500; // Fade duration in milliseconds
+    const maxConcurrentRequests = 20; // Maximum number of concurrent image requests
 
-    // Generate GOES-16 image URL for a specific hour index
-    function getGOES16ImageUrl(hourIndex) {
+    // Generate GOES-16 image URL for a specific hour, minute, and second
+    function getGOES16ImageUrl(hourIndex, minute, second) {
         const now = dayjs().utc().startOf('hour'); // Current hour in UTC
         const frameTime = now.subtract(numImages - hourIndex, 'hour'); // Load from oldest to newest
         const year = frameTime.format("YYYY");
         const month = frameTime.format("MM");
         const day = frameTime.format("DD");
         const hour = frameTime.format("HH");
-        const minute = frameTime.format("mm");
-        const fixedSeconds = "19"; // Use fixed seconds value as per the working link
-        const timestamp = `${year}${month}${day}${hour}${minute}${fixedSeconds}`; // Format timestamp for URL
+        const minuteStr = minute.toString().padStart(2, '0');
+        const secondStr = second.toString().padStart(2, '0');
+        const timestamp = `${year}${month}${day}${hour}${minuteStr}${secondStr}`; // Format timestamp for URL
 
-        return `https://rammb-slider.cira.colostate.edu/data/imagery/${year}/${month}/${day}/goes-16---full_disk/geocolor/${timestamp}/00/000_000.png`;
+        return `https://rammb-slider.cira.colostate.edu/data/imagery/${year}/${month}/${day}/goes-19---full_disk/geocolor/${timestamp}/00/000_000.png`;
     }
 
-    // Generate Himawari image URL for a specific hour index
-    // function getHimawariImageUrl(hourIndex) {
-    //     const now = dayjs().utc().startOf('hour'); // Current hour in UTC
-    //     const frameTime = now.subtract(hourIndex + 1, 'hour'); // Subtract to get the previous hour, excluding the current hour
-    //     const year = frameTime.format("YYYY");
-    //     const month = frameTime.format("MM");
-    //     const day = frameTime.format("DD");
-    //     const hour = frameTime.format("HH");
-    //     const timestamp = `${year}${month}${day}${hour}0000`; // Format timestamp for URL
-
-    //     return `https://rammb-slider.cira.colostate.edu/data/imagery/${year}/${month}/${day}/himawari---full_disk/geocolor/${timestamp}/00/000_000.png`;
-    // }
-
-    // Fetch image URLs for animation
+    // Fetch image URLs for animation by checking past minutes and seconds concurrently
     async function fetchImages() {
         images = []; // Clear previous images
         for (let i = 0; i < numImages; i++) {
-            const imageUrl = getGOES16ImageUrl(i);
-            console.log(`[Debug] Fetching image: ${imageUrl}`); // Log the URL being fetched
-            const img = new Image();
-            img.src = imageUrl;
+            let loaded = false;
 
-            // Wait for the image to load or fail
-            const loadPromise = new Promise((resolve) => {
-                img.onload = () => {
-                    images.push(img);
-                    console.log(`[Debug] Image loaded successfully: ${imageUrl}`);
-                    resolve(true);
-                };
-                img.onerror = () => {
-                    console.error(`[Error] Failed to load image: ${imageUrl}`);
-                    resolve(false);
-                };
-            });
+            // Start from the current minute and second, count backwards
+            const now = dayjs().utc();
+            let currentMinute = now.minute();
+            let currentSecond = now.second();
 
-            await loadPromise;
+            const requests = [];
+
+            // Generate all combinations of minutes and seconds to check, starting from the current time
+            for (let minute = currentMinute; minute >= 0; minute--) {
+                for (let second = currentSecond; second >= 0; second--) {
+                    const imageUrl = getGOES16ImageUrl(i, minute, second);
+                    requests.push({ imageUrl, minute, second });
+                }
+                currentSecond = 59; // Reset seconds for the next minute iteration
+            }
+
+            // Process requests in batches to limit concurrent requests
+            while (requests.length > 0 && !loaded) {
+                const batch = requests.splice(0, maxConcurrentRequests); // Get a batch of requests
+                const loadPromises = batch.map(({ imageUrl }) => {
+                    return new Promise((resolve) => {
+                        const img = new Image();
+                        img.src = imageUrl;
+                        img.onload = () => resolve({ success: true, imageUrl, img });
+                        img.onerror = () => resolve({ success: false, imageUrl });
+                    });
+                });
+
+                // Await results of the batch
+                const results = await Promise.all(loadPromises);
+                for (const result of results) {
+                    if (result.success) {
+                        images.push(result.img);
+                        console.log(`[Debug] Image loaded successfully: ${result.imageUrl}`);
+                        loaded = true;
+                        break;
+                    } else {
+                    //    console.error(`[Error] Failed to load image: ${result.imageUrl}`);
+                    }
+                }
+            }
+
+            if (!loaded) {
+                console.warn(`[Warning] Could not load an image after checking all minutes and seconds for hour index ${i}.`);
+            }
         }
     }
 
@@ -101,7 +119,7 @@
         clearInterval(animationInterval);
     }
 
-    // Refresh images every 10 minutes
+    // Refresh images every 5 minutes
     function startImageRefresh() {
         refreshInterval = setInterval(async () => {
             console.log("[Debug] Refreshing images...");
@@ -117,7 +135,7 @@
 
     // Lifecycle hooks
     onMount(async () => {
-        console.log("[Debug] onMount triggered. Fetching GOES-16 images...");
+        // console.log("[Debug] onMount triggered. Fetching GOES-19 images...");
         await fetchImages();
         startAnimation();
         startImageRefresh();
@@ -131,5 +149,3 @@
 
 <!-- HTML -->
 <div bind:this={mapDiv} class="image-container"></div>
-
-

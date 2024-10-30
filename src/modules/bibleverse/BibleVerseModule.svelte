@@ -1,3 +1,5 @@
+<!-- ./src/modules/bibleverse/BibleVerseModule.svelte -->
+
 <script>
     import { onMount } from "svelte";
     import './bibleverse_styles.css';

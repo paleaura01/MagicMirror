@@ -1,4 +1,9 @@
+
 [
+
+  {
+    "Comment-Source":"./src/modulesConfig.json"
+  },
   {
     "name": "ClockModule",
     "path": "modules/clock/ClockModule.js", 
@@ -16,11 +21,11 @@
     "region": "left",
     "props": {
       "config": {
-        "animationSpeedMs": 60,
-        "extraDelayLastFrameMs": 1500,
+        "animationSpeedMs": 1000,
+        "extraDelayLastFrameMs": 1000,
         "fadePreviousFrameOpacity": 0.25,
         "fadeCurrentFrameOpacity": 1,
-        "extraDelayCurrentFrameMs": 0,
+        "extraDelayCurrentFrameMs": 60,
         "markers": [
           { "lat": 35.315931, "lng": -81.344469, "color": "red" }
         ],
@@ -123,9 +128,48 @@
   {
     "name": "GlobeModule",
     "path": "modules/globe/GlobeModule.js",
-    "region": "center",
+    "region": "",
     "props": {}
+  },
+  {
+    "name": "DeliveryModule",
+    "path": "modules/delivery/DeliveryModule.js",
+    "region": "bottom_center",
+    "props": {
+
+    }
+  },
+  {
+    "name": "ReloadModule",
+    "path": "modules/reload/ReloadModule.js",
+    "props": {
+
+      "modules": [
+        {
+          "title": "WeatherForecastModule",
+          "interval": 60000
+        },
+        {
+          "title": "WeatherMapModule",
+          "time": 30000
+        },
+        {
+          "title": "WeatherModule",
+          "time": 120000
+        }
+      ]
+    }
+  },
+  {
+    "name": "FlightRadarModule",
+    "path": "modules/flightradar/FlightRadarModule.js",
+    "region": "center",
+    "props": {
+
+    }
   }
+  
+
   
   
   

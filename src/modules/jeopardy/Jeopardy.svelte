@@ -1,3 +1,5 @@
+<!-- ./src/modules/joopardy/JeopardyModule.svelte -->
+
 <script>
     import { onMount } from 'svelte';
     import dayjs from 'dayjs';

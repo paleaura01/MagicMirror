@@ -1,4 +1,4 @@
-// server.js
+// ./server.js
 
 import express from 'express';
 import fetch from 'node-fetch';
@@ -7,15 +7,27 @@ import FeedMe from 'feedme'; // For RSS parsing
 const app = express();
 const port = process.env.PORT || 8080;
 
+// Parse JSON bodies for POST requests
+app.use(express.json());
+
 // Serve static files from the "public" directory
 app.use(express.static('public'));
 
 // Enable CORS for all routes, including handling preflight requests
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, sentry-trace, baggage');
-  res.setHeader('Content-Security-Policy', "default-src 'self'; img-src 'self' data: *; script-src 'self';");
+  res.setHeader(
+    'Access-Control-Allow-Methods',
+    'GET, POST, PUT, DELETE, OPTIONS'
+  );
+  res.setHeader(
+    'Access-Control-Allow-Headers',
+    'Content-Type, Authorization, sentry-trace, baggage'
+  );
+  res.setHeader(
+    'Content-Security-Policy',
+    "default-src 'self'; img-src 'self' data: *; script-src 'self';"
+  );
 
   if (req.method === 'OPTIONS') {
     res.sendStatus(200); // Respond with 200 to OPTIONS requests
@@ -60,31 +72,41 @@ app.get('/proxy', async (req, res) => {
       const data = await response.json();
       res.json(data);
 
-    // Handle RSS feeds
-    } else if (contentType && (contentType.includes('application/rss+xml') || contentType.includes('application/xml'))) {
+      // Handle RSS feeds
+    } else if (
+      contentType &&
+      (contentType.includes('application/rss+xml') ||
+        contentType.includes('application/xml'))
+    ) {
       const data = await response.text();
       const parser = new FeedMe(true); // 'true' makes the parser output JSON
       parser.write(data);
       const rssData = parser.done();
       res.json(rssData);
 
-    // Handle HTML (for Wikipedia parsing)
+      // Handle HTML (for Wikipedia parsing)
     } else if (contentType && contentType.includes('text/html')) {
       const html = await response.text();
       res.send(html);
 
-    // Handle binary data (for satellite/radar tiles)
-    } else if (contentType && (contentType.startsWith('image/') || contentType.includes('octet-stream'))) {
+      // Handle binary data (for satellite/radar tiles)
+    } else if (
+      contentType &&
+      (contentType.startsWith('image/') ||
+        contentType.includes('octet-stream'))
+    ) {
       const arrayBuffer = await response.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
       res.setHeader('Content-Type', contentType);
       res.send(buffer);
-
     } else {
       // Default: treat as binary data
       const arrayBuffer = await response.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
-      res.setHeader('Content-Type', contentType || 'application/octet-stream');
+      res.setHeader(
+        'Content-Type',
+        contentType || 'application/octet-stream'
+      );
       res.send(buffer);
     }
   } catch (error) {
@@ -157,7 +179,9 @@ app.get('/rss', async (req, res) => {
       const items = rssData.items || [];
       res.json(items);
     } else {
-      res.status(response.status).json({ error: `Failed to fetch RSS feed: ${response.statusText}` });
+      res
+        .status(response.status)
+        .json({ error: `Failed to fetch RSS feed: ${response.statusText}` });
     }
   } catch (error) {
     console.error(`Error fetching RSS feed: ${error.message}`);
@@ -165,11 +189,40 @@ app.get('/rss', async (req, res) => {
   }
 });
 
+// New route to interact with agent1.py
+app.post('/api/llm', async (req, res) => {
+  const { prompt, max_length } = req.body;
+
+  try {
+    const response = await fetch('http://localhost:5001/api/llm', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt, max_length }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error from agent1.py: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    res.json(data);
+  } catch (error) {
+    console.error('Error communicating with agent1.py:', error.message);
+    res.status(500).json({ error: 'Failed to get response from LLM' });
+  }
+});
+
 // Enable preflight request handling for CORS (OPTIONS method)
 app.options('*', (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, sentry-trace, baggage');
+  res.setHeader(
+    'Access-Control-Allow-Methods',
+    'GET, POST, PUT, DELETE, OPTIONS'
+  );
+  res.setHeader(
+    'Access-Control-Allow-Headers',
+    'Content-Type, Authorization, sentry-trace, baggage'
+  );
   res.sendStatus(200);
 });
 

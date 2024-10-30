@@ -1,21 +1,5 @@
 /* ./src/modules/ticker/ticker_styles.css */
 
-/* Basic styling for the news ticker */
-.news-ticker {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start; 
-    background-color: rgb(19, 21, 136);
-    color: yellow;
-    height: 40px;
-    overflow: hidden;
-    white-space: nowrap;
-    position: relative;
-    padding: 938px;
-    font-size: 1.2rem;
-}
-
-/* Basic styling for the news ticker */
 .news-ticker {
     display: flex;
     align-items: center;
