@@ -1,65 +1,61 @@
 <script>
-    import { onMount } from 'svelte';
-    let screenshotUrl = '';
-    let description = '';
-    let loading = false;
+    import { onMount, onDestroy } from 'svelte';
+
+    let emails = [];
+    let loading = true;
     let error = '';
-  
-    async function fetchUSPSData() {
-        loading = true;
+    let timer;
+
+    async function fetchEmails() {
         try {
-            const res = await fetch('http://localhost:8002/api/usps_login');  // Corrected port to 8002
+            loading = true; // Start loading indicator
+            const res = await fetch('http://localhost:8002/api/fetch_emails');
             const data = await res.json();
-  
-            if (data.error) {
-                error = data.error;
-            } else {
-                screenshotUrl = data.screenshot_path;  // Updated to match your agent_server.py response
-                description = data.message;            // Updated to match your agent_server.py response
-            }
+            emails = data.trackingNumbers || [];
         } catch (err) {
-            console.error('Error fetching USPS data:', err);
-            error = 'Failed to fetch USPS data.';
+            error = 'Failed to fetch emails';
+            console.error(err);
         } finally {
-            loading = false;
+            loading = false; // End loading indicator
         }
     }
-  
+
     onMount(() => {
-        fetchUSPSData();
+        fetchEmails(); // Initial fetch
+        timer = setInterval(fetchEmails, 30 * 60 * 1000); // 30 minutes in milliseconds
+    });
+
+    onDestroy(() => {
+        clearInterval(timer); // Clean up interval when component is destroyed
     });
 </script>
 
 <div class="module-container">
-    <h2>USPS Informed Delivery</h2>
-  
+    <h2>Delivery Status</h2>
+
     {#if loading}
-        <p>Loading...</p>
+        <p>Loading emails...</p>
     {:else if error}
         <p class="error">{error}</p>
     {:else}
-        {#if screenshotUrl}
-            <img src={screenshotUrl} alt="USPS Dashboard Screenshot" />
-        {/if}
-        {#if description}
-            <p><strong>Description:</strong> {description}</p>
+        {#if emails.length > 0}
+            <ul>
+                {#each emails as email}
+                    <li>
+                        <strong>{email}</strong>
+                    </li>
+                {/each}
+            </ul>
+        {:else}
+            <p>No new emails found.</p>
         {/if}
     {/if}
 </div>
 
 <style>
     .module-container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
         color: white;
-    }
-    img {
-        width: 100%;
-        max-width: 400px;
-        margin-top: 10px;
-        border: 2px solid white;
-        border-radius: 8px;
+        padding: 10px;
     }
     .error {
         color: red;
