@@ -17,20 +17,23 @@ body {
 }
 
 .main-container {
-  margin: 20px;
+  margin-top: 20px;
+  margin-left: 20px;
+  margin-right: 20px;
+  height: calc(100vh - 20px); /* Ensure the main container fits within full viewport height */
 }
 
 /* Grid layout */
 .grid-container {
   display: grid;
   grid-template-areas:
-    "left top_center right"
-    "left center right"
-    "left center right"
-    "left bottom_center right"; /* Combined all right sections into a single right area */
+      "left top_center right"
+      "left center right"
+      "left center right"
+      "left bottom_center right";
   grid-template-columns: 1fr 1fr 1fr;
-  grid-template-rows: 1fr 1fr 1fr 1fr; /* Adjusted for 4 rows */
-  height: calc(100vh - 80px); /* Ensure grid takes the full height minus the header */
+  grid-template-rows: 1fr 1fr 1fr 1fr; /* Spread out rows evenly */
+  height: 100%; /* Use full height of the main container */
   width: 100%;
 }
 
@@ -59,7 +62,6 @@ body {
   height: 100%;
 }
 
-
 /* Assign regions to the CSS grid */
 .left {
   grid-area: left;
@@ -69,4 +71,8 @@ body {
 .right { grid-area: right; } /* Use the combined right region */
 
 .center { grid-area: center; } /* This is now the merged center box */
-.bottom_center { grid-area: bottom_center; }
+.bottom_center { 
+  grid-area: bottom_center;
+  align-items: center;
+  justify-content: center;
+}

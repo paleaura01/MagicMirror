@@ -1,0 +1,44 @@
+/* ./src/modules/traffic/traffic_styles.css */
+
+
+/* ./src/modules/traffic/traffic_styles.css */
+
+.traffic-module {
+    color: white;
+    font-family: 'Arial', sans-serif;
+    max-width: 100%;
+    margin: 0 auto;
+    text-align: left;
+    position: relative;
+    overflow-y: hidden; /* Hide scrollbars */
+}
+
+.module-header {
+    text-align: center;
+    font-size: 1rem;
+    font-weight: bold;
+    color: rgba(255, 255, 255, 0.6);
+    margin-bottom: 5px;
+    margin-top: 20px;
+}
+
+.loading-text,
+.error {
+    text-align: center;
+    font-size: 12px;
+}
+
+.commute-info {
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+}
+
+.symbol {
+    margin-right: 8px;
+    font-size: 18px;
+}
+
+.duration-info {
+    color: rgba(255, 255, 255, 0.9);
+}

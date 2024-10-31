@@ -13,7 +13,7 @@
     export let updateInterval = 120000;
     export let noFlightsMessage = 'Currently no flights in the area.';
     export let dayMapUrl = "https://tiles.stadiamaps.com/tiles/stamen_terrain/{z}/{x}/{y}{r}.png";
-    export let nightMapUrl = "https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png";
+   
     export let showMap = "always";
     export let showTable = true;
 

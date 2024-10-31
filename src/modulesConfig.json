@@ -75,6 +75,22 @@
     }
   },
   {
+    "name": "Traffic",
+    "path": "modules/traffic/TrafficModule.svelte",
+    "region": "left",
+    "props": {
+      "originCoords": [
+        { "lat": 35.315931, "lng": -81.344469 }
+      ], 
+      "destinationCoords": [
+        { "lat": 35.2716323, "lng": -81.1396011 }
+      ], 
+      "destinationTitle": "To Work",
+      "showSymbol": false,
+      "firstLine": "{duration} mins"
+    }
+  },
+  {
     "name": "OnThisDay",
     "path": "modules/onthisday/OnThisDayModule.svelte",
     "region": "left",

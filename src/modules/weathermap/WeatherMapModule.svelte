@@ -22,6 +22,7 @@
     const markerIcons = { red: markerRed, blue: markerBlue, green: markerGreen };
 
     export let config;
+    
 
     let mapDiv, map;
     let radarLayers = [], satelliteLayers = [];
