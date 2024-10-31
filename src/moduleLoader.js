@@ -1,40 +1,30 @@
-// ./src/moduleLoader.js
-
 import modulesConfig from './modulesConfig.json';
 
 export async function loadModules() {
   const modulesByRegion = {};
 
-  const modules = {
-    ...import.meta.glob('./modules/**/*.js'),
-    ...import.meta.glob('./jsmodules/**/*.js'),
-  };
-
+  // Dynamically import Svelte components based on their paths in the config
   for (const config of modulesConfig) {
-    // Skip comments
+    // Skip comments or invalid configurations
     if (config["Comment-Source"]) continue;
 
+    const { name, path, region, props } = config;
+
     try {
-      const modulePath = `./${config.path}`;
-      const importer = modules[modulePath];
-      if (!importer) {
-        throw new Error(`Module ${config.name} not found at ${modulePath}`);
-      }
+      // Dynamic import based on path
+      const moduleComponent = await import(`./${path}`);
 
-      const mod = await importer();
-
-      const region = config.region || 'default'; // Assign a default region if none is specified
+      // Initialize the region array if not present
       if (!modulesByRegion[region]) {
         modulesByRegion[region] = [];
       }
 
       modulesByRegion[region].push({
-        component: mod.default,
-        props: config.props || {}
+        component: moduleComponent.default,  // Assign the dynamically imported component
+        props: props || {}
       });
-
     } catch (error) {
-      console.error(`Error loading module ${config.name}:`, error);
+      console.error(`Error loading module ${name} from ${path}:`, error);
     }
   }
 

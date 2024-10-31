@@ -1,21 +1,24 @@
 <!-- ./src/Region.svelte -->
 
 <script>
+  import { modulesToReload } from './stores/reloadStore';
   export let modules = [];
-  import ModuleWrapper from './ModuleWrapper.svelte';
 
-  // Debugging: Log the modules
-  // console.log("Region.svelte - modules:", modules);
+  // Function to load each module dynamically
+  function loadComponent(module) {
+    return module.component;
+  }
 </script>
 
-<div class="region-container">
-  {#each modules as module}
-    {#if module.component && module.component.render}
-      <!-- Render JavaScript module via ModuleWrapper -->
-      <ModuleWrapper {module} />
-    {:else}
-      <!-- Render Svelte component -->
-      <svelte:component this={module.component} {...module.props} />
-    {/if}
+<div>
+  {#each modules as { component, props }, index}
+    {#await loadComponent({ component }) then ModuleComponent}
+      <!-- Use a unique key for each component -->
+      {#key props.title ?? index}
+        <svelte:component this={ModuleComponent} {...props} />
+      {/key}
+    {:catch error}
+      <p>Error loading module: {error.message}</p>
+    {/await}
   {/each}
 </div>

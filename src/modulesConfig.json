@@ -6,7 +6,7 @@
   },
   {
     "name": "ClockModule",
-    "path": "modules/clock/ClockModule.js", 
+    "path": "modules/clock/ClockModule.svelte", 
     "region": "left",
     "props": {
       "displayType": "both",
@@ -17,7 +17,7 @@
   },
   {
     "name": "WeatherMapModule",
-    "path": "modules/weathermap/WeatherMapModule.js",
+    "path": "modules/weathermap/WeatherMapModule.svelte",
     "region": "left",
     "props": {
       "config": {
@@ -47,18 +47,12 @@
   },
   {
     "name": "WeatherModule",
-    "path": "modules/weather/WeatherModule.js",
+    "path": "modules/weather/WeatherModule.svelte",
     "region": "right"
   },
   {
-    "name": "HelloWorldModule",
-    "path": "jsmodules/HelloWorldModule.js",
-    "region": "",
-    "props": {}
-  },
-  {
     "name": "TickerModule",
-    "path": "modules/ticker/TickerModule.js",
+    "path": "modules/ticker/TickerModule.svelte",
     "region": "header",
     "props": {
       "feeds": [
@@ -82,7 +76,7 @@
   },
   {
     "name": "OnThisDay",
-    "path": "modules/onthisday/OnThisDayModule.js",
+    "path": "modules/onthisday/OnThisDayModule.svelte",
     "region": "left",
     "props": {
       "animationspeed": "1",
@@ -93,7 +87,7 @@
   },
   {
     "name": "BibleVerse",
-    "path": "modules/bibleverse/BibleVerseModule.js",
+    "path": "modules/bibleverse/BibleVerseModule.svelte",
     "region": "top_center",
     "props": {
       "targetlang": "eng",
@@ -103,7 +97,7 @@
   },
   {
     "name": "WeatherForecastModule",
-    "path": "modules/weatherforecast/WeatherForecastModule.js",
+    "path": "modules/weatherforecast/WeatherForecastModule.svelte",
     "region": "right",
     "props": {
       "lat": 35.315931,
@@ -112,21 +106,21 @@
   },
   {
     "name": "Test",
-    "path": "modules/test/TestModule.js",
-    "region": "hidden",
+    "path": "modules/test/TestModule.svelte",
+    "region": "right",
     "props": {
   
     }
   },
   {
     "name": "Jeopardy",
-    "path": "modules/jeopardy/Jeopardy.js",
+    "path": "modules/jeopardy/Jeopardy.svelte",
     "region": "right",
     "props": {}
   },
   {
     "name": "CalendarModule",
-    "path": "modules/calendar/CalendarModule.js",
+    "path": "modules/calendar/CalendarModule.svelte",
     "region": "right",
     "props": {
       "maximumEntries": 10,
@@ -135,13 +129,13 @@
   },
   {
     "name": "GlobeModule",
-    "path": "modules/globe/GlobeModule.js",
+    "path": "modules/globe/GlobeModule.svelte",
     "region": "center",
     "props": {}
   },
   {
     "name": "DeliveryModule",
-    "path": "modules/delivery/DeliveryModule.js",
+    "path": "modules/delivery/DeliveryModule.svelte",
     "region": "bottom_center",
     "props": {
 
@@ -149,24 +143,24 @@
   },
   {
     "name": "ReloadModule",
-    "path": "modules/reload/ReloadModule.js",
+    "path": "modules/reload/ReloadModule.svelte",
     "region": "hidden",
     "props": {
       "modules": [
         {
           "title": "WeatherForecastModule",
-          "path": "modules/weatherforecast/WeatherForecastModule.js",
+          "path": "modules/weatherforecast/WeatherForecastModule.svelte",
           "interval": 30000
         },
         {
           "title": "WeatherMapModule",
-          "path": "modules/weathermap/WeatherMapModule.js",
-          "interval": 30000
+          "path": "modules/weathermap/WeatherMapModule.svelte",
+          "interval": "sunriseSunsetStore"
         },
         {
           "title": "WeatherModule",
-          "path": "modules/weather/WeatherModule.js",
-          "interval": 30000
+          "path": "modules/weather/WeatherModule.svelte",
+          "interval": "sunriseSunsetStore"
         }
         
       ]
@@ -174,7 +168,7 @@
   },
   {
     "name": "FlightRadarModule",
-    "path": "modules/flightradar/FlightRadarModule.js",
+    "path": "modules/flightradar/FlightRadarModule.svelte",
     "region": "",
     "props": {
       "lat": 35.315931,

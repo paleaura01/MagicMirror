@@ -27,7 +27,7 @@
     let radarLayers = [], satelliteLayers = [];
     let baseLayer, baseRadarLayer, baseSatelliteLayer;
     const updateInterval = 180000;
-    let apiCallInProgress = false, animationTimeoutId, intervalId;
+    let apiCallInProgress = false, animationTimeoutId = null, intervalId = null;
     let sunrise = null, sunset = null;
     let previousIsDaytime = null;
     let reloadCount = 0;
@@ -47,7 +47,10 @@
 
     function addBaseLayer() {
         const baseLayerUrl = getMapUrl();
-        if (baseLayer) map.removeLayer(baseLayer);
+        if (baseLayer && map.hasLayer(baseLayer)) {
+            map.removeLayer(baseLayer);
+            baseLayer = null;
+        }
         baseLayer = L.tileLayer(baseLayerUrl, {
             tileSize: 256,
             opacity: 1.0,
@@ -56,6 +59,7 @@
             attribution: '&copy; OpenStreetMap contributors',
         });
         baseLayer.addTo(map);
+        // console.log("Base layer added:", baseLayerUrl);
     }
 
     function addMarkers() {
@@ -102,11 +106,7 @@
                 return;
             }
 
-            radarLayers.forEach(layer => map.hasLayer(layer) && map.removeLayer(layer));
-            satelliteLayers.forEach(layer => layer && map.hasLayer(layer) && map.removeLayer(layer));
-
-            radarLayers = [];
-            satelliteLayers = [];
+            clearWeatherLayers();
 
             frames.forEach((frame, index) => {
                 const timestamp = frame.time;
@@ -152,8 +152,14 @@
         const baseTimestamp = baseFrame.time;
         const radarColor = getRadarColor();
 
-        if (baseRadarLayer) map.removeLayer(baseRadarLayer);
-        if (baseSatelliteLayer) map.removeLayer(baseSatelliteLayer);
+        if (baseRadarLayer && map.hasLayer(baseRadarLayer)) {
+            map.removeLayer(baseRadarLayer);
+            baseRadarLayer = null;
+        }
+        if (baseSatelliteLayer && map.hasLayer(baseSatelliteLayer)) {
+            map.removeLayer(baseSatelliteLayer);
+            baseSatelliteLayer = null;
+        }
 
         const baseRadarUrlTemplate = `https://tilecache.rainviewer.com/v2/radar/${baseTimestamp}/${tileSize}/{z}/{x}/{y}/${radarColor}/1_0.png`;
         baseRadarLayer = L.tileLayer(baseRadarUrlTemplate, {
@@ -181,6 +187,11 @@
     function animateLayers() {
         if (!radarLayers.length) return;
 
+        if (animationTimeoutId) {
+            clearTimeout(animationTimeoutId);
+            animationTimeoutId = null;
+        }
+
         let frameIndex = 0;
 
         function showNextFrame() {
@@ -205,9 +216,33 @@
 
     function updateLayersForTimeOfDay() {
         if (map) {
-            if (baseLayer) map.removeLayer(baseLayer);
-            addBaseLayer();
+            const currentUrl = getMapUrl();
+            if (baseLayer && baseLayer._url !== currentUrl) {
+                map.removeLayer(baseLayer);
+                baseLayer = null;
+                addBaseLayer();
+            }
             addWeatherLayers();
+        }
+    }
+
+    function clearWeatherLayers() {
+        radarLayers.forEach(layer => map.hasLayer(layer) && map.removeLayer(layer));
+        satelliteLayers.forEach(layer => layer && map.hasLayer(layer) && map.removeLayer(layer));
+        radarLayers = [];
+        satelliteLayers = [];
+    }
+
+    function clearAllLayers() {
+        if (map) {
+            map.eachLayer(layer => {
+                map.removeLayer(layer);
+            });
+            radarLayers = [];
+            satelliteLayers = [];
+            baseLayer = null;
+            baseRadarLayer = null;
+            baseSatelliteLayer = null;
         }
     }
 
@@ -224,25 +259,53 @@
         }
     });
 
-    // Subscribe to modulesToReload for reloading functionality
     const unsubscribe = modulesToReload.subscribe((state) => {
         if (state.WeatherMapModule !== reloadCount) {
             reloadCount = state.WeatherMapModule;
-            // console.log(`[WeatherMapModule] Reload triggered at ${new Date().toLocaleTimeString()}`);
             reload();
         }
     });
 
     async function reload() {
         console.log(`[WeatherMapModule] Reloading data at ${new Date().toLocaleTimeString()}`);
+
+        clearWeatherLayers();
+
+        if (animationTimeoutId) {
+            clearTimeout(animationTimeoutId);
+            animationTimeoutId = null;
+        }
+
+        if (intervalId) {
+            clearInterval(intervalId);
+            intervalId = null;
+        }
+
+        if (!baseLayer) {
+            addBaseLayer();
+        }
+
+        addMarkers();
         await addWeatherLayers();
         animateLayers();
+
+        intervalId = setInterval(() => addWeatherLayers(), updateInterval);
     }
 
     onDestroy(() => {
         unsubscribe();
-        if (intervalId) clearInterval(intervalId);
-        if (animationTimeoutId) clearTimeout(animationTimeoutId);
+        if (intervalId) {
+            clearInterval(intervalId);
+            intervalId = null;
+        }
+        if (animationTimeoutId) {
+            clearTimeout(animationTimeoutId);
+            animationTimeoutId = null;
+        }
+        if (map) {
+            map.remove();
+            map = null;
+        }
     });
 
     onMount(async () => {
@@ -269,7 +332,10 @@
                 await addWeatherLayers();
                 animateLayers();
 
-                if (intervalId) clearInterval(intervalId);
+                if (intervalId) {
+                    clearInterval(intervalId);
+                    intervalId = null;
+                }
                 intervalId = setInterval(() => addWeatherLayers(), updateInterval);
             }
         } catch (error) {

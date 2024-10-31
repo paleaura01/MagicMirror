@@ -1,27 +1,36 @@
-<!-- ./src/modules/test/TestModule.svelte -->
+<!-- ./src/modules/reload/ReloadModule.svelte -->
 
 <script>
-    import { onMount, onDestroy } from 'svelte';
+    import { onDestroy } from 'svelte';
     import { modulesToReload } from '../../stores/reloadStore';
 
-    let reloadCount = 0;
+    export let modules = [];
 
-    // Subscribe to the reload store
-    const unsubscribe = modulesToReload.subscribe((state) => {
-        if (state.Test && state.Test !== reloadCount) {
-            reloadCount = state.Test;
-            console.log(`[TestModule] Reload triggered at ${new Date().toLocaleTimeString()}. Reload count: ${reloadCount}`);
-            // Add any reload logic here, such as fetching new data
-        }
+    // Initialize intervals to update each module's reset key in `modulesToReload`
+    const intervals = modules.map(({ title, interval }) => {
+        console.log(`[ReloadModule] Setting interval for ${title} to ${interval} ms`);
+
+        // Set up interval to increment each module's reload key
+        return {
+            title,
+            intervalId: setInterval(() => {
+                modulesToReload.update(state => ({
+                    ...state,
+                    [title]: (state[title] || 0) + 1
+                }));
+                console.log(`[ReloadModule] Incremented reset key for ${title} at ${new Date().toLocaleTimeString()}`);
+            }, interval)
+        };
     });
 
-    onDestroy(unsubscribe);
-
-    onMount(() => {
-       // console.log(`[TestModule] Mounted at ${new Date().toLocaleTimeString()}`);
+    onDestroy(() => {
+        console.log("[ReloadModule] Clearing all intervals");
+        intervals.forEach(({ intervalId }) => clearInterval(intervalId));
     });
 </script>
 
-<div class="test-module">
-    <p>[TestModule] This module is loaded. Reload count: {reloadCount}</p>
+<div>
+    {#each modules as { title }}
+        <p>{title} reset count: {$modulesToReload[title]}</p>
+    {/each}
 </div>
