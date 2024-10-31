@@ -1,12 +1,12 @@
 <script>
     import { onMount, onDestroy } from 'svelte';
     import './traffic_styles.css';
+    import Fa6SolidCar from './icons/Fa6SolidCar.svelte'; // Import the car icon as a Svelte component
 
-    // Accept props with coordinates as arrays of objects
     export let originCoords = [{ lat: 35.315931, lng: -81.344469 }];
     export let destinationCoords = [{ lat: 35.2716323, lng: -81.1396011 }];
     export let destinationTitle = "To Work";
-    export let showSymbol = false;
+    export let showSymbol = true;
     export let firstLine = "{duration} mins";
 
     let duration = null;
@@ -14,15 +14,11 @@
     let errorMessage = '';
     let timer;
 
-    // Hardcoded access token for testing
-    const accessToken = 'pk.eyJ1Ijoiam9zaHVhc2hlbHN3ZWxsIiwiYSI6ImNtMnd5NXF3cDBjY2cyam9vaGt2ZHExMjgifQ.7ExhB8uhIXRb3Z3yv7Wyyw';
+    const accessToken = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
 
     async function fetchCommuteTime() {
-        // Extract coordinates from arrays
         const origin = originCoords[0];
         const destination = destinationCoords[0];
-
-        console.log("Origin:", origin, "Destination:", destination);  // Debugging coordinates
 
         if (!origin || !destination || !accessToken) {
             errorMessage = "Missing configuration or access token";
@@ -62,8 +58,6 @@
 </script>
 
 <div class="traffic-module">
-    <h2 class="module-header">{destinationTitle}</h2>
-
     {#if loading}
         <p class="loading-text">Loading...</p>
     {:else if errorMessage}
@@ -71,9 +65,13 @@
     {:else}
         <div class="commute-info">
             {#if showSymbol}
-                <i class="fa fa-car symbol"></i>
+                <Fa6SolidCar class="symbol" /> <!-- Use the imported Fa6SolidCar component as an SVG icon -->
             {/if}
-            <span class="duration-info">{firstLine.replace("{duration}", duration)}</span>
+            <div class="time-info">
+                <span class="duration">{firstLine.replace("{duration}", duration)}</span>
+                <span class="destination">{destinationTitle}</span>
+            </div>
         </div>
     {/if}
 </div>
+

@@ -86,7 +86,7 @@
         { "lat": 35.2716323, "lng": -81.1396011 }
       ], 
       "destinationTitle": "To Work",
-      "showSymbol": false,
+      "showSymbol": true,
       "firstLine": "{duration} mins"
     }
   },

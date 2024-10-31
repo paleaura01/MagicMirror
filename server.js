@@ -3,9 +3,13 @@
 import express from 'express';
 import fetch from 'node-fetch';
 import FeedMe from 'feedme'; // For RSS parsing
+import { config } from 'dotenv';
+
+config(); // Load environment variables from .env file
 
 const app = express();
 const port = process.env.PORT || 8080;
+const mapboxAccessToken = process.env.VITE_MAPBOX_ACCESS_TOKEN;
 
 // Parse JSON bodies for POST requests
 app.use(express.json());
@@ -16,18 +20,9 @@ app.use(express.static('public'));
 // Enable CORS for all routes, including handling preflight requests
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader(
-    'Access-Control-Allow-Methods',
-    'GET, POST, PUT, DELETE, OPTIONS'
-  );
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'Content-Type, Authorization, sentry-trace, baggage'
-  );
-  res.setHeader(
-    'Content-Security-Policy',
-    "default-src 'self'; img-src 'self' data: *; script-src 'self';"
-  );
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, sentry-trace, baggage');
+  res.setHeader('Content-Security-Policy', "default-src 'self'; img-src 'self' data: *; script-src 'self';");
 
   if (req.method === 'OPTIONS') {
     res.sendStatus(200); // Respond with 200 to OPTIONS requests
@@ -42,6 +37,37 @@ const logApiCall = (url) => {
   const timestamp = new Date().toISOString();
   console.log(`[${timestamp}] API called: ${url}`);
 };
+
+// Proxy route for Mapbox Directions API to handle CORS
+app.get('/api/mapbox-directions', async (req, res) => {
+  const { originLng, originLat, destLng, destLat } = req.query;
+
+  if (!originLng || !originLat || !destLng || !destLat) {
+    return res.status(400).json({ error: 'Missing coordinates' });
+  }
+
+  const url = `https://api.mapbox.com/directions/v5/mapbox/driving-traffic/${originLng},${originLat};${destLng},${destLat}?access_token=${mapboxAccessToken}`;
+
+  logApiCall(url); // Log the API call with a timestamp
+
+  try {
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0', // Optional: some APIs may require a user-agent
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch from Mapbox: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    res.json(data);
+  } catch (error) {
+    console.error('Error fetching data from Mapbox:', error.message);
+    res.status(500).json({ error: 'Failed to fetch data from Mapbox' });
+  }
+});
 
 // Proxy route to handle various requests including JSON, RSS, HTML, and binary data
 app.get('/proxy', async (req, res) => {
@@ -215,14 +241,8 @@ app.post('/api/llm', async (req, res) => {
 // Enable preflight request handling for CORS (OPTIONS method)
 app.options('*', (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader(
-    'Access-Control-Allow-Methods',
-    'GET, POST, PUT, DELETE, OPTIONS'
-  );
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'Content-Type, Authorization, sentry-trace, baggage'
-  );
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, sentry-trace, baggage');
   res.sendStatus(200);
 });
 
