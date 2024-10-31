@@ -22,9 +22,50 @@ const imapConfig = {
   tlsOptions: { rejectUnauthorized: false },
 };
 
-const imap = new Imap(imapConfig);
+function createImapConnection() {
+  return new Imap(imapConfig);
+}
 
-const fetchRecentTrackingNumbers = (cb) => {
+// Define the /api/fetch_emails route
+app.get('/api/fetch_emails', (req, res) => {
+  const imap = createImapConnection();
+
+  // Handling IMAP events
+  imap.once('ready', () => {
+    console.log('IMAP connection established. Checking inbox...');
+
+    imap.openBox('INBOX', false, (err, box) => {
+      if (err) {
+        console.error('Error opening inbox:', err);
+        imap.end();
+        return res.status(500).send({ error: 'Error opening inbox' });
+      }
+
+      console.log(`Connected to mailbox: ${box.name}. Total messages: ${box.messages.total}`);
+
+      fetchRecentTrackingNumbers(imap, (trackingNumbers) => {
+        res.json({ trackingNumbers });
+        imap.end();
+      });
+    });
+  });
+
+  imap.once('error', (err) => {
+    console.error('IMAP error:', err);
+    if (!res.headersSent) {
+      res.status(500).send({ error: 'IMAP error' });
+    }
+  });
+
+  imap.once('end', () => {
+    console.log('IMAP connection closed');
+  });
+
+  // Connect to the IMAP server
+  imap.connect();
+});
+
+function fetchRecentTrackingNumbers(imap, cb) {
   imap.search([['FROM', 'auto-reply@usps.com']], (err, results) => {
     if (err) {
       console.error('Error searching emails:', err);
@@ -37,12 +78,11 @@ const fetchRecentTrackingNumbers = (cb) => {
       return;
     }
 
-    // Fetch the last 5 messages
     const fetch = imap.fetch(results.slice(-5), { bodies: 'HEADER.FIELDS (SUBJECT)' });
     const emailSubjects = [];
 
     fetch.on('message', (msg) => {
-      let fullSubject = ''; // Variable to accumulate multi-line subject
+      let fullSubject = '';
 
       msg.on('body', (stream) => {
         stream.on('data', (chunk) => {
@@ -50,8 +90,7 @@ const fetchRecentTrackingNumbers = (cb) => {
         });
 
         stream.once('end', () => {
-          // Concatenate lines and decode Q-encoded subjects
-          fullSubject = fullSubject.replace(/\r\n\s+/g, ' '); // Concatenate lines with spacing
+          fullSubject = fullSubject.replace(/\r\n\s+/g, ' ');
 
           const matches = fullSubject.match(/=\?UTF-8\?Q\?(.+?)\?=/gi);
           if (matches) {
@@ -69,43 +108,14 @@ const fetchRecentTrackingNumbers = (cb) => {
     fetch.once('end', () => {
       console.log('Last 5 tracking numbers:', emailSubjects);
       cb(emailSubjects);
-      imap.end();
+    });
+
+    fetch.once('error', (err) => {
+      console.error('Fetch error:', err);
+      cb([]); // Return empty array if fetch fails
     });
   });
-};
-
-// Define the /api/fetch_emails route
-app.get('/api/fetch_emails', (req, res) => {
-  imap.once('ready', () => {
-    console.log('IMAP connection established. Checking inbox...');
-
-    imap.openBox('INBOX', false, (err, box) => {
-      if (err) {
-        console.error('Error opening inbox:', err);
-        imap.end();
-        return res.status(500).send('Error opening inbox');
-      }
-
-      console.log(`Connected to mailbox: ${box.name}. Total messages: ${box.messages.total}`);
-
-      fetchRecentTrackingNumbers((trackingNumbers) => {
-        res.json({ trackingNumbers });
-      });
-    });
-  });
-
-  imap.once('error', (err) => {
-    console.error('IMAP error:', err);
-    res.status(500).send('IMAP error');
-  });
-
-  imap.once('end', () => {
-    console.log('IMAP connection closed');
-  });
-
-  // Connect to the IMAP server
-  imap.connect();
-});
+}
 
 app.listen(port, () => {
   console.log(`✅ Delivery Server is running on port ${port}`);

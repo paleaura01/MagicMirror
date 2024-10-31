@@ -1,16 +1,22 @@
 <!-- ./src/modules/weather/WeatherModule.svelte -->
 
 <script>
-  import { onMount } from 'svelte';
+  import { onMount, onDestroy } from 'svelte';
   import dayjs from 'dayjs';
   import './weather_styles.css';
   import { sunriseSunsetStore } from '../../stores/weatherStore.js';
+  import { modulesToReload } from '../../stores/reloadStore';
 
   let weatherData = null;
   let error = null;
+  let reloadCount = 0;
 
   const lat = 35.2080;
   const lon = -81.3673;
+
+  let sunrise = null;
+  let sunset = null;
+
 
   const iconMap = {
   "0": { day: "/src/modules/weatherforecast/icons/32.png", night: "/src/modules/weatherforecast/icons/31.png" }, // Clear sky
@@ -44,20 +50,23 @@
   "default": { day: "/src/modules/weatherforecast/icons/na.png", night: "/src/modules/weatherforecast/icons/na.png" } // Default
 };
 
-const isDaytime = (sunrise, sunset) => {
-    const now = dayjs();
-    return now.isAfter(dayjs(sunrise)) && now.isBefore(dayjs(sunset));
-  };
+ // Reload functionality
+ const unsubscribe = modulesToReload.subscribe((state) => {
+    if (state.WeatherModule !== reloadCount) {
+      reloadCount = state.WeatherModule;
+      // console.log(`[WeatherModule] Reload triggered at ${new Date().toLocaleTimeString()}`);
+      reload();
+    }
+  });
 
-  const isBeforeSunrise = (sunrise) => {
-    const now = dayjs();
-    return now.isBefore(dayjs(sunrise));
-  };
+  onDestroy(unsubscribe);
 
-  let sunrise = null;
-  let sunset = null;
-  let previousIsDaytime = null;
+  async function reload() {
+    console.log(`[WeatherModule] Reloading data at ${new Date().toLocaleTimeString()}`);
+    await fetchWeatherData();
+  }
 
+  // Fetch weather data and update store with sunrise/sunset
   async function fetchWeatherData() {
     try {
       const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=relative_humidity_2m&timezone=auto&daily=sunrise,sunset`);
@@ -68,22 +77,13 @@ const isDaytime = (sunrise, sunset) => {
       }
 
       const tempCelsius = data.current_weather.temperature;
-      const tempFahrenheit = (tempCelsius * 9/5) + 32;
-
-      // Convert wind speed to mph
-      const windspeedMph = data.current_weather.windspeed * 2.23694;
-      const windSpeedRounded = windspeedMph.toFixed(1);
-
-      // Get current humidity
-      const now = dayjs();
-      const currentHour = now.format('YYYY-MM-DDTHH:00');
+      const tempFahrenheit = (tempCelsius * 9 / 5) + 32;
+      const windspeedMph = (data.current_weather.windspeed * 2.23694).toFixed(1);
+      const currentHour = dayjs().format('YYYY-MM-DDTHH:00');
       const hourIndex = data.hourly.time.findIndex(time => time === currentHour);
-      let humidity = "N/A";
-      if (hourIndex !== -1) {
-        humidity = data.hourly.relative_humidity_2m[hourIndex];
-      }
+      const humidity = hourIndex !== -1 ? `${data.hourly.relative_humidity_2m[hourIndex]}%` : "N/A";
 
-      // Calculate feels like temperature
+      // Calculate "feels like" temperature
       const feelsLike = calculateFeelsLike(tempFahrenheit, windspeedMph, humidity);
 
       sunrise = data.daily.sunrise[0];
@@ -96,8 +96,8 @@ const isDaytime = (sunrise, sunset) => {
       weatherData = {
         temperature: tempFahrenheit.toFixed(1),
         feelsLike: feelsLike.toFixed(1),
-        windspeed: windSpeedRounded,
-        humidity: humidity !== "N/A" ? `${humidity}%` : "N/A",
+        windspeed: windspeedMph,
+        humidity,
         windDirection: getCardinalDirection(data.current_weather.winddirection),
         sunrise: dayjs(sunrise).format('HH:mm'),
         sunset: dayjs(sunset).format('HH:mm'),
@@ -106,86 +106,33 @@ const isDaytime = (sunrise, sunset) => {
         showSunrise: isBeforeSunrise(sunrise) || (!isDay && dayjs().isAfter(dayjs(sunset)))
       };
 
-      sunriseSunsetStore.set({
-        sunrise: dayjs(sunrise),
-        sunset: dayjs(sunset)
-      });
+      sunriseSunsetStore.set({ sunrise: dayjs(sunrise), sunset: dayjs(sunset) });
 
     } catch (err) {
       error = err.message;
     }
   }
 
-  // Reactive statement to monitor changes in sunrise and sunset
-  $: {
-    if (sunrise && sunset) {
-      const currentIsDaytime = isDaytime(sunrise, sunset);
-      if (previousIsDaytime === null) {
-        previousIsDaytime = currentIsDaytime;
-      } else if (currentIsDaytime !== previousIsDaytime) {
-        previousIsDaytime = currentIsDaytime;
-        fetchWeatherData();
-      }
-    }
+  // Utility functions
+  function getCardinalDirection(angle) {
+    const directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
+    return directions[Math.round(angle / 22.5) % 16];
   }
 
-  onMount(async () => {
-    await fetchWeatherData();
-  });
+  function calculateFeelsLike(tempF, windSpeed, humidity) {
+    if (humidity === "N/A") return tempF;
+    if (tempF <= 50 && windSpeed > 3) return calculateWindChill(tempF, windSpeed);
+    if (tempF >= 80 && humidity >= 40) return calculateHeatIndex(tempF, humidity);
+    return tempF;
+  }
 
-  const getCardinalDirection = (angle) => {
-    const directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S',
-                        'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
-    const index = Math.round(angle / 22.5) % 16;
-    return directions[index];
-  };
+  function calculateWindChill(tempF, windSpeed) {
+    return 35.74 + 0.6215 * tempF - 35.75 * Math.pow(windSpeed, 0.16) + 0.4275 * tempF * Math.pow(windSpeed, 0.16);
+  }
 
-  // Accurate Feels Like Temperature Calculation
-  const calculateWindChill = (temperatureF, windSpeedMph) => {
-    if (temperatureF <= 50 && windSpeedMph > 3) {
-      return (
-        35.74 +
-        0.6215 * temperatureF -
-        35.75 * Math.pow(windSpeedMph, 0.16) +
-        0.4275 * temperatureF * Math.pow(windSpeedMph, 0.16)
-      );
-    } else {
-      return temperatureF;
-    }
-  };
-
-  const calculateHeatIndex = (temperatureF, relativeHumidity) => {
-    if (temperatureF >= 80 && relativeHumidity >= 40) {
-      const t = temperatureF;
-      const r = relativeHumidity;
-      return (
-        -42.379 +
-        2.04901523 * t +
-        10.14333127 * r -
-        0.22475541 * t * r -
-        0.00683783 * t * t -
-        0.05481717 * r * r +
-        0.00122874 * t * t * r +
-        0.00085282 * t * r * r -
-        0.00000199 * t * t * r * r
-      );
-    } else {
-      return temperatureF;
-    }
-  };
-
-  const calculateFeelsLike = (temperatureF, windSpeedMph, relativeHumidity) => {
-    if (relativeHumidity === "N/A") {
-      return temperatureF;
-    }
-    if (temperatureF <= 50 && windSpeedMph > 3) {
-      return calculateWindChill(temperatureF, windSpeedMph);
-    } else if (temperatureF >= 80 && relativeHumidity >= 40) {
-      return calculateHeatIndex(temperatureF, relativeHumidity);
-    } else {
-      return temperatureF;
-    }
-  };
+  function calculateHeatIndex(tempF, humidity) {
+    return -42.379 + 2.04901523 * tempF + 10.14333127 * humidity - 0.22475541 * tempF * humidity + 0.00122874 * tempF * tempF * humidity + 0.00085282 * tempF * humidity * humidity - 0.00000199 * tempF * tempF * humidity * humidity;
+  }
 
   const getWeatherDescription = (code) => {
   const descriptions = {
@@ -221,37 +168,46 @@ const isDaytime = (sunrise, sunset) => {
   };
   return descriptions[code] || descriptions["default"];
 };
+
+
+const isDaytime = (sunrise, sunset) => dayjs().isAfter(dayjs(sunrise)) && dayjs().isBefore(dayjs(sunset));
+const isBeforeSunrise = (sunrise) => dayjs().isBefore(dayjs(sunrise));
+
+onMount(async () => {
+  await fetchWeatherData();
+});
+
 </script>
 
 <div class="weather">
-  {#if error}
-    <p>{error}</p>
-  {:else if weatherData}
-    <div class="top-info">
-      <span class="wind-info">
-        <i class="wi wi-strong-wind"></i> {weatherData.windspeed} mph {weatherData.windDirection}
-      </span>
-      <span class="humidity-info">
-        <i class="wi wi-humidity"></i> {weatherData.humidity}
-      </span>
-      <span class="sunrise-sunset">
-        {#if weatherData.showSunrise}
-          <i class="wi wi-sunrise"></i> {weatherData.sunrise}
-        {:else}
-          <i class="wi wi-sunset"></i> {weatherData.sunset}
-        {/if}
-      </span>
-    </div>
+{#if error}
+  <p>{error}</p>
+{:else if weatherData}
+  <div class="top-info">
+    <span class="wind-info">
+      <i class="wi wi-strong-wind"></i> {weatherData.windspeed} mph {weatherData.windDirection}
+    </span>
+    <span class="humidity-info">
+      <i class="wi wi-humidity"></i> {weatherData.humidity}
+    </span>
+    <span class="sunrise-sunset">
+      {#if weatherData.showSunrise}
+        <i class="wi wi-sunrise"></i> {weatherData.sunrise}
+      {:else}
+        <i class="wi wi-sunset"></i> {weatherData.sunset}
+      {/if}
+    </span>
+  </div>
 
-    <div class="current-weather">
-      <img src={weatherData.weatherIcon} alt="Weather Icon" class="weather-icon"/>
-      <span class="temperature">{weatherData.temperature}°</span>
-    </div>
+  <div class="current-weather">
+    <img src={weatherData.weatherIcon} alt="Weather Icon" class="weather-icon"/>
+    <span class="temperature">{weatherData.temperature}°</span>
+  </div>
 
-    <div class="feels-like">
-      {weatherData.description} - Feels like {weatherData.feelsLike}°
-    </div>
-  {:else}
-    <p>Loading weather...</p>
-  {/if}
+  <div class="feels-like">
+    {weatherData.description} - Feels like {weatherData.feelsLike}°
+  </div>
+{:else}
+  <p>Loading weather...</p>
+{/if}
 </div>

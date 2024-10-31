@@ -77,7 +77,7 @@
     }
 
     onMount(() => {
-        console.log('Textpath:', textpath); // Log to check if it's correct
+        // console.log('Textpath:', textpath); // Log to check if it's correct
         fetchVerse();
         const interval = setInterval(fetchVerse, 120000);
 

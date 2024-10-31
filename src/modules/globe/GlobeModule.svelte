@@ -71,7 +71,7 @@
                 for (const result of results) {
                     if (result.success) {
                         images.push(result.img);
-                        console.log(`[Debug] Image loaded successfully: ${result.imageUrl}`);
+                        // console.log(`[Debug] Image loaded successfully: ${result.imageUrl}`);
                         loaded = true;
                         break;
                     } else {

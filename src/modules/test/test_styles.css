@@ -1,0 +1,12 @@
+/* ./src/modules/test/test_styles.css */
+
+.test-module {
+    background-color: #f0f0f0;
+    color: #333;
+    text-align: end;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin: 10px;
+    font-family: Arial, sans-serif;
+}

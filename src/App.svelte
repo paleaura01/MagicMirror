@@ -19,7 +19,8 @@
     'top_center',
     'right',    // Use the combined 'right' region
     'center',
-    'bottom_center'
+    'bottom_center',
+    'hidden' 
   ];
 
   // Debug: Log regions for visibility

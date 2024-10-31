@@ -1,8 +1,7 @@
 <!-- ./src/modules/weathermap/WeatherMapModule.svelte -->
 
-
 <script>
-    import { onMount } from 'svelte';
+    import { onMount, onDestroy } from 'svelte';
     import * as L from 'leaflet';
     import 'leaflet/dist/leaflet.css';
     import './weathermap_styles.css';
@@ -10,7 +9,8 @@
     import utc from 'dayjs/plugin/utc';
     import timezone from 'dayjs/plugin/timezone';
     import { sunriseSunsetStore } from '../../stores/weatherStore';
-
+    import { modulesToReload } from '../../stores/reloadStore';
+    
     dayjs.extend(utc);
     dayjs.extend(timezone);
 
@@ -30,6 +30,7 @@
     let apiCallInProgress = false, animationTimeoutId, intervalId;
     let sunrise = null, sunset = null;
     let previousIsDaytime = null;
+    let reloadCount = 0;
 
     function isDaytime() {
         const currentTime = dayjs();
@@ -221,6 +222,27 @@
             previousIsDaytime = currentIsDaytime;
             updateLayersForTimeOfDay();
         }
+    });
+
+    // Subscribe to modulesToReload for reloading functionality
+    const unsubscribe = modulesToReload.subscribe((state) => {
+        if (state.WeatherMapModule !== reloadCount) {
+            reloadCount = state.WeatherMapModule;
+            // console.log(`[WeatherMapModule] Reload triggered at ${new Date().toLocaleTimeString()}`);
+            reload();
+        }
+    });
+
+    async function reload() {
+        console.log(`[WeatherMapModule] Reloading data at ${new Date().toLocaleTimeString()}`);
+        await addWeatherLayers();
+        animateLayers();
+    }
+
+    onDestroy(() => {
+        unsubscribe();
+        if (intervalId) clearInterval(intervalId);
+        if (animationTimeoutId) clearTimeout(animationTimeoutId);
     });
 
     onMount(async () => {

@@ -64,7 +64,7 @@
       "feeds": [
         {
           "title": "New York Times",
-          "url": "https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml",
+          "url": "https://rss.nytimes.com/services/xml/rss/nyt/World.xml",
           "customLogo": "./pics/The-New-York-Times.jpg"
         },
         {
@@ -111,6 +111,14 @@
     }
   },
   {
+    "name": "Test",
+    "path": "modules/test/TestModule.js",
+    "region": "hidden",
+    "props": {
+  
+    }
+  },
+  {
     "name": "Jeopardy",
     "path": "modules/jeopardy/Jeopardy.js",
     "region": "right",
@@ -142,22 +150,25 @@
   {
     "name": "ReloadModule",
     "path": "modules/reload/ReloadModule.js",
-    "region": "",
+    "region": "hidden",
     "props": {
-
       "modules": [
         {
           "title": "WeatherForecastModule",
-          "interval": 60000
+          "path": "modules/weatherforecast/WeatherForecastModule.js",
+          "interval": 30000
         },
         {
           "title": "WeatherMapModule",
-          "time": 30000
+          "path": "modules/weathermap/WeatherMapModule.js",
+          "interval": 30000
         },
         {
           "title": "WeatherModule",
-          "time": 120000
+          "path": "modules/weather/WeatherModule.js",
+          "interval": 30000
         }
+        
       ]
     }
   },

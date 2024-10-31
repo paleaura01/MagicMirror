@@ -18,7 +18,7 @@
 
     // Function to fetch and parse "On This Day" events from Wikipedia
     async function loadEvents() {
-        console.log("Fetching today's events from Wikipedia...");
+        // console.log("Fetching today's events from Wikipedia...");
         try {
             // Correct Wikipedia URL format for selected anniversaries
             const wikiUrl = `https://en.wikipedia.org/wiki/Wikipedia:Selected_anniversaries/${dayjs().format('MMMM_DD')}`;
