@@ -1,43 +1,35 @@
-.traffic-module {
-    color: white;
-    font-family: 'Arial', sans-serif;
-    max-width: 100%;
-    margin: 0 auto;
-    text-align: left;
-    padding-top: 20px;
-}
+/* ./src/modules/ticker/ticker_styles.css */
 
-.commute-info {
-    display: flex;
-    align-items: center;
-    font-size: 18px;
-}
+    /* Styling similar to previous examples */
+    .traffic-module {
+        color: white;
+        font-family: 'Arial', sans-serif;
+        max-width: 100%;
+        margin: 0 auto;
+        text-align: left;
+        padding-top: 20px;
+    }
 
-.symbol {
-    font-size: 40px;
-    margin-right: 10px;
-    color: rgba(255, 255, 255, 0.9);
-}
+    .commute-info {
+        display: flex;
+        align-items: center;
+        font-size: 18px;
+        margin-bottom: 15px;
+    }
 
-.time-info {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-}
+    .symbol {
+        font-size: 24px;
+        margin-right: 10px;
+        color: rgba(255, 255, 255, 0.9);
+    }
 
-.duration {
-    font-size: 24px;
-    font-weight: bold;
-    color: rgba(255, 255, 255, 0.9);
-}
+    .duration {
+        font-size: 18px;
+        color: rgba(255, 255, 255, 0.9);
+    }
 
-.destination {
-    font-size: 16px;
-    color: rgba(255, 255, 255, 0.6);
-}
-
-.loading-text,
-.error {
-    text-align: center;
-    font-size: 12px;
-}
+    .loading-text,
+    .error {
+        text-align: center;
+        font-size: 12px;
+    }
