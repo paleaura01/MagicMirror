@@ -1,4 +1,7 @@
 {
+    /**
+    ./jsconfig.json
+    */
   "compilerOptions": {
     "moduleResolution": "bundler",
     "target": "ESNext",
