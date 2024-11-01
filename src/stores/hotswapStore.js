@@ -1,4 +1,4 @@
-// hotswapStore.js
+// ./src/stores/hotswapStore.js
 
 import { writable } from 'svelte/store';
 
@@ -10,32 +10,44 @@ export function getComponentName(component) {
   return name.replace(/^Proxy</, "").replace(/>$/, "");
 }
 
-// Continuous swap loop with recursive setTimeout
-export function swapModule(currentComponent, swapComponent, interval) {
+function getCurrentTimestamp() {
+  return new Date().toLocaleTimeString();
+}
+
+// Swap and manage visibility without affecting regions
+export function swapModule(currentComponent, swapComponent, interval, onSwap) {
   const currentName = getComponentName(currentComponent);
   const swapName = getComponentName(swapComponent);
 
   function swapLoop() {
-    console.log(`[hotswapStore] Swapping ${currentName} with ${swapName}`);
+    console.log(`[${getCurrentTimestamp()}] [hotswapStore] Swapping ${currentName} to hidden and showing ${swapName}`);
+
+    // Hide current module and show swap module
+    hiddenModules.update((map) => {
+      map.set(currentName, false);  // Hide current module
+      map.set(swapName, true);      // Show swap module
+      return map;
+    });
+
     activeModule.set(swapComponent);
+    if (onSwap) onSwap();
+
     setTimeout(() => {
+      console.log(`[${getCurrentTimestamp()}] [hotswapStore] Reverting ${swapName} to hidden and restoring ${currentName}`);
+
+      // Swap back and restore original component
       activeModule.set(currentComponent);
-      setTimeout(swapLoop, interval);
+      hiddenModules.update((map) => {
+        map.set(swapName, false);   // Hide swap module
+        map.set(currentName, true); // Show original module
+        return map;
+      });
+
+      if (onSwap) onSwap();
+
+      setTimeout(swapLoop, interval); // Repeat loop
     }, interval);
   }
 
-  // Initiate the swap loop
-  swapLoop();
-}
-
-// Updated hide module function to toggle visibility explicitly
-export function hideModule(component, interval) {
-  const componentName = getComponentName(component);
-
-  console.log(`[hotswapStore] Hiding ${componentName} for ${interval}ms`);
-
-  hiddenModules.update((map) => map.set(componentName, false));
-  setTimeout(() => {
-    hiddenModules.update((map) => map.set(componentName, true));
-  }, interval);
+  swapLoop(); // Start loop
 }

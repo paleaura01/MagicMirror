@@ -1,4 +1,7 @@
+// moduleLoader.js
+
 import modulesConfig from './modulesConfig.json';
+import { moduleMap } from './moduleMap';
 
 export async function loadModules() {
   const modulesByRegion = {};
@@ -9,8 +12,9 @@ export async function loadModules() {
     const { name, path, region, props } = config;
 
     try {
-      const moduleComponent = await import(`./${path}`);
-
+      // Use the moduleMap for importing modules
+      const moduleComponent = await moduleMap[path]();
+      
       if (!modulesByRegion[region]) {
         modulesByRegion[region] = [];
       }

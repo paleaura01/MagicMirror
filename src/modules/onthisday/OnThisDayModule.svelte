@@ -11,30 +11,41 @@
 
     let events = null;
     let title = null;
-    let currentDay = dayjs().format('MMMM DD'); // Track the current day
+    let currentDay = dayjs().format('MMMM D'); // Track the current day (without leading zero in day)
 
     // Regex to match events that start with a 4-digit year followed by a description
     const yearEventRegex = /^\d{4}\s*–/;
 
     // Function to fetch and parse "On This Day" events from Wikipedia
     async function loadEvents() {
-        // console.log("Fetching today's events from Wikipedia...");
         try {
-            // Correct Wikipedia URL format for selected anniversaries
-            const wikiUrl = `https://en.wikipedia.org/wiki/Wikipedia:Selected_anniversaries/${dayjs().format('MMMM_DD')}`;
-            const response = await fetch(`http://localhost:8080/proxy?url=${encodeURIComponent(wikiUrl)}`);
-            const html = await response.text(); // Fetch raw HTML
+            // Ensure day format without leading zero
+            const month = dayjs().format('MMMM');
+            const day = dayjs().format('D'); // Remove leading zero from day
+            const wikiUrl = `https://en.wikipedia.org/wiki/Wikipedia:Selected_anniversaries/${month}_${day}`;
+            const proxyUrl = `http://localhost:8080/proxy?url=${encodeURIComponent(wikiUrl)}`;
+
+            // console.log("Requesting data from:", proxyUrl);  // Log the full URL
+
+            const response = await fetch(proxyUrl);
+            
+            if (!response.ok) {
+                console.error("Failed to fetch events:", response.status, response.statusText);
+                throw new Error(`Error ${response.status}: ${response.statusText}`);
+            }
+            
+            const html = await response.text();
+            // console.log("Fetched HTML:", html);  // Log the HTML to confirm it’s fetched correctly
+
             const parser = new DOMParser();
             const doc = parser.parseFromString(html, "text/html");
-
-            // Adjusted CSS selector based on the screenshot you provided
+            
             const eventElements = doc.querySelectorAll('.mw-parser-output > ul > li');
             events = Array.from(eventElements)
                 .map(el => el.textContent.trim())
-                .filter(event => yearEventRegex.test(event)) // Filter out invalid events
-                .slice(0, 6); // Limit to 6 events
+                .filter(event => yearEventRegex.test(event))
+                .slice(0, 6);
 
-            // Set the title to include today's month and day with a round dot separator
             title = `On This Day • ${currentDay}`;
         } catch (error) {
             console.error('Error loading events:', error);
@@ -43,7 +54,7 @@
 
     // Function to check if the day has changed and update events accordingly
     function checkDayChange() {
-        const today = dayjs().format('MMMM DD');
+        const today = dayjs().format('MMMM D');
         if (today !== currentDay) {
             currentDay = today;
             loadEvents(); // Reload events for the new day

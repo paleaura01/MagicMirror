@@ -6,7 +6,7 @@
   },
   {
     "name": "ClockModule",
-    "path": "modules/clock/ClockModule.svelte", 
+    "path": "@/modules/clock/ClockModule", 
     "region": "left",
     "props": {
       "displayType": "both",
@@ -17,7 +17,7 @@
   },
   {
     "name": "WeatherMapModule",
-    "path": "modules/weathermap/WeatherMapModule.svelte",
+    "path": "@/modules/weathermap/WeatherMapModule",
     "region": "left",
     "props": {
       "config": {
@@ -47,12 +47,12 @@
   },
   {
     "name": "WeatherModule",
-    "path": "modules/weather/WeatherModule.svelte",
+    "path": "@/modules/weather/WeatherModule",
     "region": "right"
   },
   {
     "name": "TickerModule",
-    "path": "modules/ticker/TickerModule.svelte",
+    "path": "@/modules/ticker/TickerModule",
     "region": "header",
     "props": {
       "feeds": [
@@ -81,7 +81,7 @@
   },
   {
     "name": "Traffic",
-    "path": "modules/traffic/TrafficModule.svelte",
+    "path": "@/modules/traffic/TrafficModule",
     "region": "left",
     "props": {
       "originCoords": [
@@ -100,7 +100,7 @@
   },
   {
     "name": "OnThisDay",
-    "path": "modules/onthisday/OnThisDayModule.svelte",
+    "path": "@/modules/onthisday/OnThisDayModule",
     "region": "left",
     "props": {
       "animationspeed": "1",
@@ -111,7 +111,7 @@
   },
   {
     "name": "BibleVerse",
-    "path": "modules/bibleverse/BibleVerseModule.svelte",
+    "path": "@/modules/bibleverse/BibleVerseModule",
     "region": "top_center",
     "props": {
       "targetlang": "eng",
@@ -121,7 +121,7 @@
   },
   {
     "name": "WeatherForecastModule",
-    "path": "modules/weatherforecast/WeatherForecastModule.svelte",
+    "path": "@/modules/weatherforecast/WeatherForecastModule",
     "region": "right",
     "props": {
       "lat": 35.315931,
@@ -130,7 +130,7 @@
   },
   {
     "name": "TestModule",
-    "path": "modules/test/TestModule.svelte",
+    "path": "@/modules/test/TestModule",
     "region": "",
     "props": {
   
@@ -138,13 +138,13 @@
   },
   {
     "name": "Jeopardy",
-    "path": "modules/jeopardy/Jeopardy.svelte",
+    "path": "@/modules/jeopardy/Jeopardy",
     "region": "right",
     "props": {}
   },
   {
     "name": "CalendarModule",
-    "path": "modules/calendar/CalendarModule.svelte",
+    "path": "@/modules/calendar/CalendarModule",
     "region": "right",
     "props": {
       "maximumEntries": 10,
@@ -153,13 +153,13 @@
   },
   {
     "name": "GlobeModule",
-    "path": "modules/globe/GlobeModule.svelte",
+    "path": "@/modules/globe/GlobeModule",
     "region": "center",
     "props": {}
   },
   {
     "name": "DeliveryModule",
-    "path": "modules/delivery/DeliveryModule.svelte",
+    "path": "@/modules/delivery/DeliveryModule",
     "region": "bottom_center",
     "props": {
 
@@ -167,23 +167,23 @@
   },
   {
     "name": "ReloadModule",
-    "path": "modules/reload/ReloadModule.svelte",
+    "path": "@/modules/reload/ReloadModule",
     "region": "hidden",
     "props": {
       "modules": [
         {
           "title": "WeatherForecastModule",
-          "path": "modules/weatherforecast/WeatherForecastModule.svelte",
+          "path": "@/modules/weatherforecast/WeatherForecastModule",
           "interval": "sunriseSunsetStore"
         },
         {
           "title": "WeatherMapModule",
-          "path": "modules/weathermap/WeatherMapModule.svelte",
+          "path": "@/modules/weathermap/WeatherMapModule",
           "interval": "sunriseSunsetStore"
         },
         {
           "title": "WeatherModule",
-          "path": "modules/weather/WeatherModule.svelte",
+          "path": "@/modules/weather/WeatherModule",
           "interval": "sunriseSunsetStore"
         }
         
@@ -192,7 +192,7 @@
   },
   {
     "name": "FlightRadarModule",
-    "path": "modules/flightradar/FlightRadarModule.svelte",
+    "path": "@/modules/flightradar/FlightRadarModule",
     "region": "",
     "props": {
       "lat": 35.315931,
@@ -211,42 +211,42 @@
   },
   {
     "name": "HotSwapModule",
-    "path": "modules/hotswap/HotSwapModule.svelte",
+    "path": "@/modules/hotswap/HotSwapModule",
     "region": "hidden",
     "props": {
       "config": [
         {
           "current": "DeliveryModule",
-          "currentPath": "modules/weatherforecast/WeatherForecastModule.svelte",
+          "currentPath": "@/modules/weatherforecast/WeatherForecastModule",
           "swap": "TestModule",
-          "swapPath": "modules/test/TestModule.svelte",
+          "swapPath": "@/modules/test/TestModule",
           "swapRegion": "bottom_center",
           "interval": 5000,
           "time": "09:00pm"
         },
         {
           "current": "TrafficModule",
-          "currentPath": "modules/traffic/TrafficModule.svelte",
+          "currentPath": "@/modules/traffic/TrafficModule",
           "currentRegion": "left",
           "swap": "TestModule",
-          "swapPath": "modules/test/TestModule.svelte",
+          "swapPath": "@/modules/test/TestModule",
           "swapRegion": "left",
           "interval": 10000,
           "time": "09:00pm"
         },
         {
           "current": "WeatherForecastModule",
-          "currentPath": "modules/weatherforecast/WeatherForecastModule.svelte",
+          "currentPath": "@/modules/weatherforecast/WeatherForecastModule",
           "currentRegion": "right",
           "swap": "TestModule",
-          "swapPath": "modules/test/TestModule.svelte",
+          "swapPath": "@/modules/test/TestModule",
           "swapRegion": "right",
           "interval": 15000,
           "time": "09:00pm"
         },
         {
           "current": "ClockModule",
-          "currentPath": "modules/clock/ClockModule.svelte", 
+          "currentPath": "@/modules/clock/ClockModule", 
           "currentRegion": "left",
           "swap": "",
           "swapPath": "",
