@@ -70,6 +70,11 @@
           "title": "BBC World News",
           "url": "https://feeds.bbci.co.uk/news/world/rss.xml",
           "customLogo": "./pics/BBC-News.jpg"
+        },
+        {
+          "title": "The Hacker News",
+          "url": "http://feeds.feedburner.com/TheHackersNews",
+          "customLogo": "./pics/BBC-News.jpg"
         }
       ]
     }
@@ -81,12 +86,12 @@
     "props": {
       "originCoords": [
         {
-          "destinationTitle": "To Caromont Medical",
+          "destinationTitle": "To Caromont Medical Center",
           "originCoords": [{ "lat": 35.315931, "lng": -81.344469 }],
           "destinationCoords": [{ "lat": 35.2716323, "lng": -81.1396011 }]
         },
         {
-          "destinationTitle": "To Moms House",
+          "destinationTitle": "To Mom's House",
           "originCoords": [{ "lat": 35.315931, "lng": -81.344469 }],
           "destinationCoords": [{ "lat": 35.2018816, "lng": -81.1352634 }]
         }
@@ -124,9 +129,9 @@
     }
   },
   {
-    "name": "Test",
+    "name": "TestModule",
     "path": "modules/test/TestModule.svelte",
-    "region": "right",
+    "region": "hidden",
     "props": {
   
     }
@@ -169,7 +174,7 @@
         {
           "title": "WeatherForecastModule",
           "path": "modules/weatherforecast/WeatherForecastModule.svelte",
-          "interval": 30000
+          "interval": "sunriseSunsetStore"
         },
         {
           "title": "WeatherMapModule",
@@ -202,6 +207,54 @@
       "mapHeight": "300px",
       "mapWidth": "100%",
       "updateInterval": 120000
+    }
+  },
+  {
+    "name": "HotSwapModule",
+    "path": "modules/hotswap/HotSwapModule.svelte",
+    "region": "hidden",
+    "props": {
+      "config": [
+        {
+          "current": "DeliveryModule",
+          "currentPath": "modules/weatherforecast/WeatherForecastModule.svelte",
+          "swap": "TestModule",
+          "swapPath": "modules/test/TestModule.svelte",
+          "swapRegion": "bottom_center",
+          "interval": 5000,
+          "time": "09:00pm"
+        },
+        {
+          "current": "TrafficModule",
+          "currentPath": "modules/traffic/TrafficModule.svelte",
+          "currentRegion": "left",
+          "swap": "TestModule",
+          "swapPath": "modules/test/TestModule.svelte",
+          "swapRegion": "left",
+          "interval": 10000,
+          "time": "09:00pm"
+        },
+        {
+          "current": "WeatherForecastModule",
+          "currentPath": "modules/weatherforecast/WeatherForecastModule.svelte",
+          "swap": "TestModule",
+          "swapPath": "modules/test/TestModule.svelte",
+          "swapRegion": "right",
+          "interval": 15000,
+          "time": "09:00pm"
+        },
+        {
+          "current": "TrafficModule",
+          "currentPath": "modules/traffic/TrafficModule.svelte",
+          "currentRegion": "left",
+          "swap": "",
+          "swapPath": "",
+          "swapRegion": "",
+          "interval": 10000,
+          "time": ""
+        }
+        
+      ]
     }
   }
 ]

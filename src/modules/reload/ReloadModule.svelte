@@ -1,91 +1,60 @@
 <!-- ./src/modules/reload/ReloadModule.svelte -->
+
 <script>
-    import { onMount, onDestroy } from 'svelte';
-    import { sunriseSunsetStore } from '../../stores/weatherStore';
+    import { onDestroy } from 'svelte';
     import { modulesToReload } from '../../stores/reloadStore';
-    import { get } from 'svelte/store';
+    import { sunriseSunsetStore } from '../../stores/weatherStore';
   
     export let modules = [];
   
-    let timers = {};
+    let sunriseTime, sunsetTime;
+    let sunriseTimeout, sunsetTimeout;
   
-    function scheduleReload(moduleConfig) {
-      // Clear any existing timers for this module
-      if (timers[moduleConfig.title]) {
-        clearTimeout(timers[moduleConfig.title]);
-        delete timers[moduleConfig.title];
+    // Debugging: Log received modules
+    console.log("[ReloadModule] Received modules:", modules);
+  
+    function scheduleReload(time, title = "Module") {
+      const now = new Date();
+      const delay = time - now;
+  
+      if (delay > 0) {
+        console.log(`[ReloadModule] Setting reload for ${title} at ${time.toLocaleTimeString()}`);
+        return setTimeout(() => {
+          modulesToReload.update(state => ({
+            ...state,
+            [title]: (state[title] || 0) + 1
+          }));
+          console.log(`[ReloadModule] Reload triggered for ${title} at ${new Date().toLocaleTimeString()}`);
+        }, delay);
       }
-  
-      if (moduleConfig.interval === 'sunriseSunsetStore') {
-        // Get the current sunrise and sunset times
-        const { sunrise, sunset } = get(sunriseSunsetStore);
-  
-        const now = new Date();
-        const sunriseTime = new Date(sunrise);
-        const sunsetTime = new Date(sunset);
-  
-        let nextEventTime;
-  
-        if (now < sunriseTime) {
-          nextEventTime = sunriseTime;
-        } else if (now < sunsetTime) {
-          nextEventTime = sunsetTime;
-        } else {
-          // If both events have passed, schedule for the next day's sunrise
-          nextEventTime = new Date(sunriseTime.getTime() + 24 * 60 * 60 * 1000);
-        }
-  
-        const timeUntilNextEvent = nextEventTime - now;
-  
-        // Schedule the reload
-        timers[moduleConfig.title] = setTimeout(() => {
-          reloadModule(moduleConfig.title);
-          // Reschedule for the next event after reloading
-          scheduleReload(moduleConfig);
-        }, timeUntilNextEvent);
-  
-        console.log(`Scheduled reload for ${moduleConfig.title} at ${nextEventTime.toLocaleTimeString()}`);
-      } else {
-        // For fixed intervals
-        const interval = moduleConfig.interval;
-        timers[moduleConfig.title] = setInterval(() => {
-          reloadModule(moduleConfig.title);
-        }, interval);
-  
-        console.log(`Scheduled reload for ${moduleConfig.title} every ${interval} ms`);
-      }
+      return null;
     }
   
-    function reloadModule(title) {
-      modulesToReload.update(state => {
-        state[title] = (state[title] || 0) + 1;
-        return state;
-      });
-      console.log(`Reloaded module: ${title}`);
-    }
+    // Subscribe to sunrise and sunset times
+    sunriseSunsetStore.subscribe(({ sunrise, sunset }) => {
+      sunriseTime = new Date(sunrise);
+      sunsetTime = new Date(sunset);
   
-    onMount(() => {
-      modules.forEach(moduleConfig => {
-        if (moduleConfig.interval !== 'sunriseSunsetStore') {
-          scheduleReload(moduleConfig);
-        }
+      // Clear previous timeouts
+      clearTimeout(sunriseTimeout);
+      clearTimeout(sunsetTimeout);
+  
+      // Schedule reloads for each module at sunrise and sunset
+      modules.forEach(({ title }) => {
+        sunriseTimeout = scheduleReload(sunriseTime, title);
+        sunsetTimeout = scheduleReload(sunsetTime, title);
       });
     });
   
     onDestroy(() => {
-      // Clear all timers
-      Object.values(timers).forEach(timer => {
-        clearTimeout(timer);
-      });
-    });
-  
-    // Reschedule reloads when sunrise or sunset times change
-    const unsubscribe = sunriseSunsetStore.subscribe(() => {
-      modules.forEach(moduleConfig => {
-        if (moduleConfig.interval === 'sunriseSunsetStore') {
-          scheduleReload(moduleConfig);
-        }
-      });
+      clearTimeout(sunriseTimeout);
+      clearTimeout(sunsetTimeout);
     });
   </script>
+  
+  <div>
+    {#each modules as { title }}
+      <p>{title || "Unnamed module"} will reload at sunrise and sunset</p>
+    {/each}
+  </div>
   

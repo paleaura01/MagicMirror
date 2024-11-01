@@ -1,24 +1,25 @@
 <!-- ./src/Region.svelte -->
 
 <script>
-  import { modulesToReload } from './stores/reloadStore';
   export let modules = [];
 
-  // Function to load each module dynamically
-  function loadComponent(module) {
-    return module.component;
+  async function loadComponent(path) {
+    try {
+      const module = await import(`../../${path}`);
+      return module.default;
+    } catch (error) {
+      console.error(`Failed to load module at ${path}:`, error);
+      return null;
+    }
   }
 </script>
 
 <div>
   {#each modules as { component, props }, index}
-    {#await loadComponent({ component }) then ModuleComponent}
-      <!-- Use a unique key for each component -->
-      {#key props.title ?? index}
-        <svelte:component this={ModuleComponent} {...props} />
-      {/key}
-    {:catch error}
-      <p>Error loading module: {error.message}</p>
-    {/await}
+    {#if component}
+      <svelte:component this={component} {...props} />
+    {:else}
+      <p>Error loading module {props.title}</p>
+    {/if}
   {/each}
 </div>

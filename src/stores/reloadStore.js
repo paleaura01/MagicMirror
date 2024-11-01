@@ -10,5 +10,5 @@ export const modulesToReload = writable({
 
 // Add a subscription log to track updates
 modulesToReload.subscribe((value) => {
-  console.log("[reloadStore] Current reload state:", value);
+  // console.log("[reloadStore] Current reload state:", value);
 });
