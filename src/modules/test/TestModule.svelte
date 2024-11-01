@@ -1,36 +1,29 @@
-<!-- ./src/modules/reload/ReloadModule.svelte -->
-
+<!-- ./src/modules/test/TestModule.svelte -->
 <script>
-    import { onDestroy } from 'svelte';
-    import { modulesToReload } from '../../stores/reloadStore';
+    import { onMount } from 'svelte';
 
-    export let modules = [];
+    let timestamp;
 
-    // Initialize intervals to update each module's reset key in `modulesToReload`
-    const intervals = modules.map(({ title, interval }) => {
-        console.log(`[ReloadModule] Setting interval for ${title} to ${interval} ms`);
-
-        // Set up interval to increment each module's reload key
-        return {
-            title,
-            intervalId: setInterval(() => {
-                modulesToReload.update(state => ({
-                    ...state,
-                    [title]: (state[title] || 0) + 1
-                }));
-                console.log(`[ReloadModule] Incremented reset key for ${title} at ${new Date().toLocaleTimeString()}`);
-            }, interval)
-        };
-    });
-
-    onDestroy(() => {
-        console.log("[ReloadModule] Clearing all intervals");
-        intervals.forEach(({ intervalId }) => clearInterval(intervalId));
+    // Set a new timestamp when the module is mounted
+    onMount(() => {
+        timestamp = new Date().toLocaleTimeString();
+        console.log(`[TestModule] Loaded at ${timestamp}`);
     });
 </script>
 
-<div>
-    {#each modules as { title }}
-        <p>{title} reset count: {$modulesToReload[title]}</p>
-    {/each}
+<style>
+    /* Add some styling to make it easy to spot */
+    .test-module {
+        font-size: 1.5rem;
+        color: white;
+        background-color: #4CAF50; /* Green background for visibility */
+        padding: 20px;
+        text-align: center;
+        border-radius: 8px;
+    }
+</style>
+
+<div class="test-module">
+    <p>Test Module</p>
+    <p>Loaded at: {timestamp}</p>
 </div>

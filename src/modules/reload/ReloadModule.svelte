@@ -11,20 +11,20 @@
     let sunriseTimeout, sunsetTimeout;
   
     // Debugging: Log received modules
-    console.log("[ReloadModule] Received modules:", modules);
+    // console.log("[ReloadModule] Received modules:", modules);
   
     function scheduleReload(time, title = "Module") {
       const now = new Date();
       const delay = time - now;
   
       if (delay > 0) {
-        console.log(`[ReloadModule] Setting reload for ${title} at ${time.toLocaleTimeString()}`);
+        // console.log(`[ReloadModule] Setting reload for ${title} at ${time.toLocaleTimeString()}`);
         return setTimeout(() => {
           modulesToReload.update(state => ({
             ...state,
             [title]: (state[title] || 0) + 1
           }));
-          console.log(`[ReloadModule] Reload triggered for ${title} at ${new Date().toLocaleTimeString()}`);
+         // console.log(`[ReloadModule] Reload triggered for ${title} at ${new Date().toLocaleTimeString()}`);
         }, delay);
       }
       return null;

@@ -81,11 +81,12 @@
   }
 
   function updateImage() {
-    if (newsItems.length > 0) {
-      currentImage = newsItems[currentNewsIndex].logo;
-      currentNewsIndex = (currentNewsIndex + 1) % newsItems.length;
-    }
+  if (newsItems.length > 0) {
+    const currentNewsItem = newsItems[currentNewsIndex];
+    currentImage = currentNewsItem.logo || logoPNG;
+    currentNewsIndex = (currentNewsIndex + 1) % newsItems.length;
   }
+}
 
   function updateTickerText() {
     if (scrollingTextEl && newsItems.length > 0) {
@@ -111,7 +112,7 @@
     setTimeout(() => {
       fetchNewsItems();
 
-      imageCycleInterval = setInterval(updateImage, 15000);
+      imageCycleInterval = setInterval(updateImage, 5000);
       apiUpdateInterval = setInterval(fetchNewsItems, 180000); // Update every 3 minutes
 
       window.addEventListener('resize', updateAnimation);

@@ -76,3 +76,7 @@ body {
   align-items: center;
   justify-content: center;
 }
+
+.region.hidden {
+  display: none;
+}

@@ -74,7 +74,7 @@
         {
           "title": "The Hacker News",
           "url": "http://feeds.feedburner.com/TheHackersNews",
-          "customLogo": "./pics/BBC-News.jpg"
+          "customLogo": "./pics/The-Hacker-News.jpg"
         }
       ]
     }
@@ -131,7 +131,7 @@
   {
     "name": "TestModule",
     "path": "modules/test/TestModule.svelte",
-    "region": "hidden",
+    "region": "",
     "props": {
   
     }
@@ -237,6 +237,7 @@
         {
           "current": "WeatherForecastModule",
           "currentPath": "modules/weatherforecast/WeatherForecastModule.svelte",
+          "currentRegion": "right",
           "swap": "TestModule",
           "swapPath": "modules/test/TestModule.svelte",
           "swapRegion": "right",
@@ -244,12 +245,12 @@
           "time": "09:00pm"
         },
         {
-          "current": "TrafficModule",
-          "currentPath": "modules/traffic/TrafficModule.svelte",
+          "current": "ClockModule",
+          "currentPath": "modules/clock/ClockModule.svelte", 
           "currentRegion": "left",
           "swap": "",
           "swapPath": "",
-          "swapRegion": "",
+          "swapRegion": "hidden",
           "interval": 10000,
           "time": ""
         }
