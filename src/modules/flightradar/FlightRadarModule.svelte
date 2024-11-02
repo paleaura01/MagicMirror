@@ -1,3 +1,5 @@
+<!-- ./src/modules/flightradar/FlightRadarModule.svelte -->
+
 <script>
     import { onMount } from 'svelte';
     import * as L from 'leaflet';

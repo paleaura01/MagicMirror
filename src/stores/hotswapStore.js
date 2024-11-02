@@ -1,53 +1,64 @@
-// ./src/stores/hotswapStore.js
+// src/stores/hotswapStore.js
 
-import { writable } from 'svelte/store';
+import { modulesByRegionStore } from './modulesByRegionStore';
+import { getModuleByName } from '../moduleLoader';
 
-export const activeModule = writable(null);
-export const hiddenModules = writable(new Map());
+export function swapModules(config) {
+  config.forEach(({ current, swap, interval, currentRegion, swapRegion }) => {
+    if (!swap) return; // No swap defined
 
-export function getComponentName(component) {
-  const name = component?.name || component?.toString() || "UnknownComponent";
-  return name.replace(/^Proxy</, "").replace(/>$/, "");
-}
+    setInterval(() => {
+      modulesByRegionStore.update((modulesByRegion) => {
+        const currentModule = getModuleByName(current);
+        const swapModule = getModuleByName(swap);
 
-function getCurrentTimestamp() {
-  return new Date().toLocaleTimeString();
-}
+        if (!currentModule || !swapModule) {
+          console.error(`Module not found: ${currentModule ? swap : current}`);
+          return modulesByRegion;
+        }
 
-// Swap and manage visibility without affecting regions
-export function swapModule(currentComponent, swapComponent, interval, onSwap) {
-  const currentName = getComponentName(currentComponent);
-  const swapName = getComponentName(swapComponent);
+        // Remove the current module from its region
+        modulesByRegion[currentRegion] = modulesByRegion[currentRegion].filter(
+          (module) => module.name !== current
+        );
 
-  function swapLoop() {
-    console.log(`[${getCurrentTimestamp()}] [hotswapStore] Swapping ${currentName} to hidden and showing ${swapName}`);
+        // Add the swap module to its region
+        modulesByRegion[swapRegion] = modulesByRegion[swapRegion] || [];
+        if (!modulesByRegion[swapRegion].some((module) => module.name === swap)) {
+          modulesByRegion[swapRegion].push(swapModule);
+        }
 
-    // Hide current module and show swap module
-    hiddenModules.update((map) => {
-      map.set(currentName, false);  // Hide current module
-      map.set(swapName, true);      // Show swap module
-      return map;
-    });
-
-    activeModule.set(swapComponent);
-    if (onSwap) onSwap();
-
-    setTimeout(() => {
-      console.log(`[${getCurrentTimestamp()}] [hotswapStore] Reverting ${swapName} to hidden and restoring ${currentName}`);
-
-      // Swap back and restore original component
-      activeModule.set(currentComponent);
-      hiddenModules.update((map) => {
-        map.set(swapName, false);   // Hide swap module
-        map.set(currentName, true); // Show original module
-        return map;
+        return { ...modulesByRegion };
       });
 
-      if (onSwap) onSwap();
+      console.log(`[hotswapStore] Swapped: ${current} out, ${swap} in`);
 
-      setTimeout(swapLoop, interval); // Repeat loop
+      setTimeout(() => {
+        modulesByRegionStore.update((modulesByRegion) => {
+          const currentModule = getModuleByName(current);
+          const swapModule = getModuleByName(swap);
+
+          if (!currentModule || !swapModule) {
+            console.error(`Module not found: ${currentModule ? swap : current}`);
+            return modulesByRegion;
+          }
+
+          // Remove the swap module from its region
+          modulesByRegion[swapRegion] = modulesByRegion[swapRegion].filter(
+            (module) => module.name !== swap
+          );
+
+          // Add the current module back to its region
+          modulesByRegion[currentRegion] = modulesByRegion[currentRegion] || [];
+          if (!modulesByRegion[currentRegion].some((module) => module.name === current)) {
+            modulesByRegion[currentRegion].push(currentModule);
+          }
+
+          return { ...modulesByRegion };
+        });
+
+        console.log(`[hotswapStore] Reverted: ${swap} out, ${current} in`);
+      }, interval / 2);
     }, interval);
-  }
-
-  swapLoop(); // Start loop
+  });
 }

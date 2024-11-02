@@ -2,6 +2,9 @@
 
 import modulesConfig from './modulesConfig.json';
 import { moduleMap } from './moduleMap';
+import { modulesByRegionStore } from './stores/modulesByRegionStore';
+
+const moduleRegistry = new Map();
 
 export async function loadModules() {
   const modulesByRegion = {};
@@ -12,21 +15,30 @@ export async function loadModules() {
     const { name, path, region, props } = config;
 
     try {
-      // Use the moduleMap for importing modules
       const moduleComponent = await moduleMap[path]();
-      
+
+      // Store the module in the registry
+      moduleRegistry.set(name, {
+        name,
+        component: moduleComponent.default,
+        props: props || {},
+        region,
+      });
+
       if (!modulesByRegion[region]) {
         modulesByRegion[region] = [];
       }
 
-      modulesByRegion[region].push({
-        component: moduleComponent.default,
-        props: props || {}
-      });
+      modulesByRegion[region].push(moduleRegistry.get(name));
     } catch (error) {
       console.error(`Error loading module ${name} from ${path}:`, error);
     }
   }
 
-  return modulesByRegion;
+  // Set the store value
+  modulesByRegionStore.set(modulesByRegion);
+}
+
+export function getModuleByName(name) {
+  return moduleRegistry.get(name);
 }

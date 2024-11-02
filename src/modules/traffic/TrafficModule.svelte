@@ -1,3 +1,6 @@
+<!-- ./src/modules/traffic/TrafficModule.svelte -->
+
+
 <script>
     import { onMount, onDestroy } from 'svelte';
     import './traffic_styles.css';

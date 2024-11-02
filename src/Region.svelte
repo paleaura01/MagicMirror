@@ -1,6 +1,5 @@
 <!-- ./src/Region.svelte -->
 
-
 <script>
   export let modules = [];
 </script>
@@ -14,4 +13,3 @@
     {/if}
   {/each}
 </div>
-

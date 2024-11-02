@@ -1,12 +1,10 @@
-
 [
-
   {
-    "Comment-Source":"./src/modulesConfig.json"
+    "Comment-Source": "./src/modulesConfig.json"
   },
   {
     "name": "ClockModule",
-    "path": "@/modules/clock/ClockModule", 
+    "path": "@/modules/clock/ClockModule",
     "region": "left",
     "props": {
       "displayType": "both",
@@ -48,7 +46,8 @@
   {
     "name": "WeatherModule",
     "path": "@/modules/weather/WeatherModule",
-    "region": "right"
+    "region": "right",
+    "props": {}
   },
   {
     "name": "TickerModule",
@@ -57,7 +56,12 @@
     "props": {
       "feeds": [
         {
-          "title": "New York Times",
+          "title": "Reddit - News of the Stupid",
+          "url": "https://www.reddit.com/r/NewsOfTheStupid.rss",
+          "customLogo": "./pics/Reddit.png"
+        },
+        {
+          "title": "New York Times - World",
           "url": "https://rss.nytimes.com/services/xml/rss/nyt/World.xml",
           "customLogo": "./pics/The-New-York-Times.jpg"
         },
@@ -80,7 +84,7 @@
     }
   },
   {
-    "name": "Traffic",
+    "name": "TrafficModule",
     "path": "@/modules/traffic/TrafficModule",
     "region": "left",
     "props": {
@@ -99,7 +103,7 @@
     }
   },
   {
-    "name": "OnThisDay",
+    "name": "OnThisDayModule",
     "path": "@/modules/onthisday/OnThisDayModule",
     "region": "left",
     "props": {
@@ -110,7 +114,7 @@
     }
   },
   {
-    "name": "BibleVerse",
+    "name": "BibleVerseModule",
     "path": "@/modules/bibleverse/BibleVerseModule",
     "region": "top_center",
     "props": {
@@ -132,12 +136,10 @@
     "name": "TestModule",
     "path": "@/modules/test/TestModule",
     "region": "",
-    "props": {
-  
-    }
+    "props": {}
   },
   {
-    "name": "Jeopardy",
+    "name": "JeopardyModule",
     "path": "@/modules/jeopardy/Jeopardy",
     "region": "right",
     "props": {}
@@ -161,9 +163,7 @@
     "name": "DeliveryModule",
     "path": "@/modules/delivery/DeliveryModule",
     "region": "bottom_center",
-    "props": {
-
-    }
+    "props": {}
   },
   {
     "name": "ReloadModule",
@@ -186,7 +186,6 @@
           "path": "@/modules/weather/WeatherModule",
           "interval": "sunriseSunsetStore"
         }
-        
       ]
     }
   },
@@ -217,44 +216,40 @@
       "config": [
         {
           "current": "DeliveryModule",
-          "currentPath": "@/modules/weatherforecast/WeatherForecastModule",
+          "currentPath": "@/modules/delivery/DeliveryModule",
           "swap": "TestModule",
           "swapPath": "@/modules/test/TestModule",
+          "currentRegion": "bottom_center",
           "swapRegion": "bottom_center",
-          "interval": 5000,
-          "time": "09:00pm"
+          "interval": 5000
         },
         {
           "current": "TrafficModule",
           "currentPath": "@/modules/traffic/TrafficModule",
-          "currentRegion": "left",
           "swap": "TestModule",
           "swapPath": "@/modules/test/TestModule",
+          "currentRegion": "left",
           "swapRegion": "left",
-          "interval": 10000,
-          "time": "09:00pm"
+          "interval": 10000
         },
         {
           "current": "WeatherForecastModule",
           "currentPath": "@/modules/weatherforecast/WeatherForecastModule",
-          "currentRegion": "right",
           "swap": "TestModule",
           "swapPath": "@/modules/test/TestModule",
+          "currentRegion": "right",
           "swapRegion": "right",
-          "interval": 15000,
-          "time": "09:00pm"
+          "interval": 15000
         },
         {
           "current": "ClockModule",
-          "currentPath": "@/modules/clock/ClockModule", 
+          "currentPath": "@/modules/clock/ClockModule",
           "currentRegion": "left",
           "swap": "",
           "swapPath": "",
           "swapRegion": "hidden",
-          "interval": 10000,
-          "time": ""
+          "interval": 10000
         }
-        
       ]
     }
   }
