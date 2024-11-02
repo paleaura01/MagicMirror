@@ -1,31 +1,43 @@
 // src/stores/hotswapStore.js
 
-import { swapVisibilityStore } from './swapVisibilityStore';
+import { writable } from 'svelte/store';
+
+export const modulesByRegionStore = writable({});
+
+export const swapVisibilityStore = writable({});
 
 export function swapModules(config) {
-  config.forEach(({ current, swap, interval }) => {
-    if (!swap) return; // No swap defined
+  config.forEach(({ current, swap, swapRegion, interval }) => {
+    const hideModule = swapRegion === 'hidden';
 
     const initialDelay = Math.floor(Math.random() * interval);
 
     setTimeout(() => {
       setInterval(() => {
-        // Show the swap module
-        swapVisibilityStore.update(state => ({
+        // Hide the current module or show the swap module
+        swapVisibilityStore.update((state) => ({
           ...state,
-          [current]: swap
+          [current]: hideModule ? null : swap,
         }));
 
-        console.log(`[hotswapStore] Swapped: ${current} out, ${swap} in`);
+        console.log(
+          `[hotswapStore] ${
+            hideModule ? `Hid ${current}` : `Swapped: ${current} out, ${swap} in`
+          }`
+        );
 
         setTimeout(() => {
           // Show the current module again
-          swapVisibilityStore.update(state => ({
+          swapVisibilityStore.update((state) => ({
             ...state,
-            [current]: current
+            [current]: current,
           }));
 
-          console.log(`[hotswapStore] Reverted: ${swap} out, ${current} in`);
+          console.log(
+            `[hotswapStore] ${
+              hideModule ? `Showed ${current}` : `Reverted: ${swap} out, ${current} in`
+            }`
+          );
         }, interval / 2);
       }, interval);
     }, initialDelay);

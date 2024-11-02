@@ -2,8 +2,7 @@
 
 import modulesConfig from './modulesConfig.json';
 import { moduleMap } from './moduleMap';
-import { modulesByRegionStore } from './stores/modulesByRegionStore';
-import { swapVisibilityStore } from './stores/swapVisibilityStore';
+import { modulesByRegionStore, swapVisibilityStore } from './stores/hotswapStore.js';
 
 const moduleRegistry = new Map();
 
@@ -16,43 +15,38 @@ export async function loadModules() {
   );
   const swapConfigs = hotswapConfigEntry ? hotswapConfigEntry.props.config : [];
 
-  // Map to track which modules are involved in swapping
+  // Map to track swapping groups
   const swapModuleGroups = {};
 
   // Process swapping configurations
-  for (const { current, swap, currentRegion, currentPath, swapPath } of swapConfigs) {
-    if (!swapModuleGroups[current]) {
-      swapModuleGroups[current] = {
+  for (const swapConfig of swapConfigs) {
+    const { current, swap, currentRegion, swapRegion, currentPath, swapPath } = swapConfig;
+
+    // Unique key for each swapping group
+    const groupKey = `${currentRegion}-${current}`;
+
+    if (!swapModuleGroups[groupKey]) {
+      swapModuleGroups[groupKey] = {
         region: currentRegion,
-        current: current, // Store the current module
-        modules: new Set(),
+        current,
+        modules: [],
       };
     }
-    swapModuleGroups[current].modules.add(current);
-    swapModuleGroups[current].modules.add(swap);
 
-    // Load current and swap modules if not already loaded
-    const modulesToLoad = [
-      { name: current, path: currentPath, region: currentRegion },
-      { name: swap, path: swapPath, region: currentRegion },
-    ];
+    // Add current module to the swapping group
+    swapModuleGroups[groupKey].modules.push({
+      name: current,
+      path: currentPath,
+      region: currentRegion,
+    });
 
-    for (const { name, path, region } of modulesToLoad) {
-      if (!moduleRegistry.has(name)) {
-        try {
-          const moduleComponent = await moduleMap[path]();
-
-          moduleRegistry.set(name, {
-            name,
-            component: moduleComponent.default,
-            props: {}, // Empty props for now
-            region,
-            visible: true,
-          });
-        } catch (error) {
-          console.error(`Error loading module ${name} from ${path}:`, error);
-        }
-      }
+    // Only add the swap module if swapRegion is not 'hidden'
+    if (swapRegion !== 'hidden') {
+      swapModuleGroups[groupKey].modules.push({
+        name: swap,
+        path: swapPath,
+        region: swapRegion,
+      });
     }
   }
 
@@ -66,36 +60,60 @@ export async function loadModules() {
     const { name, path, region, props } = config;
 
     // Check if this module is part of a swapping group
-    if (swapModuleGroups[name]) {
-      const swapGroup = swapModuleGroups[name];
+    const swapGroupKey = Object.keys(swapModuleGroups).find(
+      (key) => swapModuleGroups[key].current === name
+    );
+
+    if (swapGroupKey) {
+      const swapGroup = swapModuleGroups[swapGroupKey];
       if (!modulesByRegion[region]) {
         modulesByRegion[region] = [];
       }
-      // Avoid duplicating the group
-      if (!modulesByRegion[region].some((group) => group.isSwapGroup && group.names.includes(name))) {
-        // Ensure the current module is first in the group
-        const groupNames = [
-          swapGroup.current,
-          ...Array.from(swapGroup.modules).filter((n) => n !== swapGroup.current),
-        ];
 
-        // Update module props and region if necessary
-        groupNames.forEach((moduleName) => {
-          if (moduleRegistry.has(moduleName)) {
-            const existingModule = moduleRegistry.get(moduleName);
-            if (moduleName === name) {
-              existingModule.props = props || existingModule.props;
-              existingModule.region = region || existingModule.region;
+      // Avoid duplicating the group
+      if (
+        !modulesByRegion[region].some(
+          (group) => group.isSwapGroup && group.names.includes(name)
+        )
+      ) {
+        // Load swap modules into moduleRegistry if not already loaded
+        const groupModules = await Promise.all(
+          swapGroup.modules.map(async (mod) => {
+            if (!moduleRegistry.has(mod.name)) {
+              try {
+                const moduleComponent = await moduleMap[mod.path]();
+
+                moduleRegistry.set(mod.name, {
+                  name: mod.name,
+                  component: moduleComponent.default,
+                  props: {}, // Empty props for now, will update if in modulesConfig
+                  region: mod.region,
+                  visible: true,
+                });
+              } catch (error) {
+                console.error(`Error loading module ${mod.name} from ${mod.path}:`, error);
+              }
             }
+            return moduleRegistry.get(mod.name);
+          })
+        );
+
+        // Update module props and region if specified in modulesConfig
+        swapGroup.modules.forEach((mod) => {
+          const matchingConfig = modulesConfig.find((cfg) => cfg.name === mod.name);
+          if (matchingConfig && moduleRegistry.has(mod.name)) {
+            const existingModule = moduleRegistry.get(mod.name);
+            existingModule.props = matchingConfig.props || existingModule.props;
+            existingModule.region = matchingConfig.region || existingModule.region;
           }
         });
+
+        const groupNames = groupModules.map((mod) => mod.name);
 
         modulesByRegion[region].push({
           isSwapGroup: true,
           names: groupNames,
-          modules: groupNames
-            .map((moduleName) => moduleRegistry.get(moduleName))
-            .filter(Boolean),
+          modules: groupModules,
         });
 
         // Initialize visibility to show the current module
@@ -104,12 +122,11 @@ export async function loadModules() {
       continue; // Skip adding this module individually
     }
 
-    // Load the module if not already loaded
+    // Load or update the module in moduleRegistry
     if (!moduleRegistry.has(name)) {
       try {
         const moduleComponent = await moduleMap[path]();
 
-        // Store the module in the registry
         moduleRegistry.set(name, {
           name,
           component: moduleComponent.default,

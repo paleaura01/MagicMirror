@@ -89,6 +89,12 @@
     }
   },
   {
+    "name": "JeopardyModule",
+    "path": "@/modules/jeopardy/Jeopardy",
+    "region": "right",
+    "props": {}
+  },
+  {
     "name": "CalendarModule",
     "path": "@/modules/calendar/CalendarModule",
     "region": "right",
@@ -220,10 +226,10 @@
         {
           "current": "TrafficModule",
           "currentPath": "@/modules/traffic/TrafficModule",
-          "swap": "TestModule",
+          "swap": "hidden",
           "swapPath": "@/modules/test/TestModule",
           "currentRegion": "left",
-          "swapRegion": "left",
+          "swapRegion": "hidden",
           "interval": 20000
         },
         {
@@ -235,6 +241,7 @@
           "swapRegion": "right",
           "interval": 25000
         }
+
       ]
     }
   }

@@ -2,7 +2,10 @@
 
 <script>
   import SwapContainer from './SwapContainer.svelte';
+
   export let modules = [];
+
+  // No store imports needed unless used
 </script>
 
 <div>

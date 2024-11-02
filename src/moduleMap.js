@@ -7,6 +7,7 @@
     "@/modules/onthisday/OnThisDayModule": () => import("@/modules/onthisday/OnThisDayModule.svelte"),
     "@/modules/weather/WeatherModule": () => import("@/modules/weather/WeatherModule.svelte"),
     "@/modules/weatherforecast/WeatherForecastModule": () => import("@/modules/weatherforecast/WeatherForecastModule.svelte"),
+    "@/modules/jeopardy/Jeopardy": () => import("@/modules/jeopardy/Jeopardy.svelte"),
     "@/modules/calendar/CalendarModule": () => import("@/modules/calendar/CalendarModule.svelte"),
     "@/modules/ticker/TickerModule": () => import("@/modules/ticker/TickerModule.svelte"),
     "@/modules/bibleverse/BibleVerseModule": () => import("@/modules/bibleverse/BibleVerseModule.svelte"),

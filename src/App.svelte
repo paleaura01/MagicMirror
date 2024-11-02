@@ -1,11 +1,11 @@
 <!-- ./src/App.svelte -->
+
 <script>
   import Region from './Region.svelte';
   import { onMount } from 'svelte';
-  import { modulesByRegionStore } from './stores/modulesByRegionStore';
-  import { loadModules } from './moduleLoader.js';
-  import { swapModules } from './stores/hotswapStore';
+  import { modulesByRegionStore, swapModules } from './stores/hotswapStore.js';
   import modulesConfig from './modulesConfig.json';
+  import { loadModules } from './moduleLoader.js';
 
   let modulesByRegion = {};
 
@@ -13,7 +13,7 @@
     await loadModules();
 
     // Extract the hotswap configurations
-    const hotswapConfigEntry = modulesConfig.find(config => config.name === 'HotSwapModule');
+    const hotswapConfigEntry = modulesConfig.find((config) => config.name === 'HotSwapModule');
     if (hotswapConfigEntry) {
       const hotswapConfigs = hotswapConfigEntry.props.config;
       swapModules(hotswapConfigs);
@@ -23,15 +23,7 @@
   // Subscribe to the store
   $: modulesByRegion = $modulesByRegionStore;
 
-  const regions = [
-    'header',
-    'left',
-    'top_center',
-    'right',
-    'center',
-    'bottom_center',
-    'hidden'
-  ];
+  const regions = ['header', 'left', 'top_center', 'right', 'center', 'bottom_center', 'hidden'];
 </script>
 
 <div class="main-container">
