@@ -44,10 +44,58 @@
     }
   },
   {
+    "name": "TrafficModule",
+    "path": "@/modules/traffic/TrafficModule",
+    "region": "left",
+    "props": {
+      "originCoords": [
+        {
+          "destinationTitle": "To Caromont Medical Center",
+          "originCoords": [{ "lat": 35.315931, "lng": -81.344469 }],
+          "destinationCoords": [{ "lat": 35.2716323, "lng": -81.1396011 }]
+        },
+        {
+          "destinationTitle": "To Mom's House",
+          "originCoords": [{ "lat": 35.315931, "lng": -81.344469 }],
+          "destinationCoords": [{ "lat": 35.2018816, "lng": -81.1352634 }]
+        }
+      ]
+    }
+  },
+  {
+    "name": "OnThisDayModule",
+    "path": "@/modules/onthisday/OnThisDayModule",
+    "region": "left",
+    "props": {
+      "animationspeed": "1",
+      "updateInterval": 3600,
+      "maxWidth": "400px",
+      "textSize": "xsmall"
+    }
+  },
+  {
     "name": "WeatherModule",
     "path": "@/modules/weather/WeatherModule",
     "region": "right",
     "props": {}
+  },
+  {
+    "name": "WeatherForecastModule",
+    "path": "@/modules/weatherforecast/WeatherForecastModule",
+    "region": "right",
+    "props": {
+      "lat": 35.315931,
+      "lon": -81.344469
+    }
+  },
+  {
+    "name": "CalendarModule",
+    "path": "@/modules/calendar/CalendarModule",
+    "region": "right",
+    "props": {
+      "maximumEntries": 10,
+      "icsFilePath": "/ical/US_Holidays.ics"
+    }
   },
   {
     "name": "TickerModule",
@@ -84,37 +132,6 @@
     }
   },
   {
-    "name": "TrafficModule",
-    "path": "@/modules/traffic/TrafficModule",
-    "region": "left",
-    "props": {
-      "originCoords": [
-        {
-          "destinationTitle": "To Caromont Medical Center",
-          "originCoords": [{ "lat": 35.315931, "lng": -81.344469 }],
-          "destinationCoords": [{ "lat": 35.2716323, "lng": -81.1396011 }]
-        },
-        {
-          "destinationTitle": "To Mom's House",
-          "originCoords": [{ "lat": 35.315931, "lng": -81.344469 }],
-          "destinationCoords": [{ "lat": 35.2018816, "lng": -81.1352634 }]
-        }
-      ]
-    }
-  }
-  ,
-  {
-    "name": "OnThisDayModule",
-    "path": "@/modules/onthisday/OnThisDayModule",
-    "region": "left",
-    "props": {
-      "animationspeed": "1",
-      "updateInterval": 3600,
-      "maxWidth": "400px",
-      "textSize": "xsmall"
-    }
-  },
-  {
     "name": "BibleVerseModule",
     "path": "@/modules/bibleverse/BibleVerseModule",
     "region": "top_center",
@@ -122,36 +139,6 @@
       "targetlang": "eng",
       "sourcelang": "heb",
       "textpath": "src/modules/bibleverse/docs/Full-Tanakh-With-Versification"
-    }
-  },
-  {
-    "name": "WeatherForecastModule",
-    "path": "@/modules/weatherforecast/WeatherForecastModule",
-    "region": "right",
-    "props": {
-      "lat": 35.315931,
-      "lon": -81.344469
-    }
-  },
-  {
-    "name": "TestModule",
-    "path": "@/modules/test/TestModule",
-    "region": "",
-    "props": {}
-  },
-  {
-    "name": "JeopardyModule",
-    "path": "@/modules/jeopardy/Jeopardy",
-    "region": "right",
-    "props": {}
-  },
-  {
-    "name": "CalendarModule",
-    "path": "@/modules/calendar/CalendarModule",
-    "region": "right",
-    "props": {
-      "maximumEntries": 10,
-      "icsFilePath": "/ical/US_Holidays.ics"
     }
   },
   {
@@ -164,6 +151,12 @@
     "name": "DeliveryModule",
     "path": "@/modules/delivery/DeliveryModule",
     "region": "bottom_center",
+    "props": {}
+  },
+  {
+    "name": "TestModule",
+    "path": "@/modules/test/TestModule",
+    "region": "",
     "props": {}
   },
   {
@@ -222,7 +215,7 @@
           "swapPath": "@/modules/test/TestModule",
           "currentRegion": "bottom_center",
           "swapRegion": "bottom_center",
-          "interval": 5000
+          "interval": 15000
         },
         {
           "current": "TrafficModule",
@@ -231,7 +224,7 @@
           "swapPath": "@/modules/test/TestModule",
           "currentRegion": "left",
           "swapRegion": "left",
-          "interval": 10000
+          "interval": 20000
         },
         {
           "current": "WeatherForecastModule",
@@ -240,16 +233,7 @@
           "swapPath": "@/modules/test/TestModule",
           "currentRegion": "right",
           "swapRegion": "right",
-          "interval": 15000
-        },
-        {
-          "current": "ClockModule",
-          "currentPath": "@/modules/clock/ClockModule",
-          "currentRegion": "left",
-          "swap": "",
-          "swapPath": "",
-          "swapRegion": "hidden",
-          "interval": 10000
+          "interval": 25000
         }
       ]
     }

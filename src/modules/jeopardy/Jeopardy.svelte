@@ -1,30 +1,30 @@
-<!-- ./src/modules/joopardy/JeopardyModule.svelte -->
+<!-- ./src/modules/jeopardy/JeopardyModule.svelte -->
 
 <script>
     import { onMount } from 'svelte';
     import dayjs from 'dayjs';
     import './jeopardy_styles.css';
+  
     let questions = [];
     let currentQuestion = {};
     let showAnswer = false;
     let currentIndex = 0;
     let score = 0;
-    let topScore = parseInt(localStorage.getItem('topScore')) || 0; // Retrieve the top score from localStorage
+    let topScore = parseInt(localStorage.getItem('topScore')) || 0;
     let lastResetDate = localStorage.getItem('lastResetDate') || dayjs().format('YYYY-MM-DD');
     let options = [];
     let selectedOption = null;
     let autoNextTimeout;
-
+  
     onMount(async () => {
-        checkAndResetScore(); // Check if the score needs to be reset
-
-        const res = await fetch('/src/modules/jeopardy/JEOPARDY_QUESTIONS1.json');
-        questions = await res.json();
-        shuffleQuestions();
-        getNextQuestion();
-
-        // Schedule the next reset at midnight
-        scheduleMidnightReset();
+      checkAndResetScore();
+  
+      const res = await fetch('/src/modules/jeopardy/JEOPARDY_QUESTIONS1.json');
+      questions = await res.json();
+      shuffleQuestions();
+      getNextQuestion();
+  
+      scheduleMidnightReset();
     });
 
     function checkAndResetScore() {
