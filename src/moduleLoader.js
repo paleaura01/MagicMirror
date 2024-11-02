@@ -11,6 +11,7 @@ export async function loadModules() {
 
   for (const config of modulesConfig) {
     if (config["Comment-Source"]) continue;
+    if (config.name === 'HotSwapModule') continue; // Skip HotSwapModule
 
     const { name, path, region, props } = config;
 

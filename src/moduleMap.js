@@ -15,6 +15,5 @@
     "@/modules/globe/GlobeModule": () => import("@/modules/globe/GlobeModule.svelte"),
     "@/modules/delivery/DeliveryModule": () => import("@/modules/delivery/DeliveryModule.svelte"),
     "@/modules/reload/ReloadModule": () => import("@/modules/reload/ReloadModule.svelte"),
-    "@/modules/flightradar/FlightRadarModule": () => import("@/modules/flightradar/FlightRadarModule.svelte"),
-    "@/modules/hotswap/HotSwapModule": () => import("@/modules/hotswap/HotSwapModule.svelte")
+    "@/modules/flightradar/FlightRadarModule": () => import("@/modules/flightradar/FlightRadarModule.svelte")
   };

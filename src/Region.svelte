@@ -5,7 +5,7 @@
 </script>
 
 <div>
-  {#each modules as { component, props }, index}
+  {#each modules as { component, props, name } (name)}
     {#if component}
       <svelte:component this={component} {...props} />
     {:else}

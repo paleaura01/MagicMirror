@@ -17,15 +17,24 @@ export function swapModules(config) {
           return modulesByRegion;
         }
 
+        // Initialize regions if undefined
+        modulesByRegion[currentRegion] = modulesByRegion[currentRegion] || [];
+        modulesByRegion[swapRegion] = modulesByRegion[swapRegion] || [];
+
         // Remove the current module from its region
         modulesByRegion[currentRegion] = modulesByRegion[currentRegion].filter(
           (module) => module.name !== current
         );
 
-        // Add the swap module to its region
-        modulesByRegion[swapRegion] = modulesByRegion[swapRegion] || [];
+        // Add the swap module to its region with correct props
         if (!modulesByRegion[swapRegion].some((module) => module.name === swap)) {
-          modulesByRegion[swapRegion].push(swapModule);
+          const newSwapModule = {
+            name: swapModule.name,
+            component: swapModule.component,
+            props: swapModule.props || {}, // Ensure correct props
+            region: swapRegion,
+          };
+          modulesByRegion[swapRegion].push(newSwapModule);
         }
 
         return { ...modulesByRegion };
@@ -43,15 +52,24 @@ export function swapModules(config) {
             return modulesByRegion;
           }
 
+          // Initialize regions if undefined
+          modulesByRegion[currentRegion] = modulesByRegion[currentRegion] || [];
+          modulesByRegion[swapRegion] = modulesByRegion[swapRegion] || [];
+
           // Remove the swap module from its region
           modulesByRegion[swapRegion] = modulesByRegion[swapRegion].filter(
             (module) => module.name !== swap
           );
 
-          // Add the current module back to its region
-          modulesByRegion[currentRegion] = modulesByRegion[currentRegion] || [];
+          // Add the current module back to its region with correct props
           if (!modulesByRegion[currentRegion].some((module) => module.name === current)) {
-            modulesByRegion[currentRegion].push(currentModule);
+            const newCurrentModule = {
+              name: currentModule.name,
+              component: currentModule.component,
+              props: currentModule.props || {}, // Ensure correct props
+              region: currentRegion,
+            };
+            modulesByRegion[currentRegion].push(newCurrentModule);
           }
 
           return { ...modulesByRegion };
