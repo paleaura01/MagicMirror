@@ -18,11 +18,7 @@ export function swapModules(config) {
           [current]: hideModule ? null : swap,
         }));
 
-        console.log(
-          `[hotswapStore] ${
-            hideModule ? `Hid ${current}` : `Swapped: ${current} out, ${swap} in`
-          }`
-        );
+        // console.log(`[hotswapStore] ${hideModule ? `Hid ${current}` : `Swapped: ${current} out, ${swap} in`}`);
 
         setTimeout(() => {
           // Show the current module again
@@ -31,11 +27,7 @@ export function swapModules(config) {
             [current]: current,
           }));
 
-          console.log(
-            `[hotswapStore] ${
-              hideModule ? `Showed ${current}` : `Reverted: ${swap} out, ${current} in`
-            }`
-          );
+          // console.log(`[hotswapStore] ${hideModule ? `Showed ${current}` : `Reverted: ${swap} out, ${current} in`}`);
         }, interval / 2);
       }, interval);
     }, initialDelay);

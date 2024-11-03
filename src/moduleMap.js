@@ -1,5 +1,5 @@
 
-  // Automatically generated module map
+  // ./src/modulemap.js
   export const moduleMap = {
     "@/modules/clock/ClockModule": () => import("@/modules/clock/ClockModule.svelte"),
     "@/modules/weathermap/WeatherMapModule": () => import("@/modules/weathermap/WeatherMapModule.svelte"),

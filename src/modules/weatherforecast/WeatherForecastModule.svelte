@@ -1,12 +1,14 @@
-<!-- ./src/modules/weatherforecast/WeatherForecastModule.svelte -->
-
 <script>
     import { onMount, onDestroy } from 'svelte';
     import './weatherforecast_styles.css';
     import dayjs from 'dayjs';
-    import { sunriseSunsetStore } from '../../stores/weatherStore.js';
+    import utc from 'dayjs/plugin/utc';
+    import timezone from 'dayjs/plugin/timezone';
+    import { sunriseSunsetStore, isDaytimeStore, updateSunriseSunset, setModuleReady } from '../../stores/weatherStore.js';
     import { modulesToReload } from '../../stores/reloadStore';
-    import { get } from 'svelte/store';
+
+    dayjs.extend(utc);
+    dayjs.extend(timezone);
 
     export let lat = 35.2080;
     export let lon = -81.3673;
@@ -18,15 +20,7 @@
     let previousIsDaytime = null;
     let reloadCount = 0;
 
-    const unsubscribe = modulesToReload.subscribe((state) => {
-        if (state.WeatherForecastModule !== reloadCount) {
-            reloadCount = state.WeatherForecastModule;
-            // console.log(`[WeatherForecastModule] Reload triggered at ${new Date().toLocaleTimeString()}`);
-            reload();
-        }
-    });
-
-    onDestroy(unsubscribe);
+    const userTimezone = dayjs.tz.guess();
 
     const iconMap = {
         "0": { day: "/src/modules/weatherforecast/icons/32.png", night: "/src/modules/weatherforecast/icons/31.png" },
@@ -60,22 +54,37 @@
         "default": { day: "/src/modules/weatherforecast/icons/na.png", night: "/src/modules/weatherforecast/icons/na.png" }
     };
 
-    function isDaytime(sunrise, sunset) {
-        const now = dayjs();
-        return now.isAfter(dayjs(sunrise)) && now.isBefore(dayjs(sunset));
+    let isDaytime;
+
+    isDaytimeStore.subscribe(value => {
+        isDaytime = value;
+        console.log(`[WeatherForecastModule] Current daytime status:`, isDaytime ? 'Day' : 'Night');
+        if (forecastData.length > 0) {
+            forecastData = forecastData.map(day => ({
+                ...day,
+                icon: getWeatherIcon(day.weatherCode)
+            }));
+        }
+    });
+
+    function getWeatherIcon(code) {
+        return iconMap[code] ? (isDaytime ? iconMap[code].day : iconMap[code].night) : iconMap["default"][isDaytime ? "day" : "night"];
     }
 
     async function fetchWeatherData() {
         try {
-            const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=auto`);
+            const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=temperature_2m_max,temperature_2m_min,weathercode,sunrise,sunset&timezone=auto`);
             const data = await response.json();
 
             if (!data.daily) {
                 throw new Error("Forecast data not available");
             }
 
-            const { sunrise, sunset } = get(sunriseSunsetStore);
-            const isDay = isDaytime(sunrise, sunset);
+            // Update sunrise and sunset times in the store
+            sunrise = dayjs(data.daily.sunrise[0]).tz(userTimezone);
+            sunset = dayjs(data.daily.sunset[0]).tz(userTimezone);
+            console.log(`[WeatherForecastModule] Parsed Sunrise: ${sunrise.format()}, Sunset: ${sunset.format()}`);
+            updateSunriseSunset(sunrise, sunset);
 
             forecastData = data.daily.time.map((date, index) => {
                 const maxTempC = data.daily.temperature_2m_max[index];
@@ -84,31 +93,28 @@
                 const minTempF = (minTempC * 9 / 5) + 32;
                 const weatherCode = data.daily.weathercode[index].toString();
 
-                const icon = iconMap[weatherCode] ? (isDay ? iconMap[weatherCode].day : iconMap[weatherCode].night) : iconMap["default"].day;
-
                 return {
                     day: dayjs(date).format('ddd'),
                     maxTemp: maxTempF.toFixed(1),
                     minTemp: minTempF.toFixed(1),
-                    icon
+                    icon: getWeatherIcon(weatherCode),
+                    weatherCode
                 };
             });
-            // console.log(`[WeatherForecastModule] Data fetched successfully at ${new Date().toLocaleTimeString()}`);
         } catch (err) {
             error = err.message;
-            console.error("[WeatherForecastModule] Error fetching weather data:", err);
+            console.error("[WeatherForecastModule] Error fetching forecast data:", err);
         }
     }
 
     function reload() {
-        console.log(`[WeatherForecastModule] Reloading data at ${new Date().toLocaleTimeString()}`);
         fetchWeatherData();
     }
 
-    $: sunriseSunsetStore.subscribe(({ sunrise: newSunrise, sunset: newSunset }) => {
-        sunrise = newSunrise;
-        sunset = newSunset;
-        const currentIsDaytime = isDaytime(sunrise, sunset);
+    sunriseSunsetStore.subscribe(({ sunrise: newSunrise, sunset: newSunset }) => {
+        sunrise = dayjs(newSunrise).tz(userTimezone);
+        sunset = dayjs(newSunset).tz(userTimezone);
+        const currentIsDaytime = isDaytime;
 
         if (previousIsDaytime === null) {
             previousIsDaytime = currentIsDaytime;
@@ -118,7 +124,19 @@
         }
     });
 
-    onMount(fetchWeatherData);
+    const unsubscribe = modulesToReload.subscribe((state) => {
+        if (state.WeatherForecastModule !== reloadCount) {
+            reloadCount = state.WeatherForecastModule;
+            reload();
+        }
+    });
+
+    onDestroy(unsubscribe);
+
+    onMount(async () => {
+        await fetchWeatherData();
+        setModuleReady("WeatherForecastModule");
+    });
 </script>
 
 <div class="weather-forecast">

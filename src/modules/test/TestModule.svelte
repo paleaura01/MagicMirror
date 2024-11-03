@@ -7,7 +7,7 @@
     // Set a new timestamp when the module is mounted
     onMount(() => {
         timestamp = new Date().toLocaleTimeString();
-        console.log(`[TestModule] Loaded at ${timestamp}`);
+        // console.log(`[TestModule] Loaded at ${timestamp}`);
     });
 </script>
 

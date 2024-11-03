@@ -10,7 +10,7 @@ const moduleEntries = modulesConfig
   .map(({ path }) => `"${path}": () => import("${path}.svelte")`);
 
 const moduleMapContent = `
-  // Automatically generated module map
+  // ./src/modulemap.js
   export const moduleMap = {
     ${moduleEntries.join(',\n    ')}
   };

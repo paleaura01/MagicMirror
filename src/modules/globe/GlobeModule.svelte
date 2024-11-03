@@ -1,5 +1,3 @@
-<!-- ./src/modules/globe/GlobeModule.svelte -->
-
 <script>
     import { onMount, onDestroy } from "svelte";
     import dayjs from 'dayjs';
@@ -11,9 +9,9 @@
     let animationInterval;
     let refreshInterval;
 
-    const numImages = 1; // Total images for the last 24 hours
+    const numImages = 1; // Total images for the last hour
     const frameDelay = 1000; // Delay in milliseconds between frame changes
-    const refreshDelay = 120000; // 1 minutes in milliseconds
+    const refreshDelay = 120000; // 2 minutes in milliseconds
     const fadeDuration = 500; // Fade duration in milliseconds
     const maxConcurrentRequests = 20; // Maximum number of concurrent image requests
 
@@ -35,14 +33,13 @@
     // Fetch image URLs for animation by checking past minutes and seconds concurrently
     async function fetchImages() {
         images = []; // Clear previous images
+
+        // Start from the current hour and count backwards
         for (let i = 0; i < numImages; i++) {
             let loaded = false;
-
-            // Start from the current minute and second, count backwards
             const now = dayjs().utc();
             let currentMinute = now.minute();
             let currentSecond = now.second();
-
             const requests = [];
 
             // Generate all combinations of minutes and seconds to check, starting from the current time
@@ -71,58 +68,57 @@
                 for (const result of results) {
                     if (result.success) {
                         images.push(result.img);
-                        // console.log(`[Debug] Image loaded successfully: ${result.imageUrl}`);
                         loaded = true;
-                        break;
-                    } else {
-                    //    console.error(`[Error] Failed to load image: ${result.imageUrl}`);
+                        break; // Break out of the forEach loop once an image is loaded
                     }
                 }
             }
 
             if (!loaded) {
-                console.warn(`[Warning] Could not load an image after checking all minutes and seconds for hour index ${i}.`);
+                console.warn(`[Warning] Could not load an image after checking all minutes and seconds for hour index ${i}. Retrying the last hour...`);
+                // Attempt to check the last hour again by incrementing the index and repeating the check
+                i--;
+                if (i < 0) break; // Prevent infinite loop if no images can be loaded
             }
         }
     }
 
     // Start animation loop with crossfade effect
     function startAnimation() {
-    animationInterval = setInterval(() => {
-        if (images.length > 0 && mapDiv) { // Check if mapDiv is not null
-            const currentImageUrl = images[currentFrame].src;
-            const nextFrame = (currentFrame + 1) % images.length;
-            const nextImageUrl = images[nextFrame].src;
+        animationInterval = setInterval(() => {
+            if (images.length > 0 && mapDiv) { // Check if mapDiv is not null
+                const currentImageUrl = images[currentFrame].src;
+                const nextFrame = (currentFrame + 1) % images.length;
+                const nextImageUrl = images[nextFrame].src;
 
-            // Create fade-in effect for the next frame
-            const fadeOverlay = document.createElement("div");
-            fadeOverlay.className = "fade-overlay";
-            fadeOverlay.style.backgroundImage = `url(${nextImageUrl})`;
-            mapDiv.appendChild(fadeOverlay);
+                // Create fade-in effect for the next frame
+                const fadeOverlay = document.createElement("div");
+                fadeOverlay.className = "fade-overlay";
+                fadeOverlay.style.backgroundImage = `url(${nextImageUrl})`;
+                mapDiv.appendChild(fadeOverlay);
 
-            // Update the background image
-            mapDiv.style.backgroundImage = `url(${currentImageUrl})`;
+                // Update the background image
+                mapDiv.style.backgroundImage = `url(${currentImageUrl})`;
 
-            // Remove fade overlay after animation ends
-            setTimeout(() => {
-                if (mapDiv.contains(fadeOverlay)) { // Ensure fadeOverlay exists before removing
-                    mapDiv.removeChild(fadeOverlay);
-                }
-            }, fadeDuration);
+                // Remove fade overlay after animation ends
+                setTimeout(() => {
+                    if (mapDiv.contains(fadeOverlay)) { // Ensure fadeOverlay exists before removing
+                        mapDiv.removeChild(fadeOverlay);
+                    }
+                }, fadeDuration);
 
-            // Move to the next frame
-            currentFrame = nextFrame;
-        }
-    }, frameDelay);
-}
-
+                // Move to the next frame
+                currentFrame = nextFrame;
+            }
+        }, frameDelay);
+    }
 
     // Stop animation
     function stopAnimation() {
         clearInterval(animationInterval);
     }
 
-    // Refresh images every 5 minutes
+    // Refresh images every 2 minutes
     function startImageRefresh() {
         refreshInterval = setInterval(async () => {
             console.log("[Debug] Refreshing images...");
@@ -138,7 +134,6 @@
 
     // Lifecycle hooks
     onMount(async () => {
-        // console.log("[Debug] onMount triggered. Fetching GOES-19 images...");
         await fetchImages();
         startAnimation();
         startImageRefresh();
