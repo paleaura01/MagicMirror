@@ -1,8 +1,6 @@
-// src/stores/hotswapStore.js
+// ./src/stores/hotswapStore.js
 
 import { writable } from 'svelte/store';
-
-export const modulesByRegionStore = writable({});
 
 export const swapVisibilityStore = writable({});
 

@@ -2,7 +2,10 @@
 
 import modulesConfig from './modulesConfig.json';
 import { moduleMap } from './moduleMap';
-import { modulesByRegionStore, swapVisibilityStore } from './stores/hotswapStore.js';
+import { modulesByRegionStore } from './stores/reloadStore.js';
+import { swapVisibilityStore } from './stores/hotswapStore.js';
+import { modulesToReload } from './stores/reloadStore.js';
+import { sunriseSunsetStore } from './stores/weatherStore';
 
 const moduleRegistry = new Map();
 
@@ -52,10 +55,20 @@ export async function loadModules() {
 
   const initialVisibility = {};
 
+  // Map to keep track of module keys for reloading
+  const moduleKeys = {};
+
+  // Subscribe to modulesToReload to get module reload counts
+  modulesToReload.subscribe((reloadCounts) => {
+    for (const [moduleName, count] of Object.entries(reloadCounts)) {
+      moduleKeys[moduleName] = count;
+    }
+  });
+
   // Process modulesConfig.json in order
   for (const config of modulesConfig) {
     if (config['Comment-Source']) continue;
-    if (config.name === 'HotSwapModule') continue; // Skip HotSwapModule
+    if (config.name === 'HotSwapModule' || config.name === 'ReloadModule') continue;
 
     const { name, path, region, props } = config;
 
@@ -66,13 +79,13 @@ export async function loadModules() {
 
     if (swapGroupKey) {
       const swapGroup = swapModuleGroups[swapGroupKey];
-      if (!modulesByRegion[region]) {
-        modulesByRegion[region] = [];
+      if (!modulesByRegion[swapGroup.region]) {
+        modulesByRegion[swapGroup.region] = [];
       }
 
       // Avoid duplicating the group
       if (
-        !modulesByRegion[region].some(
+        !modulesByRegion[swapGroup.region].some(
           (group) => group.isSwapGroup && group.names.includes(name)
         )
       ) {
@@ -110,7 +123,7 @@ export async function loadModules() {
 
         const groupNames = groupModules.map((mod) => mod.name);
 
-        modulesByRegion[region].push({
+        modulesByRegion[swapGroup.region].push({
           isSwapGroup: true,
           names: groupNames,
           modules: groupModules,
@@ -149,7 +162,10 @@ export async function loadModules() {
       modulesByRegion[region] = [];
     }
 
-    modulesByRegion[region].push(moduleRegistry.get(name));
+    modulesByRegion[region].push({
+      ...moduleRegistry.get(name),
+      key: moduleKeys[name] || 0, // Add the key for reloading
+    });
   }
 
   // Set the initial visibility state
@@ -157,6 +173,71 @@ export async function loadModules() {
 
   // Set the store value
   modulesByRegionStore.set(modulesByRegion);
+
+  // Schedule module reloads
+  const reloadConfigEntry = modulesConfig.find(
+    (config) => config.name === 'ReloadModule'
+  );
+  const reloadConfigs = reloadConfigEntry ? reloadConfigEntry.props.modules : [];
+
+  scheduleModuleReloads(reloadConfigs);
+}
+
+function scheduleModuleReloads(reloadConfigs) {
+  let sunriseTime, sunsetTime;
+  let sunriseTimeouts = {};
+  let sunsetTimeouts = {};
+
+  // Function to schedule a reload for a module
+  function scheduleReload(time, moduleName) {
+    const now = new Date();
+    const delay = time - now;
+
+    if (delay > 0) {
+      return setTimeout(() => {
+        modulesToReload.update((state) => ({
+          ...state,
+          [moduleName]: (state[moduleName] || 0) + 1,
+        }));
+        console.log(`[Reload] Reload triggered for ${moduleName} at ${new Date().toLocaleTimeString()}`);
+
+        // Reschedule the reload for the next day
+        scheduleNextReloads();
+      }, delay);
+    }
+    return null;
+  }
+
+  // Function to schedule reloads based on sunrise and sunset times
+  function scheduleNextReloads() {
+    // Clear previous timeouts
+    Object.values(sunriseTimeouts).forEach(clearTimeout);
+    Object.values(sunsetTimeouts).forEach(clearTimeout);
+
+    sunriseTimeouts = {};
+    sunsetTimeouts = {};
+
+    // Schedule reloads for each module at sunrise and sunset
+    reloadConfigs.forEach(({ title, interval }) => {
+      if (interval === 'sunriseSunsetStore') {
+        if (sunriseTime) {
+          sunriseTimeouts[title] = scheduleReload(sunriseTime, title);
+        }
+        if (sunsetTime) {
+          sunsetTimeouts[title] = scheduleReload(sunsetTime, title);
+        }
+      }
+      // Additional intervals can be handled here
+    });
+  }
+
+  // Subscribe to sunrise and sunset times
+  sunriseSunsetStore.subscribe(({ sunrise, sunset }) => {
+    sunriseTime = new Date(sunrise);
+    sunsetTime = new Date(sunset);
+
+    scheduleNextReloads();
+  });
 }
 
 export function getModuleByName(name) {

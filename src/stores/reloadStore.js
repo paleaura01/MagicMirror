@@ -2,11 +2,9 @@
 
 import { writable } from 'svelte/store';
 
-export const modulesToReload = writable({
-  WeatherForecastModule: 0,
-  WeatherMapModule: 0,
-  WeatherModule: 0,
-});
+export const modulesByRegionStore = writable({});
+
+export const modulesToReload = writable({});
 
 // Add a subscription log to track updates
 modulesToReload.subscribe((value) => {

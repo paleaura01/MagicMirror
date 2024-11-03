@@ -3,7 +3,8 @@
 <script>
   import Region from './Region.svelte';
   import { onMount } from 'svelte';
-  import { modulesByRegionStore, swapModules } from './stores/hotswapStore.js';
+  import { modulesByRegionStore } from './stores/reloadStore.js';
+  import { swapModules } from './stores/hotswapStore.js';
   import modulesConfig from './modulesConfig.json';
   import { loadModules } from './moduleLoader.js';
 

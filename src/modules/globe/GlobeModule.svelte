@@ -88,31 +88,34 @@
 
     // Start animation loop with crossfade effect
     function startAnimation() {
-        animationInterval = setInterval(() => {
-            if (images.length > 0) {
-                const currentImageUrl = images[currentFrame].src;
-                const nextFrame = (currentFrame + 1) % images.length;
-                const nextImageUrl = images[nextFrame].src;
+    animationInterval = setInterval(() => {
+        if (images.length > 0 && mapDiv) { // Check if mapDiv is not null
+            const currentImageUrl = images[currentFrame].src;
+            const nextFrame = (currentFrame + 1) % images.length;
+            const nextImageUrl = images[nextFrame].src;
 
-                // Create fade-in effect for the next frame
-                const fadeOverlay = document.createElement("div");
-                fadeOverlay.className = "fade-overlay";
-                fadeOverlay.style.backgroundImage = `url(${nextImageUrl})`;
-                mapDiv.appendChild(fadeOverlay);
+            // Create fade-in effect for the next frame
+            const fadeOverlay = document.createElement("div");
+            fadeOverlay.className = "fade-overlay";
+            fadeOverlay.style.backgroundImage = `url(${nextImageUrl})`;
+            mapDiv.appendChild(fadeOverlay);
 
-                // Update the background image
-                mapDiv.style.backgroundImage = `url(${currentImageUrl})`;
+            // Update the background image
+            mapDiv.style.backgroundImage = `url(${currentImageUrl})`;
 
-                // Remove fade overlay after animation ends
-                setTimeout(() => {
+            // Remove fade overlay after animation ends
+            setTimeout(() => {
+                if (mapDiv.contains(fadeOverlay)) { // Ensure fadeOverlay exists before removing
                     mapDiv.removeChild(fadeOverlay);
-                }, fadeDuration);
+                }
+            }, fadeDuration);
 
-                // Move to the next frame
-                currentFrame = nextFrame;
-            }
-        }, frameDelay);
-    }
+            // Move to the next frame
+            currentFrame = nextFrame;
+        }
+    }, frameDelay);
+}
+
 
     // Stop animation
     function stopAnimation() {

@@ -5,8 +5,26 @@
   overflow: hidden;
   background-color: transparent !important;
   margin-top: 25px;
+  cursor: grab; /* Set cursor to grab */
+  pointer-events: auto; /* Ensure pointer events are enabled */
 }
 
+.rain-map-wrapper:active {
+  cursor: grabbing; /* Set cursor when active */
+}
+
+/* Ensure that the map container and its children are not affected by global styles */
+.rain-map-wrapper,
+.rain-map-wrapper * {
+  background-color: initial !important;
+  color: initial !important;
+  border: initial !important;
+  pointer-events: auto !important;
+  cursor: auto !important;
+}
+
+
+/* Rest of your styles remain the same */
 .rain-map-time-wrapper {
   --color-history: #003aff;
   --color-now: #000;
@@ -63,6 +81,3 @@
 .rain-map-wrapper.inverted-colors .leaflet-tile-pane .leaflet-layer:first-child {
   filter: invert(100%) hue-rotate(180deg);
 }
-
-
-

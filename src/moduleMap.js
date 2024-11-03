@@ -13,7 +13,6 @@
     "@/modules/bibleverse/BibleVerseModule": () => import("@/modules/bibleverse/BibleVerseModule.svelte"),
     "@/modules/globe/GlobeModule": () => import("@/modules/globe/GlobeModule.svelte"),
     "@/modules/delivery/DeliveryModule": () => import("@/modules/delivery/DeliveryModule.svelte"),
-    "@/modules/test/TestModule": () => import("@/modules/test/TestModule.svelte"),
-    "@/modules/reload/ReloadModule": () => import("@/modules/reload/ReloadModule.svelte"),
-    "@/modules/flightradar/FlightRadarModule": () => import("@/modules/flightradar/FlightRadarModule.svelte")
+    "@/modules/flightradar/FlightRadarModule": () => import("@/modules/flightradar/FlightRadarModule.svelte"),
+    "@/modules/test/TestModule": () => import("@/modules/test/TestModule.svelte")
   };

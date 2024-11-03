@@ -160,6 +160,25 @@
     "props": {}
   },
   {
+    "name": "FlightRadarModule",
+    "path": "@/modules/flightradar/FlightRadarModule",
+    "region": "",
+    "props": {
+      "lat": 35.315931,
+      "lon": -81.344469,
+      "zoom": 5,
+      "units": "imperial",
+      "showMap": "always",
+      "showTable": true,
+      "noFlightsMessage": "No flights currently in the area.",
+      "dayMapUrl": "https://tiles.stadiamaps.com/tiles/stamen_terrain/{z}/{x}/{y}{r}.png",
+      "nightMapUrl": "https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png",
+      "mapHeight": "300px",
+      "mapWidth": "100%",
+      "updateInterval": 120000
+    }
+  },
+  {
     "name": "TestModule",
     "path": "@/modules/test/TestModule",
     "region": "",
@@ -167,8 +186,6 @@
   },
   {
     "name": "ReloadModule",
-    "path": "@/modules/reload/ReloadModule",
-    "region": "hidden",
     "props": {
       "modules": [
         {
@@ -190,28 +207,7 @@
     }
   },
   {
-    "name": "FlightRadarModule",
-    "path": "@/modules/flightradar/FlightRadarModule",
-    "region": "",
-    "props": {
-      "lat": 35.315931,
-      "lon": -81.344469,
-      "zoom": 5,
-      "units": "imperial",
-      "showMap": "always",
-      "showTable": true,
-      "noFlightsMessage": "No flights currently in the area.",
-      "dayMapUrl": "https://tiles.stadiamaps.com/tiles/stamen_terrain/{z}/{x}/{y}{r}.png",
-      "nightMapUrl": "https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png",
-      "mapHeight": "300px",
-      "mapWidth": "100%",
-      "updateInterval": 120000
-    }
-  },
-  {
     "name": "HotSwapModule",
-    "path": "@/modules/hotswap/HotSwapModule",
-    "region": "hidden",
     "props": {
       "config": [
         {
@@ -226,7 +222,7 @@
         {
           "current": "TrafficModule",
           "currentPath": "@/modules/traffic/TrafficModule",
-          "swap": "hidden",
+          "swap": "TestModule",
           "swapPath": "@/modules/test/TestModule",
           "currentRegion": "left",
           "swapRegion": "hidden",
@@ -241,7 +237,6 @@
           "swapRegion": "right",
           "interval": 25000
         }
-
       ]
     }
   }
