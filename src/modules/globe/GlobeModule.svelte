@@ -13,7 +13,7 @@
     const frameDelay = 1000; // Delay in milliseconds between frame changes
     const refreshDelay = 120000; // 2 minutes in milliseconds
     const fadeDuration = 500; // Fade duration in milliseconds
-    const maxConcurrentRequests = 20; // Maximum number of concurrent image requests
+    const maxConcurrentRequests = 100; // Maximum number of concurrent image requests
 
     // Generate GOES-16 image URL for a specific hour, minute, and second
     function getGOES16ImageUrl(hourIndex, minute, second) {
@@ -69,16 +69,14 @@
                     if (result.success) {
                         images.push(result.img);
                         loaded = true;
-                        break; // Break out of the forEach loop once an image is loaded
+                        break; // Break out of the loop once an image is loaded
                     }
                 }
-            }
 
-            if (!loaded) {
-                console.warn(`[Warning] Could not load an image after checking all minutes and seconds for hour index ${i}. Retrying the last hour...`);
-                // Attempt to check the last hour again by incrementing the index and repeating the check
-                i--;
-                if (i < 0) break; // Prevent infinite loop if no images can be loaded
+                // If no image loaded, just log a warning
+                if (!loaded && requests.length === 0) {
+                    console.warn(`[Warning] Could not load an image for hour index ${i}. Retrying later...`);
+                }
             }
         }
     }

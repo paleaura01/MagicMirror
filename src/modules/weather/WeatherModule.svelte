@@ -59,7 +59,7 @@
   // Subscribe to isDaytimeStore to dynamically adjust icons based on daytime status
   isDaytimeStore.subscribe(value => {
     isDaytime = value;
-    console.log(`[WeatherModule] Current daytime status:`, isDaytime ? 'Day' : 'Night');
+    // console.log(`[WeatherModule] Current daytime status:`, isDaytime ? 'Day' : 'Night');
     if (weatherData) {
       weatherData.weatherIcon = getWeatherIcon(weatherData.weatherCode);
     }
@@ -92,7 +92,7 @@ async function fetchWeatherData() {
       throw new Error("Weather data not available");
     }
 
-    console.log("[WeatherModule] API Response:", data);
+    // console.log("[WeatherModule] API Response:", data);
 
     const tempCelsius = data.current_weather.temperature;
     const tempFahrenheit = (tempCelsius * 9 / 5) + 32;
@@ -103,7 +103,7 @@ async function fetchWeatherData() {
     if (data.daily.sunrise && data.daily.sunset) {
       sunrise = dayjs(data.daily.sunrise[0]).tz(userTimezone);
       sunset = dayjs(data.daily.sunset[0]).tz(userTimezone);
-      console.log(`[WeatherModule] Parsed Sunrise: ${sunrise.format()}, Sunset: ${sunset.format()}`);
+      // console.log(`[WeatherModule] Parsed Sunrise: ${sunrise.format()}, Sunset: ${sunset.format()}`);
       updateSunriseSunset(sunrise, sunset);
     } else {
       console.warn("[WeatherModule] Missing sunrise or sunset data; updateSunriseSunset will not be called.");

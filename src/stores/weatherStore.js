@@ -32,7 +32,7 @@ export function updateSunriseSunset(sunrise, sunset) {
       sunset: dayjs(sunset),
       ready: true,
     });
-    console.log(`[updateSunriseSunset] Updated sunrise: ${dayjs(sunrise).format()} and sunset: ${dayjs(sunset).format()}`);
+    // console.log(`[updateSunriseSunset] Updated sunrise: ${dayjs(sunrise).format()} and sunset: ${dayjs(sunset).format()}`);
   } else {
     sunriseSunsetStore.update((state) => ({
       ...state,
@@ -48,5 +48,5 @@ export const moduleReadyStore = writable({});
 // Function to set module as ready
 export function setModuleReady(moduleName) {
   moduleReadyStore.update(state => ({ ...state, [moduleName]: true }));
-  console.log(`[setModuleReady] ${moduleName} is now marked as ready`);
+ // console.log(`[setModuleReady] ${moduleName} is now marked as ready`);
 }

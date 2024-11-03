@@ -58,7 +58,7 @@
 
     isDaytimeStore.subscribe(value => {
         isDaytime = value;
-        console.log(`[WeatherForecastModule] Current daytime status:`, isDaytime ? 'Day' : 'Night');
+        // console.log(`[WeatherForecastModule] Current daytime status:`, isDaytime ? 'Day' : 'Night');
         if (forecastData.length > 0) {
             forecastData = forecastData.map(day => ({
                 ...day,
@@ -83,7 +83,7 @@
             // Update sunrise and sunset times in the store
             sunrise = dayjs(data.daily.sunrise[0]).tz(userTimezone);
             sunset = dayjs(data.daily.sunset[0]).tz(userTimezone);
-            console.log(`[WeatherForecastModule] Parsed Sunrise: ${sunrise.format()}, Sunset: ${sunset.format()}`);
+            // console.log(`[WeatherForecastModule] Parsed Sunrise: ${sunrise.format()}, Sunset: ${sunset.format()}`);
             updateSunriseSunset(sunrise, sunset);
 
             forecastData = data.daily.time.map((date, index) => {

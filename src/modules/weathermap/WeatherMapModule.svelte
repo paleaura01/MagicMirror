@@ -35,7 +35,7 @@
     // Subscribe to isDaytimeStore to track daytime status changes
     isDaytimeStore.subscribe(value => {
         isDaytime = value;
-        console.log(`[WeatherMapModule] Current daytime status:`, isDaytime ? 'Day' : 'Night');
+        // console.log(`[WeatherMapModule] Current daytime status:`, isDaytime ? 'Day' : 'Night');
         updateLayersForTimeOfDay();
     });
 
@@ -43,7 +43,7 @@
     sunriseSunsetStore.subscribe(({ sunrise: newSunrise, sunset: newSunset }) => {
         sunrise = newSunrise ? dayjs(newSunrise) : null;
         sunset = newSunset ? dayjs(newSunset) : null;
-        console.log(`[WeatherMapModule] Loaded Sunrise: ${sunrise ? sunrise.format() : 'N/A'}, Sunset: ${sunset ? sunset.format() : 'N/A'}`);
+        // console.log(`[WeatherMapModule] Loaded Sunrise: ${sunrise ? sunrise.format() : 'N/A'}, Sunset: ${sunset ? sunset.format() : 'N/A'}`);
         updateLayersForTimeOfDay();
     });
 
