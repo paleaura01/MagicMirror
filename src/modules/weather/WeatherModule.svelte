@@ -82,44 +82,50 @@
     await fetchWeatherData();
   }
 
-  async function fetchWeatherData() {
-    try {
-      const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=relative_humidity_2m&timezone=auto&daily=sunrise,sunset`);
-      const data = await response.json();
+  // In WeatherModule.svelte
+async function fetchWeatherData() {
+  try {
+    const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=relative_humidity_2m&timezone=auto&daily=sunrise,sunset`);
+    const data = await response.json();
 
-      if (!data.current_weather || !data.hourly) {
-        throw new Error("Weather data not available");
-      }
+    if (!data.current_weather || !data.hourly) {
+      throw new Error("Weather data not available");
+    }
 
-      console.log("[WeatherModule] API Response:", data);
+    console.log("[WeatherModule] API Response:", data);
 
-      const tempCelsius = data.current_weather.temperature;
-      const tempFahrenheit = (tempCelsius * 9 / 5) + 32;
-      const windspeedMph = (data.current_weather.windspeed * 2.23694).toFixed(1);
-      const humidity = `${data.hourly.relative_humidity_2m[0]}%`;
+    const tempCelsius = data.current_weather.temperature;
+    const tempFahrenheit = (tempCelsius * 9 / 5) + 32;
+    const windspeedMph = (data.current_weather.windspeed * 2.23694).toFixed(1);
+    const humidity = `${data.hourly.relative_humidity_2m[0]}%`;
 
+    // Check if sunrise and sunset data are available
+    if (data.daily.sunrise && data.daily.sunset) {
       sunrise = dayjs(data.daily.sunrise[0]).tz(userTimezone);
       sunset = dayjs(data.daily.sunset[0]).tz(userTimezone);
-      console.log(`[WeatherModule] Parsed Sunrise: ${sunrise ? sunrise.format() : 'N/A'}, Sunset: ${sunset ? sunset.format() : 'N/A'}`);
-
+      console.log(`[WeatherModule] Parsed Sunrise: ${sunrise.format()}, Sunset: ${sunset.format()}`);
       updateSunriseSunset(sunrise, sunset);
-
-      const weatherCode = data.current_weather.weathercode.toString();
-      weatherData = {
-        temperature: tempFahrenheit.toFixed(1),
-        windspeed: windspeedMph,
-        humidity,
-        sunrise: sunrise.format('HH:mm'),
-        sunset: sunset.format('HH:mm'),
-        weatherIcon: getWeatherIcon(weatherCode),
-        description: getWeatherDescription(weatherCode),
-        weatherCode
-      };
-    } catch (err) {
-      error = err.message;
-      console.error("[WeatherModule] Error fetching weather data:", err);
+    } else {
+      console.warn("[WeatherModule] Missing sunrise or sunset data; updateSunriseSunset will not be called.");
     }
+
+    const weatherCode = data.current_weather.weathercode.toString();
+    weatherData = {
+      temperature: tempFahrenheit.toFixed(1),
+      windspeed: windspeedMph,
+      humidity,
+      sunrise: sunrise ? sunrise.format('HH:mm') : 'N/A',
+      sunset: sunset ? sunset.format('HH:mm') : 'N/A',
+      weatherIcon: getWeatherIcon(weatherCode),
+      description: getWeatherDescription(weatherCode),
+      weatherCode
+    };
+  } catch (err) {
+    error = err.message;
+    console.error("[WeatherModule] Error fetching weather data:", err);
   }
+}
+
 
   function getWeatherDescription(code) {
     const descriptions = {

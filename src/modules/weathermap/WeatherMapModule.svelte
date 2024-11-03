@@ -6,7 +6,7 @@
     import dayjs from 'dayjs';
     import utc from 'dayjs/plugin/utc';
     import timezone from 'dayjs/plugin/timezone';
-    import { sunriseSunsetStore, isDaytimeStore, updateSunriseSunset, setModuleReady } from '../../stores/weatherStore.js';
+    import { sunriseSunsetStore, isDaytimeStore, setModuleReady } from '../../stores/weatherStore.js';
     import { modulesToReload } from '../../stores/reloadStore';
 
     dayjs.extend(utc);
@@ -39,15 +39,19 @@
         updateLayersForTimeOfDay();
     });
 
-    // Subscribe to sunriseSunsetStore for updates
+    // Subscribe to sunriseSunsetStore to get sunrise and sunset times
     sunriseSunsetStore.subscribe(({ sunrise: newSunrise, sunset: newSunset }) => {
         sunrise = newSunrise ? dayjs(newSunrise) : null;
         sunset = newSunset ? dayjs(newSunset) : null;
-        console.log(`[WeatherMapModule] Updated Sunrise: ${sunrise ? sunrise.format() : 'N/A'}, Sunset: ${sunset ? sunset.format() : 'N/A'}`);
+        console.log(`[WeatherMapModule] Loaded Sunrise: ${sunrise ? sunrise.format() : 'N/A'}, Sunset: ${sunset ? sunset.format() : 'N/A'}`);
         updateLayersForTimeOfDay();
     });
 
     async function fetchWeatherData() {
+        if (!map) {
+            console.error("Map is not initialized; skipping weather data fetch.");
+            return;
+        }
         try {
             const apiUrl = 'http://localhost:8080/proxy?url=' + encodeURIComponent('https://api.rainviewer.com/public/weather-maps.json');
             const response = await fetch(apiUrl);
@@ -63,14 +67,7 @@
             const radarFrames = data.radar.past;
             const satelliteFrames = data.satellite.infrared;
 
-            // Update sunrise and sunset based on the weather data
-            const sunriseTime = data.daily.sunrise[0]; // Assuming the API provides daily data with sunrise times
-            const sunsetTime = data.daily.sunset[0]; // Assuming the API provides daily data with sunset times
-
-            // Update the store with the new sunrise and sunset values
-            updateSunriseSunset(sunriseTime, sunsetTime);
-
-            // Continue with radar and satellite frame processing
+            // Process radar and satellite frame data
             const frames = radarFrames.filter(radarFrame => satelliteFrames.some(satFrame => satFrame.time === radarFrame.time));
 
             if (!frames.length) {
@@ -176,72 +173,9 @@
             if (!map) console.error("Map is not initialized.");
             return;
         }
-
         apiCallInProgress = true;
-        try {
-            const apiUrl = 'http://localhost:8080/proxy?url=' + encodeURIComponent('https://api.rainviewer.com/public/weather-maps.json');
-            const response = await fetch(apiUrl);
-
-            if (!response.ok) {
-                console.error("Failed to fetch RainViewer data.");
-                apiCallInProgress = false;
-                return;
-            }
-
-            const data = await response.json();
-            const tileSize = 256;
-            const radarFrames = data.radar.past;
-            const satelliteFrames = data.satellite.infrared;
-
-            // Continue to process radar and satellite data
-            const frames = radarFrames.filter(radarFrame => satelliteFrames.some(satFrame => satFrame.time === radarFrame.time));
-
-            if (!frames.length) {
-                console.warn("No frames with both radar and satellite data found.");
-                apiCallInProgress = false;
-                return;
-            }
-
-            clearWeatherLayers();
-
-            frames.forEach((frame, index) => {
-                const timestamp = frame.time;
-                const radarColor = getRadarColor();
-                const radarUrlTemplate = `https://tilecache.rainviewer.com/v2/radar/${timestamp}/${tileSize}/{z}/{x}/{y}/${radarColor}/1_0.png`;
-
-                const radarLayer = L.tileLayer(radarUrlTemplate, {
-                    tileSize,
-                    opacity: 0,
-                    zIndex: 1100 + index,
-                    maxZoom: config.zoom,
-                    errorTileUrl: './pics/error-tile.png',
-                }).addTo(map);
-                radarLayers.push(radarLayer);
-
-                const satelliteFrame = satelliteFrames.find(satFrame => satFrame.time === timestamp);
-                if (satelliteFrame && satelliteFrame.path) {
-                    const satelliteUrlTemplate = `https://tilecache.rainviewer.com/v2/satellite/${satelliteFrame.path}/${tileSize}/{z}/{x}/{y}/0/0_0.png`;
-
-                    const satelliteLayer = L.tileLayer(satelliteUrlTemplate, {
-                        tileSize,
-                        opacity: 0,
-                        zIndex: 1000 + index,
-                        maxZoom: config.zoom,
-                        errorTileUrl: './pics/error-tile.png',
-                    }).addTo(map);
-                    satelliteLayers.push(satelliteLayer);
-                } else {
-                    satelliteLayers.push(null);
-                }
-            });
-
-            updateBaseLayers(frames[0], tileSize, satelliteFrames);
-
-            apiCallInProgress = false;
-        } catch (error) {
-            console.error("Error fetching radar data:", error);
-            apiCallInProgress = false;
-        }
+        await fetchWeatherData();
+        apiCallInProgress = false;
     }
 
     function updateBaseLayers(baseFrame, tileSize, satelliteFrames) {

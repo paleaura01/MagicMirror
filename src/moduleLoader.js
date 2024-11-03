@@ -117,7 +117,7 @@ export async function loadModules() {
 }
 
 function scheduleModuleReloads(reloadConfigs) {
-  if (unsubscribeSunriseSunset) unsubscribeSunriseSunset();  // Unsubscribe if already subscribed
+  if (unsubscribeSunriseSunset) unsubscribeSunriseSunset();
 
   unsubscribeSunriseSunset = sunriseSunsetStore.subscribe(({ sunrise, sunset, ready }) => {
     if (!ready) {
@@ -125,18 +125,14 @@ function scheduleModuleReloads(reloadConfigs) {
       return;
     }
 
+    // Proceed with scheduling reloads after confirming sunrise and sunset are set
     const sunriseTime = sunrise ? dayjs(sunrise).tz(userTimezone) : null;
     const sunsetTime = sunset ? dayjs(sunset).tz(userTimezone) : null;
 
-    console.log(`[moduleLoader] Scheduling reload with Sunrise: ${sunriseTime ? sunriseTime.format() : 'N/A'}, Sunset: ${sunsetTime ? sunsetTime.format() : 'N/A'}`);
+    console.log(`[moduleLoader] Scheduling reload with Sunrise: ${sunriseTime.format()}, Sunset: ${sunsetTime.format()}`);
 
-    reloadScheduled = false;
     clearTimeouts();
     scheduleNextReloads(reloadConfigs, sunriseTime, sunsetTime);
-
-    // Unsubscribe after the first valid update
-    unsubscribeSunriseSunset();
-    unsubscribeSunriseSunset = null;
   });
 }
 
