@@ -6,14 +6,18 @@
     let loading = true;
     let error = '';
     let timer;
-    const logoPath = '/src/modules/delivery/pics/United-States-Postal-Service-Logo.png';
+    const logos = {
+        'auto-reply@usps.com': '/src/modules/delivery/pics/United-States-Postal-Service-Logo.png',
+        'order-update@amazon.com': '/src/modules/delivery/pics/Amazon-Logo.png',
+        'shipment-tracking@amazon.com': '/src/modules/delivery/pics/Amazon-Logo.png'
+    };
 
     async function fetchEmails() {
         try {
             loading = true;
             const res = await fetch('http://localhost:8002/api/fetch_emails');
             const data = await res.json();
-            emails = data.trackingNumbers || [];
+            emails = data.trackingEmails || [];
         } catch (err) {
             error = 'Failed to fetch emails';
             console.error(err);
@@ -51,8 +55,8 @@
                 <ul class="delivery-list">
                     {#each emails as email, index}
                         <li class="delivery-item" style="opacity: {getFadeOpacity(index)};">
-                            <img src={logoPath} alt="USPS Logo" class="logo-icon" />
-                            <span class="delivery-info">{email}</span> <!-- Only display the cleaned subject -->
+                            <img src={logos[email.sender]} alt="{email.sender} Logo" class="logo-icon" />
+                            <span class="delivery-info">{email.subject}</span> <!-- Only display the cleaned subject -->
                         </li>
                     {/each}
                 </ul>
@@ -62,3 +66,7 @@
         </div>
     {/if}
 </div>
+
+<style>
+    /* Include previous CSS styles */
+</style>

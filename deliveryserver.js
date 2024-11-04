@@ -30,6 +30,7 @@ app.get('/api/fetch_emails', (req, res) => {
   const imap = createImapConnection();
 
   imap.once('ready', () => {
+    console.log('IMAP connection ready.');
     imap.openBox('INBOX', false, (err, box) => {
       if (err) {
         console.error('Error opening inbox:', err);
@@ -37,8 +38,8 @@ app.get('/api/fetch_emails', (req, res) => {
         return res.status(500).send({ error: 'Error opening inbox' });
       }
 
-      fetchRecentTrackingNumbers(imap, (trackingNumbers) => {
-        res.json({ trackingNumbers });
+      fetchEmailsForEachSender(imap, (trackingEmails) => {
+        res.json({ trackingEmails });
         imap.end();
       });
     });
@@ -58,21 +59,28 @@ app.get('/api/fetch_emails', (req, res) => {
   imap.connect();
 });
 
-function fetchRecentTrackingNumbers(imap, cb) {
-    imap.search([['FROM', 'auto-reply@usps.com']], (err, results) => {
+function fetchEmailsForEachSender(imap, cb) {
+  const senders = ['auto-reply@usps.com', 'order-update@amazon.com', 'shipment-tracking@amazon.com'];
+  const emailSubjects = [];
+
+  const fetchEmails = (sender, callback) => {
+    console.log(`Searching emails from sender: ${sender}`);
+
+    imap.search([['FROM', sender]], (err, results) => {
       if (err) {
-        console.error('Error searching emails:', err);
-        cb([]);
+        console.error(`Error searching emails for sender ${sender}:`, err);
+        callback();
         return;
       }
       if (results.length === 0) {
-        cb([]);
+        console.log(`No emails found for sender: ${sender}`);
+        callback();
         return;
       }
 
-      // Fetch the last 8 messages
+      console.log(`Found ${results.length} emails for sender ${sender}. Fetching headers...`);
+
       const fetch = imap.fetch(results.slice(-8), { bodies: 'HEADER.FIELDS (SUBJECT)' });
-      const emailSubjects = [];
 
       fetch.on('message', (msg) => {
         let fullSubject = '';
@@ -83,8 +91,6 @@ function fetchRecentTrackingNumbers(imap, cb) {
           });
 
           stream.once('end', () => {
-            fullSubject = fullSubject.replace(/\r\n\s+/g, ' ');
-
             const matches = fullSubject.match(/=\?UTF-8\?Q\?(.+?)\?=/gi);
             if (matches) {
               const decodedSubject = matches
@@ -92,40 +98,44 @@ function fetchRecentTrackingNumbers(imap, cb) {
                   iconv.decode(Buffer.from(part.replace(/=\?UTF-8\?Q\?/i, '').replace(/\?=/, '').replace(/_/g, ' '), 'utf8'), 'utf8')
                 )
                 .join('');
-
-              // Refine the format to match the desired output
-              const formattedSubject = decodedSubject
-                .replace(/USPS=C2=AE\s+/i, '') // Remove USPS trademark
-                .replace(/Expected\s+|on\s+|by\s+/gi, '') // Remove "Expected", "on", and "by"
-                .replace(/\b(arriving|between)\b\s+/gi, '') // Remove "arriving" and "between"
-                .replace(/(\d{1,2}:\d{2}[ap]m)\s+(\d+)/i, '$1 - $2') // Add dash before tracking number
-                .replace(/^(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday),\s+/i, '') // Remove weekday if it appears at the start
-                .replace(/\s+/g, ' ') // Remove extra whitespace
-                .trim();
-            
-              // Remove "Delivery" if it’s at the beginning of the string
-              const finalSubject = formattedSubject.startsWith('Delivery')
-                ? formattedSubject.slice('Delivery'.length).trim()
-                : formattedSubject;
-
-              emailSubjects.push(finalSubject);
+              console.log(`Decoded subject for ${sender}: ${decodedSubject}`);
+              emailSubjects.push(decodedSubject);
+            } else {
+              console.log(`Non-encoded subject for ${sender}: ${fullSubject}`);
+              emailSubjects.push(fullSubject);
             }
           });
         });
       });
 
       fetch.once('end', () => {
-        cb(emailSubjects.reverse()); // Reverse the order to show the newest emails at the top
+        console.log(`Completed fetching emails for sender ${sender}`);
+        callback();
       });
 
       fetch.once('error', (err) => {
-        console.error('Fetch error:', err);
-        cb([]);
+        console.error(`Fetch error for sender ${sender}:`, err);
+        callback();
       });
     });
-}
+  };
 
-  
+  // Process each sender one by one
+  let senderIndex = 0;
+
+  const processNextSender = () => {
+    if (senderIndex < senders.length) {
+      const sender = senders[senderIndex];
+      senderIndex += 1;
+      fetchEmails(sender, processNextSender);
+    } else {
+      console.log('All senders processed.');
+      cb(emailSubjects.reverse());
+    }
+  };
+
+  processNextSender();
+}
 
 app.listen(port, () => {
   console.log(`✅ Delivery Server is running on port ${port}`);
