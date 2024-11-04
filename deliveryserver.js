@@ -121,11 +121,16 @@ function fetchEmailsForEachSender(imap, cb) {
               : fullSubject;
 
             // Parse the date, or set to null if invalid
-            const parsedDate = new Date(dateHeader);
-            const emailDate = isNaN(parsedDate) ? null : parsedDate.toISOString();
-
-            if (!emailDate) {
-              console.warn(`Invalid date parsed for email from ${email}: ${dateHeader}`);
+            let emailDate = null;
+            try {
+              const parsedDate = new Date(dateHeader);
+              if (!isNaN(parsedDate)) {
+                emailDate = parsedDate.toISOString();
+              } else {
+                console.warn(`Invalid date format for email from ${email}: ${dateHeader}`);
+              }
+            } catch (err) {
+              console.warn(`Error parsing date for email from ${email}: ${dateHeader}`, err);
             }
 
             console.log(`Fetched email - Date: ${emailDate}, Sender: ${email}, Subject: ${subject}`);

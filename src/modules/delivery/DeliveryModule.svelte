@@ -51,7 +51,7 @@
       <div class="delivery-list-container">
         {#if emails.length > 0}
           <ul class="delivery-list">
-            {#each emails.slice(0, 6) as email, index} <!-- Display only the first 6 emails -->
+            {#each emails.slice(0, 5) as email, index} <!-- Display only the first 5 emails -->
               <li class="delivery-item" style="opacity: {getFadeOpacity(index)};">
                 <img src={email.logo} alt="{email.sender} Logo" class="logo-icon" />
                 <span class="delivery-info">{email.subject}</span>
