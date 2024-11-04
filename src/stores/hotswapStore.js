@@ -2,7 +2,7 @@
 
 import { writable } from 'svelte/store';
 
-export const swapVisibilityStore = writable({});
+export const swapVisibilityStore = writable({}); 
 
 export function swapModules(config) {
   config.forEach(({ current, swap, swapRegion, interval }) => {
@@ -12,22 +12,26 @@ export function swapModules(config) {
 
     setTimeout(() => {
       setInterval(() => {
-        // Hide the current module or show the swap module
-        swapVisibilityStore.update((state) => ({
-          ...state,
-          [current]: hideModule ? null : swap,
-        }));
-
-        // console.log(`[hotswapStore] ${hideModule ? `Hid ${current}` : `Swapped: ${current} out, ${swap} in`}`);
+        // console.log(`[hotswapStore] Swapping ${current} with ${swap}`);
+        swapVisibilityStore.update((state) => {
+          const newState = {
+            ...state,
+            [current]: hideModule ? null : swap,
+          };
+          console.log("Visibility state updated:", newState);
+          return newState;
+        });
 
         setTimeout(() => {
-          // Show the current module again
-          swapVisibilityStore.update((state) => ({
-            ...state,
-            [current]: current,
-          }));
-
-          // console.log(`[hotswapStore] ${hideModule ? `Showed ${current}` : `Reverted: ${swap} out, ${current} in`}`);
+          // console.log(`[hotswapStore] Reverting ${swap} to show ${current}`);
+          swapVisibilityStore.update((state) => {
+            const newState = {
+              ...state,
+              [current]: current,
+            };
+            // console.log("Reverting state:", newState);
+            return newState;
+          });
         }, interval / 2);
       }, interval);
     }, initialDelay);

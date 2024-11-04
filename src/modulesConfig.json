@@ -210,24 +210,23 @@
     "name": "HotSwapModule",
     "props": {
       "config": [
-
+        {
+          "current": "DeliveryModule",
+          "currentPath": "@/modules/delivery/DeliveryModule",
+          "swap": "TestModule",
+          "swapPath": "@/modules/test/TestModule",
+          "currentRegion": "bottom_center",
+          "swapRegion": "bottom_center",
+          "interval": 15000
+        },
         {
           "current": "TrafficModule",
           "currentPath": "@/modules/traffic/TrafficModule",
           "swap": "TestModule",
           "swapPath": "@/modules/test/TestModule",
           "currentRegion": "left",
-          "swapRegion": "hidden",
+          "swapRegion": "left",
           "interval": 20000
-        },
-        {
-          "current": "WeatherForecastModule",
-          "currentPath": "@/modules/weatherforecast/WeatherForecastModule",
-          "swap": "TestModule",
-          "swapPath": "@/modules/test/TestModule",
-          "currentRegion": "right",
-          "swapRegion": "right",
-          "interval": 25000
         }
       ]
     }

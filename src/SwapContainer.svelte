@@ -6,15 +6,13 @@
   
     export let module;
   
-    let visibleModuleName = module.modules[0]?.name; // Start with the first module
-  
+    let visibleModuleName = module.modules[0]?.name;
     let unsubscribe;
   
     onMount(() => {
-      // Subscribe to visibility changes
       unsubscribe = swapVisibilityStore.subscribe((state) => {
-        if (state.hasOwnProperty(module.names[0])) {
-          visibleModuleName = state[module.names[0]];
+        if (state.hasOwnProperty(module.modules[0].name)) {
+          visibleModuleName = state[module.modules[0].name];
         } else {
           visibleModuleName = module.modules[0]?.name;
         }
@@ -28,18 +26,13 @@
   
   <div class="swap-container">
     {#if module.modules.length > 1}
-      {#each module.modules as mod (mod ? mod.name : '')}
-        {#if mod}
-          <div class:hidden={visibleModuleName !== mod.name}>
-            <svelte:component this={mod.component} {...mod.props} />
-          </div>
-        {:else}
-          <div>Error: Module not found</div>
-        {/if}
+      {#each module.modules as mod (mod.name)}
+        <div class:hidden={visibleModuleName !== mod.name}>
+          <svelte:component this={mod.component} {...mod.props} />
+        </div>
       {/each}
     {:else}
-      <!-- Only one module in the swap group -->
-      <div class:hidden={!visibleModuleName}>
+      <div>
         <svelte:component this={module.modules[0].component} {...module.modules[0].props} />
       </div>
     {/if}

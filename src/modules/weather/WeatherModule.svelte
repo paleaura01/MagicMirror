@@ -1,3 +1,6 @@
+<!-- ./src/modules/weather/WeatherModule.svelte -->
+
+
 <script>
   import { onMount, onDestroy } from 'svelte';
   import dayjs from 'dayjs';
