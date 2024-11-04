@@ -18,7 +18,7 @@ export function swapModules(config) {
             ...state,
             [current]: hideModule ? null : swap,
           };
-          console.log("Visibility state updated:", newState);
+          // console.log("Visibility state updated:", newState);
           return newState;
         });
 
