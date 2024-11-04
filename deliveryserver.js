@@ -41,6 +41,10 @@ app.get('/api/fetch_emails', (req, res) => {
       fetchEmailsForEachSender(imap, (emails) => {
         // Sort emails by date after all have been fetched
         emails.sort((a, b) => new Date(b.date) - new Date(a.date));
+        console.log("Final sorted emails:");
+        emails.forEach((email, index) => {
+          console.log(`Email ${index + 1} - Date: ${email.date}, Sender: ${email.sender}, Subject: ${email.subject}`);
+        });
         res.json({ emails });
         imap.end();
       });
@@ -64,8 +68,8 @@ app.get('/api/fetch_emails', (req, res) => {
 function fetchEmailsForEachSender(imap, cb) {
   const senders = [
     { email: 'auto-reply@usps.com', logo: '/src/modules/delivery/pics/United-States-Postal-Service-Logo.png' },
-    { email: '<order-update@amazon.com>', logo: '/src/modules/delivery/pics/Amazon-Logo.png' },
-    { email: '<shipment-tracking@amazon.com>', logo: '/src/modules/delivery/pics/Amazon-Logo.png' },
+    { email: 'order-update@amazon.com', logo: '/src/modules/delivery/pics/Amazon-Logo.png' },
+    { email: 'shipment-tracking@amazon.com', logo: '/src/modules/delivery/pics/Amazon-Logo.png' },
     { email: 'help@walmart.com', logo: '/src/modules/delivery/pics/Walmart-Logo.png' }
   ];
   const emails = [];
@@ -88,26 +92,43 @@ function fetchEmailsForEachSender(imap, cb) {
 
       console.log(`Found ${results.length} emails for sender ${email}. Fetching headers...`);
 
-      const fetch = imap.fetch(results.slice(-8), { bodies: ['HEADER.FIELDS (SUBJECT DATE)'] });
+      const fetch = imap.fetch(results.slice(-8), { bodies: 'HEADER.FIELDS (SUBJECT DATE)' });
 
       fetch.on('message', (msg) => {
         let fullSubject = '';
-        let emailDate = '';
+        let dateHeader = '';
 
         msg.on('body', (stream) => {
           stream.on('data', (chunk) => {
             const text = chunk.toString('utf8');
-            fullSubject += text.match(/Subject: (.*)/i)?.[1] || '';
-            emailDate += text.match(/Date: (.*)/i)?.[1] || '';
+            const subjectMatch = text.match(/Subject: (.*)/i);
+            if (subjectMatch) {
+              fullSubject += subjectMatch[1].trim();
+            }
+            const dateMatch = text.match(/Date: (.*)/i);
+            if (dateMatch) {
+              dateHeader = dateMatch[1].trim();
+            }
           });
 
           stream.once('end', () => {
+            // Decode subject
             const matches = fullSubject.match(/=\?UTF-8\?Q\?(.+?)\?=/gi);
             const subject = matches
               ? matches.map((part) =>
                   iconv.decode(Buffer.from(part.replace(/=\?UTF-8\?Q\?/i, '').replace(/\?=/, '').replace(/_/g, ' '), 'utf8'), 'utf8')
                 ).join('')
               : fullSubject;
+
+            // Parse the date, or set to null if invalid
+            const parsedDate = new Date(dateHeader);
+            const emailDate = isNaN(parsedDate) ? null : parsedDate.toISOString();
+
+            if (!emailDate) {
+              console.warn(`Invalid date parsed for email from ${email}: ${dateHeader}`);
+            }
+
+            console.log(`Fetched email - Date: ${emailDate}, Sender: ${email}, Subject: ${subject}`);
 
             emails.push({ sender: email, subject, date: emailDate, logo });
           });
