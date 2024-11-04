@@ -38,8 +38,10 @@ app.get('/api/fetch_emails', (req, res) => {
         return res.status(500).send({ error: 'Error opening inbox' });
       }
 
-      fetchEmailsForEachSender(imap, (trackingEmails) => {
-        res.json({ trackingEmails });
+      fetchEmailsForEachSender(imap, (emails) => {
+        // Sort emails by date after all have been fetched
+        emails.sort((a, b) => new Date(b.date) - new Date(a.date));
+        res.json({ emails });
         imap.end();
       });
     });
@@ -60,67 +62,70 @@ app.get('/api/fetch_emails', (req, res) => {
 });
 
 function fetchEmailsForEachSender(imap, cb) {
-  const senders = ['auto-reply@usps.com', 'order-update@amazon.com', 'shipment-tracking@amazon.com'];
-  const emailSubjects = [];
+  const senders = [
+    { email: 'auto-reply@usps.com', logo: '/src/modules/delivery/pics/United-States-Postal-Service-Logo.png' },
+    { email: '<order-update@amazon.com>', logo: '/src/modules/delivery/pics/Amazon-Logo.png' },
+    { email: '<shipment-tracking@amazon.com>', logo: '/src/modules/delivery/pics/Amazon-Logo.png' },
+    { email: 'help@walmart.com', logo: '/src/modules/delivery/pics/Walmart-Logo.png' }
+  ];
+  const emails = [];
 
-  const fetchEmails = (sender, callback) => {
-    console.log(`Searching emails from sender: ${sender}`);
+  const fetchEmails = (senderInfo, callback) => {
+    const { email, logo } = senderInfo;
+    console.log(`Searching emails from sender: ${email}`);
 
-    imap.search([['FROM', sender]], (err, results) => {
+    imap.search([['FROM', email]], (err, results) => {
       if (err) {
-        console.error(`Error searching emails for sender ${sender}:`, err);
+        console.error(`Error searching emails for sender ${email}:`, err);
         callback();
         return;
       }
       if (results.length === 0) {
-        console.log(`No emails found for sender: ${sender}`);
+        console.log(`No emails found for sender: ${email}`);
         callback();
         return;
       }
 
-      console.log(`Found ${results.length} emails for sender ${sender}. Fetching headers...`);
+      console.log(`Found ${results.length} emails for sender ${email}. Fetching headers...`);
 
-      const fetch = imap.fetch(results.slice(-8), { bodies: 'HEADER.FIELDS (SUBJECT)' });
+      const fetch = imap.fetch(results.slice(-8), { bodies: ['HEADER.FIELDS (SUBJECT DATE)'] });
 
       fetch.on('message', (msg) => {
         let fullSubject = '';
+        let emailDate = '';
 
         msg.on('body', (stream) => {
           stream.on('data', (chunk) => {
-            fullSubject += chunk.toString('utf8');
+            const text = chunk.toString('utf8');
+            fullSubject += text.match(/Subject: (.*)/i)?.[1] || '';
+            emailDate += text.match(/Date: (.*)/i)?.[1] || '';
           });
 
           stream.once('end', () => {
             const matches = fullSubject.match(/=\?UTF-8\?Q\?(.+?)\?=/gi);
-            if (matches) {
-              const decodedSubject = matches
-                .map((part) =>
+            const subject = matches
+              ? matches.map((part) =>
                   iconv.decode(Buffer.from(part.replace(/=\?UTF-8\?Q\?/i, '').replace(/\?=/, '').replace(/_/g, ' '), 'utf8'), 'utf8')
-                )
-                .join('');
-              console.log(`Decoded subject for ${sender}: ${decodedSubject}`);
-              emailSubjects.push(decodedSubject);
-            } else {
-              console.log(`Non-encoded subject for ${sender}: ${fullSubject}`);
-              emailSubjects.push(fullSubject);
-            }
+                ).join('')
+              : fullSubject;
+
+            emails.push({ sender: email, subject, date: emailDate, logo });
           });
         });
       });
 
       fetch.once('end', () => {
-        console.log(`Completed fetching emails for sender ${sender}`);
+        console.log(`Completed fetching emails for sender ${email}`);
         callback();
       });
 
       fetch.once('error', (err) => {
-        console.error(`Fetch error for sender ${sender}:`, err);
+        console.error(`Fetch error for sender ${email}:`, err);
         callback();
       });
     });
   };
 
-  // Process each sender one by one
   let senderIndex = 0;
 
   const processNextSender = () => {
@@ -130,7 +135,7 @@ function fetchEmailsForEachSender(imap, cb) {
       fetchEmails(sender, processNextSender);
     } else {
       console.log('All senders processed.');
-      cb(emailSubjects.reverse());
+      cb(emails);
     }
   };
 

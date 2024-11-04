@@ -150,7 +150,7 @@
   {
     "name": "GlobeModule",
     "path": "@/modules/globe/GlobeModule",
-    "region": "center",
+    "region": "",
     "props": {}
   },
   {
@@ -210,15 +210,7 @@
     "name": "HotSwapModule",
     "props": {
       "config": [
-        {
-          "current": "DeliveryModule",
-          "currentPath": "@/modules/delivery/DeliveryModule",
-          "swap": "TestModule",
-          "swapPath": "@/modules/test/TestModule",
-          "currentRegion": "bottom_center",
-          "swapRegion": "bottom_center",
-          "interval": 15000
-        },
+
         {
           "current": "TrafficModule",
           "currentPath": "@/modules/traffic/TrafficModule",
