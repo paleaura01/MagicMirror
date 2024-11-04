@@ -196,7 +196,7 @@
         {
           "title": "WeatherMapModule",
           "path": "@/modules/weathermap/WeatherMapModule",
-          "interval": 5000
+          "interval": "sunriseSunsetStore"
         },
         {
           "title": "WeatherModule",

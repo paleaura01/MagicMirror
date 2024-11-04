@@ -17,7 +17,7 @@ const moduleRegistry = new Map();
 let reloadScheduled = false;
 let sunriseTimeouts = {};
 let sunsetTimeouts = {};
-let unsubscribeSunriseSunset;  // Track subscription
+let unsubscribeSunriseSunset;
 
 const userTimezone = dayjs.tz.guess();
 
@@ -28,16 +28,19 @@ function clearTimeouts() {
   sunsetTimeouts = {};
 }
 
+function logWithTimestamp(message) {
+  console.log(`[${new Date().toISOString()}] ${message}`);
+}
+
 export async function loadModules() {
+  logWithTimestamp("Loading modules...");
   const modulesByRegion = {};
 
-  // Extract swap configurations
   const hotswapConfigEntry = modulesConfig.find(
     (config) => config.name === 'HotSwapModule'
   );
   const swapConfigs = hotswapConfigEntry ? hotswapConfigEntry.props.config : [];
 
-  // Process swapping configurations
   const swapModuleGroups = swapConfigs.reduce((acc, swapConfig) => {
     const groupKey = `${swapConfig.currentRegion}-${swapConfig.current}`;
     acc[groupKey] = acc[groupKey] || { region: swapConfig.currentRegion, current: swapConfig.current, modules: [] };
@@ -121,15 +124,14 @@ function scheduleModuleReloads(reloadConfigs) {
 
   unsubscribeSunriseSunset = sunriseSunsetStore.subscribe(({ sunrise, sunset, ready }) => {
     if (!ready) {
-       console.log("[moduleLoader] Waiting for both sunrise and sunset times to initialize.");
+      logWithTimestamp("Awaiting sunrise and sunset initialization.");
       return;
     }
 
-    // Proceed with scheduling reloads after confirming sunrise and sunset are set
     const sunriseTime = sunrise ? dayjs(sunrise).tz(userTimezone) : null;
     const sunsetTime = sunset ? dayjs(sunset).tz(userTimezone) : null;
 
-     console.log(`[moduleLoader] Scheduling reload with Sunrise: ${sunriseTime.format()}, Sunset: ${sunsetTime.format()}`);
+    logWithTimestamp(`[moduleLoader] Scheduling reload with Sunrise: ${sunriseTime.format()}, Sunset: ${sunsetTime.format()}`);
 
     clearTimeouts();
     scheduleNextReloads(reloadConfigs, sunriseTime, sunsetTime);
@@ -137,13 +139,16 @@ function scheduleModuleReloads(reloadConfigs) {
 }
 
 function scheduleNextReloads(reloadConfigs, sunriseTime, sunsetTime) {
-  if (reloadScheduled) return;
-   console.log("[ScheduleReload] Scheduling reloads based on sunrise and sunset times");
-
-  reloadScheduled = true;
+  clearTimeouts();
 
   reloadConfigs.forEach(({ title, interval }) => {
-    if (interval === 'sunriseSunsetStore') {
+    if (typeof interval === 'number') {
+      setInterval(() => {
+        const reloadId = Date.now();
+        modulesToReload.update((state) => ({ ...state, [title]: (state[title] || 0) + 1 }));
+        logWithTimestamp(`[Reload ${reloadId}] Interval-based reload triggered for ${title}`);
+      }, interval);
+    } else if (interval === 'sunriseSunsetStore') {
       if (sunriseTime) sunriseTimeouts[title] = scheduleReload(sunriseTime, title, 'sunrise');
       if (sunsetTime) sunsetTimeouts[title] = scheduleReload(sunsetTime, title, 'sunset');
     }
@@ -155,11 +160,12 @@ function scheduleReload(time, moduleName, eventType) {
   let delay = time.diff(now);
 
   if (delay < 0) delay += 24 * 60 * 60 * 1000;
-   console.log(`[ScheduleReload] Scheduling reload for ${moduleName} at ${time.format()} (in ${delay} ms) for ${eventType}`);
+  logWithTimestamp(`[ScheduleReload] Scheduling reload for ${moduleName} at ${time.format()} (in ${delay} ms) for ${eventType}`);
 
   return setTimeout(() => {
+    const reloadId = Date.now();
     modulesToReload.update((state) => ({ ...state, [moduleName]: (state[moduleName] || 0) + 1 }));
-    console.log(`[Reload] Reload triggered for ${moduleName} at ${dayjs().tz(userTimezone).format()}`);
+    logWithTimestamp(`[Reload ${reloadId}] Reload triggered for ${moduleName} at ${dayjs().tz(userTimezone).format()}`);
     reloadScheduled = false;
   }, delay);
 }

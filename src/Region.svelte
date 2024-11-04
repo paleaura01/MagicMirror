@@ -2,14 +2,13 @@
 
 <script>
   import SwapContainer from './SwapContainer.svelte';
-  export let modules = [];
-
-  // Import the reload store to get module keys
   import { modulesToReload } from './stores/reloadStore.js';
+
+  export let modules = [];
 
   let moduleKeys = {};
 
-  // Subscribe to modulesToReload to get the latest keys
+  // Subscribe to `modulesToReload` to track reload counts
   modulesToReload.subscribe((reloadCounts) => {
     moduleKeys = { ...reloadCounts };
   });
@@ -21,9 +20,8 @@
       <!-- Handle swapping group -->
       <SwapContainer {module} />
     {:else}
-      <!-- Regular module -->
+      <!-- Regular module with forced re-rendering by key change -->
       {#if module.component}
-        <!-- Use the key to force re-rendering when needed -->
         {#key moduleKeys[module.name] || 0}
           <svelte:component this={module.component} {...module.props} />
         {/key}

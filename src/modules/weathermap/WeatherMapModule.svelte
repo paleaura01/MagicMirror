@@ -1,3 +1,5 @@
+<!-- ./src/modules/weathermap/WeatherMapModule.svelte -->
+
 <script>
     import { onMount, onDestroy } from 'svelte';
     import * as L from 'leaflet';
@@ -6,9 +8,9 @@
     import dayjs from 'dayjs';
     import utc from 'dayjs/plugin/utc';
     import timezone from 'dayjs/plugin/timezone';
-    import { sunriseSunsetStore, isDaytimeStore, setModuleReady } from '../../stores/weatherStore.js';
+    import { sunriseSunsetStore } from '../../stores/weatherStore';
     import { modulesToReload } from '../../stores/reloadStore';
-
+    
     dayjs.extend(utc);
     dayjs.extend(timezone);
 
@@ -20,110 +22,28 @@
     const markerIcons = { red: markerRed, blue: markerBlue, green: markerGreen };
 
     export let config;
-
+    
     let mapDiv, map;
     let radarLayers = [], satelliteLayers = [];
     let baseLayer, baseRadarLayer, baseSatelliteLayer;
     const updateInterval = 180000;
     let apiCallInProgress = false, animationTimeoutId = null, intervalId = null;
+    let sunrise = null, sunset = null;
+    let previousIsDaytime = null;
     let reloadCount = 0;
     let unsubscribe;
 
-    let sunrise = null, sunset = null;
-    let isDaytime;
-
-    // Subscribe to isDaytimeStore to track daytime status changes
-    isDaytimeStore.subscribe(value => {
-        isDaytime = value;
-        // console.log(`[WeatherMapModule] Current daytime status:`, isDaytime ? 'Day' : 'Night');
-        updateLayersForTimeOfDay();
-    });
-
-    // Subscribe to sunriseSunsetStore to get sunrise and sunset times
-    sunriseSunsetStore.subscribe(({ sunrise: newSunrise, sunset: newSunset }) => {
-        sunrise = newSunrise ? dayjs(newSunrise) : null;
-        sunset = newSunset ? dayjs(newSunset) : null;
-        // console.log(`[WeatherMapModule] Loaded Sunrise: ${sunrise ? sunrise.format() : 'N/A'}, Sunset: ${sunset ? sunset.format() : 'N/A'}`);
-        updateLayersForTimeOfDay();
-    });
-
-    async function fetchWeatherData() {
-        if (!map) {
-            console.error("Map is not initialized; skipping weather data fetch.");
-            return;
-        }
-        try {
-            const apiUrl = 'http://localhost:8080/proxy?url=' + encodeURIComponent('https://api.rainviewer.com/public/weather-maps.json');
-            const response = await fetch(apiUrl);
-
-            if (!response.ok) {
-                console.error("Failed to fetch RainViewer data.");
-                apiCallInProgress = false;
-                return;
-            }
-
-            const data = await response.json();
-            const tileSize = 256;
-            const radarFrames = data.radar.past;
-            const satelliteFrames = data.satellite.infrared;
-
-            // Process radar and satellite frame data
-            const frames = radarFrames.filter(radarFrame => satelliteFrames.some(satFrame => satFrame.time === radarFrame.time));
-
-            if (!frames.length) {
-                console.warn("No frames with both radar and satellite data found.");
-                apiCallInProgress = false;
-                return;
-            }
-
-            clearWeatherLayers();
-
-            frames.forEach((frame, index) => {
-                const timestamp = frame.time;
-                const radarColor = getRadarColor();
-                const radarUrlTemplate = `https://tilecache.rainviewer.com/v2/radar/${timestamp}/${tileSize}/{z}/{x}/{y}/${radarColor}/1_0.png`;
-
-                const radarLayer = L.tileLayer(radarUrlTemplate, {
-                    tileSize,
-                    opacity: 0,
-                    zIndex: 1100 + index,
-                    maxZoom: config.zoom,
-                    errorTileUrl: './pics/error-tile.png',
-                }).addTo(map);
-                radarLayers.push(radarLayer);
-
-                const satelliteFrame = satelliteFrames.find(satFrame => satFrame.time === timestamp);
-                if (satelliteFrame && satelliteFrame.path) {
-                    const satelliteUrlTemplate = `https://tilecache.rainviewer.com/v2/satellite/${satelliteFrame.path}/${tileSize}/{z}/{x}/{y}/0/0_0.png`;
-
-                    const satelliteLayer = L.tileLayer(satelliteUrlTemplate, {
-                        tileSize,
-                        opacity: 0,
-                        zIndex: 1000 + index,
-                        maxZoom: config.zoom,
-                        errorTileUrl: './pics/error-tile.png',
-                    }).addTo(map);
-                    satelliteLayers.push(satelliteLayer);
-                } else {
-                    satelliteLayers.push(null);
-                }
-            });
-
-            updateBaseLayers(frames[0], tileSize, satelliteFrames);
-
-            apiCallInProgress = false;
-        } catch (error) {
-            console.error("Error fetching radar data:", error);
-            apiCallInProgress = false;
-        }
+    function isDaytime() {
+        const currentTime = dayjs();
+        return sunrise && sunset && currentTime.isAfter(sunrise) && currentTime.isBefore(sunset);
     }
 
     function getRadarColor() {
-        return isDaytime ? config.dayRadarColor : config.nightRadarColor;
+        return isDaytime() ? config.dayRadarColor : config.nightRadarColor;
     }
 
     function getMapUrl() {
-        return isDaytime ? config.dayMapUrl : config.nightMapUrl;
+        return isDaytime() ? config.dayMapUrl : config.nightMapUrl;
     }
 
     function addBaseLayer() {
@@ -173,9 +93,70 @@
             if (!map) console.error("Map is not initialized.");
             return;
         }
+
         apiCallInProgress = true;
-        await fetchWeatherData();
-        apiCallInProgress = false;
+        try {
+            const apiUrl = 'http://localhost:8080/proxy?url=' + encodeURIComponent('https://api.rainviewer.com/public/weather-maps.json');
+            const response = await fetch(apiUrl);
+
+            if (!response.ok) {
+                console.error("Failed to fetch RainViewer data.");
+                apiCallInProgress = false;
+                return;
+            }
+
+            const data = await response.json();
+            const tileSize = 256;
+            const radarFrames = data.radar.past;
+            const satelliteFrames = data.satellite.infrared;
+            const frames = radarFrames.filter(radarFrame => satelliteFrames.some(satFrame => satFrame.time === radarFrame.time));
+
+            if (!frames.length) {
+                console.warn("No frames with both radar and satellite data found.");
+                apiCallInProgress = false;
+                return;
+            }
+
+            clearWeatherLayers();
+
+            frames.forEach((frame, index) => {
+                const timestamp = frame.time;
+                const radarColor = getRadarColor();
+                const radarUrlTemplate = `https://tilecache.rainviewer.com/v2/radar/${timestamp}/${tileSize}/{z}/{x}/{y}/${radarColor}/1_0.png`;
+
+                const radarLayer = L.tileLayer(radarUrlTemplate, {
+                    tileSize,
+                    opacity: 0,
+                    zIndex: 1100 + index,
+                    maxZoom: config.zoom,
+                    errorTileUrl: './pics/error-tile.png',
+                }).addTo(map);
+                radarLayers.push(radarLayer);
+
+                const satelliteFrame = satelliteFrames.find(satFrame => satFrame.time === timestamp);
+                if (satelliteFrame && satelliteFrame.path) {
+                    const satelliteUrlTemplate = `https://tilecache.rainviewer.com/v2/satellite/${satelliteFrame.path}/${tileSize}/{z}/{x}/{y}/0/0_0.png`;
+
+                    const satelliteLayer = L.tileLayer(satelliteUrlTemplate, {
+                        tileSize,
+                        opacity: 0,
+                        zIndex: 1000 + index,
+                        maxZoom: config.zoom,
+                        errorTileUrl: './pics/error-tile.png',
+                    }).addTo(map);
+                    satelliteLayers.push(satelliteLayer);
+                } else {
+                    satelliteLayers.push(null);
+                }
+            });
+
+            updateBaseLayers(frames[0], tileSize, satelliteFrames);
+
+            apiCallInProgress = false;
+        } catch (error) {
+            console.error("Error fetching radar data:", error);
+            apiCallInProgress = false;
+        }
     }
 
     function updateBaseLayers(baseFrame, tileSize, satelliteFrames) {
@@ -257,6 +238,7 @@
                 baseLayer = null;
                 addBaseLayer();
             }
+            addWeatherLayers();
         }
     }
 
@@ -284,7 +266,22 @@
         }
     }
 
+    sunriseSunsetStore.subscribe(value => {
+        sunrise = dayjs(value.sunrise).tz();
+        sunset = dayjs(value.sunset).tz();
+
+        const currentIsDaytime = isDaytime();
+        if (previousIsDaytime === null) {
+            previousIsDaytime = currentIsDaytime;
+        } else if (currentIsDaytime !== previousIsDaytime) {
+            previousIsDaytime = currentIsDaytime;
+            updateLayersForTimeOfDay();
+        }
+    });
+
     async function reload() {
+        console.log(`[WeatherMapModule] Reloading data at ${new Date().toLocaleTimeString()}`);
+
         if (!map) {
             console.error("Map is not initialized; skipping reload.");
             return;
@@ -339,23 +336,51 @@
                     maxZoom: config.zoom || 10,
                     attributionControl: false,
                     zoomControl: false,
-                    scrollWheelZoom: true,
-                    doubleClickZoom: true,
-                    touchZoom: true,
-                    dragging: true,
+                    scrollWheelZoom: false,
+                    doubleClickZoom: false,
+                    touchZoom: false,
+                    dragging: false,
                     boxZoom: true,
                     keyboard: true,
                 });
 
                 addBaseLayer();
-                map.on('dblclick', () => map.setView([config.mapPositions[0].lat, config.mapPositions[0].lng], config.zoom || 10));
                 addMarkers();
                 await addWeatherLayers();
                 animateLayers();
 
+                if (intervalId) {
+                    clearInterval(intervalId);
+                    intervalId = null;
+                }
                 intervalId = setInterval(() => addWeatherLayers(), updateInterval);
 
-                setModuleReady('WeatherMapModule');
+                // Add mouse events to enable and disable dragging
+                mapDiv.addEventListener('mouseenter', () => {
+                    if (map) {
+                        map.scrollWheelZoom.enable();
+                        map.dragging.enable();
+                        map.touchZoom.enable();
+                        mapDiv.style.cursor = 'grab';
+                    }
+                });
+
+                mapDiv.addEventListener('mousedown', () => {
+                    mapDiv.style.cursor = 'grabbing';
+                });
+
+                mapDiv.addEventListener('mouseup', () => {
+                    mapDiv.style.cursor = 'grab';
+                });
+
+                mapDiv.addEventListener('mouseleave', () => {
+                    if (map) {
+                        map.scrollWheelZoom.disable();
+                        map.dragging.disable();
+                        map.touchZoom.disable();
+                        mapDiv.style.cursor = 'default';
+                    }
+                });
 
                 unsubscribe = modulesToReload.subscribe((state) => {
                     if (state.WeatherMapModule !== reloadCount) {
@@ -370,8 +395,4 @@
     });
 </script>
 
-<div
-    bind:this={mapDiv}
-    class="rain-map-wrapper"
-    style="height: {config.mapHeight}; width: {config.mapWidth};">
-</div>
+<div bind:this={mapDiv} class="rain-map-wrapper" style="height: {config.mapHeight}; width: {config.mapWidth};"></div>
