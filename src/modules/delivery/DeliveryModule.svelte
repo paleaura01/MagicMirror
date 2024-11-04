@@ -1,3 +1,6 @@
+<!-- ./src/modules/Delivery/DeliveryModule.svelte -->
+
+
 <script>
     import { onMount, onDestroy } from 'svelte';
     import './delivery_styles.css';
@@ -48,7 +51,7 @@
       <div class="delivery-list-container">
         {#if emails.length > 0}
           <ul class="delivery-list">
-            {#each emails as email, index}
+            {#each emails.slice(0, 6) as email, index} <!-- Display only the first 6 emails -->
               <li class="delivery-item" style="opacity: {getFadeOpacity(index)};">
                 <img src={email.logo} alt="{email.sender} Logo" class="logo-icon" />
                 <span class="delivery-info">{email.subject}</span>
@@ -61,4 +64,5 @@
       </div>
     {/if}
   </div>
+  
   

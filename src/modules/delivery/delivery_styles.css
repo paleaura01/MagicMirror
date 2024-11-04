@@ -15,7 +15,7 @@
     font-weight: bold;
     color: rgba(255, 255, 255, 0.6);
     margin-bottom: 5px;
-    margin-top: 40px;
+    
     position: relative;
 }
 
@@ -44,7 +44,7 @@
 .delivery-list-container {
     padding-top: 10px;
     overflow-y: auto;
-    max-height: 90%; /* Adjusted max height for scroll */
+    max-height: 100%; /* Adjusted max height for scroll */
 }
 
 /* Hide scrollbar for WebKit browsers */
@@ -75,7 +75,7 @@
 
 .logo-icon {
     width: 80px;
-    height: auto;
+    height: 30px;
     margin-right: 8px;
 }
 
