@@ -33,7 +33,7 @@ function logWithTimestamp(message) {
 }
 
 export async function loadModules() {
-  logWithTimestamp("Loading modules...");
+  // logWithTimestamp("Loading modules...");
   const modulesByRegion = {};
 
   const hotswapConfigEntry = modulesConfig.find(
@@ -124,14 +124,14 @@ function scheduleModuleReloads(reloadConfigs) {
 
   unsubscribeSunriseSunset = sunriseSunsetStore.subscribe(({ sunrise, sunset, ready }) => {
     if (!ready) {
-      logWithTimestamp("Awaiting sunrise and sunset initialization.");
+      // logWithTimestamp("Awaiting sunrise and sunset initialization.");
       return;
     }
 
     const sunriseTime = sunrise ? dayjs(sunrise).tz(userTimezone) : null;
     const sunsetTime = sunset ? dayjs(sunset).tz(userTimezone) : null;
 
-    logWithTimestamp(`[moduleLoader] Scheduling reload with Sunrise: ${sunriseTime.format()}, Sunset: ${sunsetTime.format()}`);
+    // logWithTimestamp(`[moduleLoader] Scheduling reload with Sunrise: ${sunriseTime.format()}, Sunset: ${sunsetTime.format()}`);
 
     clearTimeouts();
     scheduleNextReloads(reloadConfigs, sunriseTime, sunsetTime);
@@ -160,12 +160,12 @@ function scheduleReload(time, moduleName, eventType) {
   let delay = time.diff(now);
 
   if (delay < 0) delay += 24 * 60 * 60 * 1000;
-  logWithTimestamp(`[ScheduleReload] Scheduling reload for ${moduleName} at ${time.format()} (in ${delay} ms) for ${eventType}`);
+  // logWithTimestamp(`[ScheduleReload] Scheduling reload for ${moduleName} at ${time.format()} (in ${delay} ms) for ${eventType}`);
 
   return setTimeout(() => {
     const reloadId = Date.now();
     modulesToReload.update((state) => ({ ...state, [moduleName]: (state[moduleName] || 0) + 1 }));
-    logWithTimestamp(`[Reload ${reloadId}] Reload triggered for ${moduleName} at ${dayjs().tz(userTimezone).format()}`);
+    // logWithTimestamp(`[Reload ${reloadId}] Reload triggered for ${moduleName} at ${dayjs().tz(userTimezone).format()}`);
     reloadScheduled = false;
   }, delay);
 }

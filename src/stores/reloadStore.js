@@ -11,6 +11,6 @@ let debounceTimeout;
 modulesToReload.subscribe((value) => {
   if (debounceTimeout) clearTimeout(debounceTimeout);
   debounceTimeout = setTimeout(() => {
-    console.log("[reloadStore] Current reload state:", value);
+    // console.log("[reloadStore] Current reload state:", value);
   }, 300); // Adjust the debounce time as needed
 });

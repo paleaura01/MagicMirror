@@ -280,7 +280,7 @@
     });
 
     async function reload() {
-        console.log(`[WeatherMapModule] Reloading data at ${new Date().toLocaleTimeString()}`);
+        // console.log(`[WeatherMapModule] Reloading data at ${new Date().toLocaleTimeString()}`);
 
         if (!map) {
             console.error("Map is not initialized; skipping reload.");

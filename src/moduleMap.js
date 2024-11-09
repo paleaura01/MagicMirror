@@ -14,5 +14,6 @@
     "@/modules/globe/GlobeModule": () => import("@/modules/globe/GlobeModule.svelte"),
     "@/modules/delivery/DeliveryModule": () => import("@/modules/delivery/DeliveryModule.svelte"),
     "@/modules/flightradar/FlightRadarModule": () => import("@/modules/flightradar/FlightRadarModule.svelte"),
-    "@/modules/test/TestModule": () => import("@/modules/test/TestModule.svelte")
+    "@/modules/test/TestModule": () => import("@/modules/test/TestModule.svelte"),
+    "@/modules/fuelprices/FuelPricesModule": () => import("@/modules/fuelprices/FuelPricesModule.svelte")
   };

@@ -46,7 +46,7 @@
   {
     "name": "TrafficModule",
     "path": "@/modules/traffic/TrafficModule",
-    "region": "left",
+    "region": "",
     "props": {
       "originCoords": [
         {
@@ -61,6 +61,12 @@
         }
       ]
     }
+  },
+  {
+    "name": "FuelPrices",
+    "path": "@/modules/fuelprices/FuelPricesModule",
+    "region": "",
+    "props": {}
   },
   {
     "name": "OnThisDayModule",
@@ -222,10 +228,10 @@
         {
           "current": "TrafficModule",
           "currentPath": "@/modules/traffic/TrafficModule",
-          "swap": "TestModule",
-          "swapPath": "@/modules/test/TestModule",
+          "swap": "",
+          "swapPath": "@/modules/fuelprices/FuelPricesModule",
           "currentRegion": "left",
-          "swapRegion": "left",
+          "swapRegion": "",
           "interval": 20000
         }
       ]
