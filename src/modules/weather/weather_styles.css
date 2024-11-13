@@ -5,47 +5,40 @@
   margin-top: 25px;
   color: white;
   font-family: Arial, sans-serif;
-  text-align: right; /* Align content to the right */
+  text-align: right;
 }
 
 .top-info {
   display: flex;
   flex-direction: row;
-  align-items: flex-end; /* Align items to the right */
+  justify-content: flex-end;
   font-size: 0.9em;
   margin-bottom: 10px;
   color: rgba(255, 255, 255, 0.6);
-  gap: 8px; /* Spacing between each section */
+  gap: 20px; /* Spacing between wind-humidity and sunrise-sunset */
 }
 
-.wind-info,
-.humidity-info {
-  display: flex;
-  align-items: center;
-  gap: 4px; /* Space between icon and text */
-}
-
+.wind-humidity,
 .sunrise-sunset {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  margin-top: 4px;
+  align-items: flex-end; /* Align text to the right */
+  gap: 5px; /* Space between items */
 }
 
-.sunrise, .sunset {
+.wind-info,
+.humidity-info,
+.sunrise,
+.sunset {
   display: flex;
   align-items: center;
-  margin: 2px 0;
-}
-
-.wi {
-  margin-right: 5px;
+  gap: 5px; /* Space between icon and text */
 }
 
 .current-weather {
   display: flex;
   align-items: center;
-  justify-content: flex-end; /* Align content to the right */
+  justify-content: flex-end;
   margin-bottom: 10px;
 }
 
@@ -56,23 +49,16 @@
 }
 
 .temperature {
-  font-size: 2.8em; /* Increase the font size for visibility */
-  font-weight: 300; /* Thinner font weight for a sleek look */
+  font-size: 2.8em;
+  font-weight: 300;
   margin: 0;
   line-height: 1;
 }
 
-.feels-like {
+.feels-like,
+.pollen-level,
+.description {
   font-size: 1.2em;
   color: rgba(255, 255, 255, 0.6);
   margin-top: 5px;
 }
-
-.humidity-info {
-  font-size: 1.2em;
-  margin-left: 10px;
-  font-family: Arial, sans-serif;
-  margin-right: 5px;
-  color: rgba(255, 255, 255, 0.6);
-}
-
