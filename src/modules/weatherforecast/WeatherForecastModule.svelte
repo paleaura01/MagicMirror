@@ -1,3 +1,5 @@
+<!-- ./src/modules/weatherforecast/WeatherForecastModule.svelte -->
+
 <script>
     import { onMount, onDestroy } from 'svelte';
     import './weatherforecast_styles.css';

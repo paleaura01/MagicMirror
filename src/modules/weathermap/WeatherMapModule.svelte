@@ -33,6 +33,8 @@
     let reloadCount = 0;
     let unsubscribe;
 
+    let markerInstances = []; // Store marker instances
+
     function isDaytime() {
         const currentTime = dayjs();
         return sunrise && sunset && currentTime.isAfter(sunrise) && currentTime.isBefore(sunset);
@@ -59,7 +61,7 @@
         baseLayer = L.tileLayer(baseLayerUrl, {
             tileSize: 256,
             opacity: 1.0,
-            zIndex: 500,
+            zIndex: 100, // Adjusted zIndex
             maxZoom: 18,
             attribution: '&copy; OpenStreetMap contributors',
         });
@@ -71,10 +73,14 @@
             console.error("Map is not initialized.");
             return;
         }
-        config.markers?.forEach(marker => {
-            const iconUrl = markerIcons[marker.color] || markerRed;
+        // Remove existing markers
+        markerInstances.forEach(marker => map.removeLayer(marker));
+        markerInstances = [];
 
-            L.marker([marker.lat, marker.lng], {
+        config.markers?.forEach(markerConfig => {
+            const iconUrl = markerIcons[markerConfig.color] || markerRed;
+
+            const markerInstance = L.marker([markerConfig.lat, markerConfig.lng], {
                 icon: L.icon({
                     iconUrl,
                     shadowUrl: markerShadow,
@@ -83,8 +89,19 @@
                     iconAnchor: [12, 41],
                     shadowAnchor: [12, 41],
                     popupAnchor: [0, -41]
-                })
+                }),
+                zIndexOffset: 1500, // Keep the marker on top
+                interactive: true // Ensure marker is interactive
             }).addTo(map);
+
+            // Event listener for resetting map position on marker click
+            markerInstance.on('click', () => {
+                map.setView([markerConfig.lat, markerConfig.lng], config.zoom || 10, {
+                    animate: true
+                });
+            });
+
+            markerInstances.push(markerInstance);
         });
     }
 
@@ -127,7 +144,8 @@
                 const radarLayer = L.tileLayer(radarUrlTemplate, {
                     tileSize,
                     opacity: 0,
-                    zIndex: 1100 + index,
+                    zIndex: 200 + index, // Lower zIndex value
+                    pane: 'tilePane', // Ensure it's added to the correct pane
                     maxZoom: config.zoom,
                     errorTileUrl: './pics/error-tile.png',
                 }).addTo(map);
@@ -140,7 +158,8 @@
                     const satelliteLayer = L.tileLayer(satelliteUrlTemplate, {
                         tileSize,
                         opacity: 0,
-                        zIndex: 1000 + index,
+                        zIndex: 100 + index, // Lower zIndex value
+                        pane: 'tilePane', // Ensure it's added to the correct pane
                         maxZoom: config.zoom,
                         errorTileUrl: './pics/error-tile.png',
                     }).addTo(map);
@@ -181,7 +200,8 @@
         baseRadarLayer = L.tileLayer(baseRadarUrlTemplate, {
             tileSize,
             opacity: 0.5,
-            zIndex: 900,
+            zIndex: 200,
+            pane: 'tilePane', // Ensure it's added to the correct pane
             maxZoom: config.zoom,
             errorTileUrl: './pics/error-tile.png',
         }).addTo(map);
@@ -193,7 +213,8 @@
             baseSatelliteLayer = L.tileLayer(baseSatelliteUrlTemplate, {
                 tileSize,
                 opacity: 1,
-                zIndex: 800,
+                zIndex: 100,
+                pane: 'tilePane', // Ensure it's added to the correct pane
                 maxZoom: config.zoom,
                 errorTileUrl: './pics/error-tile.png',
             }).addTo(map);
@@ -263,6 +284,7 @@
             baseLayer = null;
             baseRadarLayer = null;
             baseSatelliteLayer = null;
+            markerInstances = [];
         }
     }
 
@@ -280,8 +302,6 @@
     });
 
     async function reload() {
-        // console.log(`[WeatherMapModule] Reloading data at ${new Date().toLocaleTimeString()}`);
-
         if (!map) {
             console.error("Map is not initialized; skipping reload.");
             return;
@@ -303,7 +323,7 @@
             addBaseLayer();
         }
 
-        addMarkers();
+        // Markers are already added during initialization; no need to add them again
         await addWeatherLayers();
         animateLayers();
 
@@ -336,16 +356,16 @@
                     maxZoom: config.zoom || 10,
                     attributionControl: false,
                     zoomControl: false,
-                    scrollWheelZoom: false,
-                    doubleClickZoom: false,
-                    touchZoom: false,
-                    dragging: false,
+                    scrollWheelZoom: true, // Enable scroll wheel zoom
+                    doubleClickZoom: false, // Disable default double-click zoom
+                    touchZoom: true, // Enable touch zoom
+                    dragging: true, // Enable dragging
                     boxZoom: true,
                     keyboard: true,
                 });
 
                 addBaseLayer();
-                addMarkers();
+                addMarkers(); // Add markers once during initialization
                 await addWeatherLayers();
                 animateLayers();
 
@@ -355,15 +375,8 @@
                 }
                 intervalId = setInterval(() => addWeatherLayers(), updateInterval);
 
-                // Add mouse events to enable and disable dragging
-                mapDiv.addEventListener('mouseenter', () => {
-                    if (map) {
-                        map.scrollWheelZoom.enable();
-                        map.dragging.enable();
-                        map.touchZoom.enable();
-                        mapDiv.style.cursor = 'grab';
-                    }
-                });
+                // Cursor style adjustments
+                mapDiv.style.cursor = 'grab';
 
                 mapDiv.addEventListener('mousedown', () => {
                     mapDiv.style.cursor = 'grabbing';
@@ -373,13 +386,11 @@
                     mapDiv.style.cursor = 'grab';
                 });
 
-                mapDiv.addEventListener('mouseleave', () => {
-                    if (map) {
-                        map.scrollWheelZoom.disable();
-                        map.dragging.disable();
-                        map.touchZoom.disable();
-                        mapDiv.style.cursor = 'default';
-                    }
+                // Add double-click event listener to reset map position
+                map.on('dblclick', () => {
+                    const originalPosition = [config.mapPositions[0].lat, config.mapPositions[0].lng];
+                    const originalZoom = config.zoom || 10;
+                    map.setView(originalPosition, originalZoom, { animate: true });
                 });
 
                 unsubscribe = modulesToReload.subscribe((state) => {

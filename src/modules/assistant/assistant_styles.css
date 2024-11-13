@@ -1,0 +1,27 @@
+/* ./src/modules/assistant/assistant_styles.css */
+.assistant-container {
+    font-family: Arial, sans-serif;
+    padding: 10px;
+    background-color: #1e1e1e;
+    color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+  
+  .assistant-title {
+    font-size: 1.5em;
+    margin-bottom: 10px;
+    text-align: center;
+  }
+  
+  .assistant-results {
+    font-size: 1em;
+    margin-top: 10px;
+    white-space: pre-wrap;
+  }
+  
+  .loading {
+    font-style: italic;
+    color: gray;
+  }
+  

@@ -1,6 +1,5 @@
 <!-- ./src/modules/Delivery/DeliveryModule.svelte -->
 
-
 <script>
     import { onMount, onDestroy } from 'svelte';
     import './delivery_styles.css';
@@ -64,5 +63,4 @@
       </div>
     {/if}
   </div>
-  
   

@@ -162,6 +162,12 @@
   {
     "name": "DeliveryModule",
     "path": "@/modules/delivery/DeliveryModule",
+    "region": "",
+    "props": {}
+  },
+  {
+    "name": "AssistantModule",
+    "path": "@/modules/assistant/AssistantModule",
     "region": "bottom_center",
     "props": {}
   },
@@ -208,6 +214,11 @@
           "title": "WeatherModule",
           "path": "@/modules/weather/WeatherModule",
           "interval": "sunriseSunsetStore"
+        },
+        {
+          "title": "FuelPrices",
+          "path": "@/modules/fuelprices/FuelPricesModule",
+          "interval": "sunriseSunsetStore"
         }
       ]
     }
@@ -217,13 +228,13 @@
     "props": {
       "config": [
         {
-          "current": "DeliveryModule",
+          "current": "",
           "currentPath": "@/modules/delivery/DeliveryModule",
-          "swap": "TestModule",
+          "swap": "",
           "swapPath": "@/modules/test/TestModule",
           "currentRegion": "bottom_center",
-          "swapRegion": "bottom_center",
-          "interval": 15000
+          "swapRegion": "",
+          "interval": 0
         },
         {
           "current": "TrafficModule",

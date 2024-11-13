@@ -23,7 +23,6 @@
   cursor: auto !important;
 }
 
-
 /* Rest of your styles remain the same */
 .rain-map-time-wrapper {
   --color-history: #003aff;
@@ -80,4 +79,14 @@
 
 .rain-map-wrapper.inverted-colors .leaflet-tile-pane .leaflet-layer:first-child {
   filter: invert(100%) hue-rotate(180deg);
+}
+
+.leaflet-marker-icon {
+  z-index: 1500; /* Ensures markers stay on top */
+  pointer-events: auto; /* Allow interaction with markers */
+  cursor: pointer; /* Set cursor to pointer */
+}
+
+.leaflet-marker-icon:active {
+  cursor: grabbing; /* Grabbing cursor when clicked */
 }

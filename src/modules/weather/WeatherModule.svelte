@@ -1,4 +1,4 @@
-<!-- ./src/modules/weather/WeatherModule.svelte -->
+<!-- ./src/modules/weather/TrafficModule.svelte -->
 
 
 <script>
@@ -7,7 +7,6 @@
   import utc from 'dayjs/plugin/utc';
   import timezone from 'dayjs/plugin/timezone';
   import './weather_styles.css';
-  import { modulesToReload } from '../../stores/reloadStore';
   import { sunriseSunsetStore, isDaytimeStore, updateSunriseSunset, setModuleReady } from '../../stores/weatherStore.js';
 
   dayjs.extend(utc);
@@ -15,15 +14,14 @@
 
   let weatherData = null;
   let error = null;
-  let reloadCount = 0;
-
   const lat = 35.2080;
   const lon = -81.3673;
-
+  const userTimezone = dayjs.tz.guess();
   let sunrise = null;
   let sunset = null;
   let previousIsDaytime = null;
-  const userTimezone = dayjs.tz.guess();
+  let isDaytime;
+  let intervalId;
 
   const iconMap = {
     "0": { day: "/src/modules/weatherforecast/icons/32.png", night: "/src/modules/weatherforecast/icons/31.png" },
@@ -57,12 +55,8 @@
     "default": { day: "/src/modules/weatherforecast/icons/na.png", night: "/src/modules/weatherforecast/icons/na.png" }
   };
 
-  let isDaytime;
-
-  // Subscribe to isDaytimeStore to dynamically adjust icons based on daytime status
   isDaytimeStore.subscribe(value => {
     isDaytime = value;
-    // console.log(`[WeatherModule] Current daytime status:`, isDaytime ? 'Day' : 'Night');
     if (weatherData) {
       weatherData.weatherIcon = getWeatherIcon(weatherData.weatherCode);
     }
@@ -72,63 +66,42 @@
     return iconMap[code] ? (isDaytime ? iconMap[code].day : iconMap[code].night) : iconMap["default"][isDaytime ? "day" : "night"];
   }
 
-  const unsubscribe = modulesToReload.subscribe((state) => {
-    if (state.WeatherModule !== reloadCount) {
-      reloadCount = state.WeatherModule;
-      reload();
+  async function fetchWeatherData() {
+    try {
+      const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=relative_humidity_2m&timezone=auto&daily=sunrise,sunset`);
+      const data = await response.json();
+
+      if (!data.current_weather || !data.hourly) {
+        throw new Error("Weather data not available");
+      }
+
+      const tempCelsius = data.current_weather.temperature;
+      const tempFahrenheit = (tempCelsius * 9 / 5) + 32;
+      const windspeedMph = (data.current_weather.windspeed * 2.23694).toFixed(1);
+      const humidity = `${data.hourly.relative_humidity_2m[0]}%`;
+
+      if (data.daily.sunrise && data.daily.sunset) {
+        sunrise = dayjs(data.daily.sunrise[0]).tz(userTimezone);
+        sunset = dayjs(data.daily.sunset[0]).tz(userTimezone);
+        updateSunriseSunset(sunrise, sunset);
+      }
+
+      const weatherCode = data.current_weather.weathercode.toString();
+      weatherData = {
+        temperature: tempFahrenheit.toFixed(1),
+        windspeed: windspeedMph,
+        humidity,
+        sunrise: sunrise ? sunrise.format('HH:mm') : 'N/A',
+        sunset: sunset ? sunset.format('HH:mm') : 'N/A',
+        weatherIcon: getWeatherIcon(weatherCode),
+        description: getWeatherDescription(weatherCode),
+        weatherCode
+      };
+    } catch (err) {
+      error = err.message;
+      console.error("[WeatherModule] Error fetching weather data:", err);
     }
-  });
-
-  onDestroy(unsubscribe);
-
-  async function reload() {
-    await fetchWeatherData();
   }
-
-  // In WeatherModule.svelte
-async function fetchWeatherData() {
-  try {
-    const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=relative_humidity_2m&timezone=auto&daily=sunrise,sunset`);
-    const data = await response.json();
-
-    if (!data.current_weather || !data.hourly) {
-      throw new Error("Weather data not available");
-    }
-
-    // console.log("[WeatherModule] API Response:", data);
-
-    const tempCelsius = data.current_weather.temperature;
-    const tempFahrenheit = (tempCelsius * 9 / 5) + 32;
-    const windspeedMph = (data.current_weather.windspeed * 2.23694).toFixed(1);
-    const humidity = `${data.hourly.relative_humidity_2m[0]}%`;
-
-    // Check if sunrise and sunset data are available
-    if (data.daily.sunrise && data.daily.sunset) {
-      sunrise = dayjs(data.daily.sunrise[0]).tz(userTimezone);
-      sunset = dayjs(data.daily.sunset[0]).tz(userTimezone);
-      // console.log(`[WeatherModule] Parsed Sunrise: ${sunrise.format()}, Sunset: ${sunset.format()}`);
-      updateSunriseSunset(sunrise, sunset);
-    } else {
-      console.warn("[WeatherModule] Missing sunrise or sunset data; updateSunriseSunset will not be called.");
-    }
-
-    const weatherCode = data.current_weather.weathercode.toString();
-    weatherData = {
-      temperature: tempFahrenheit.toFixed(1),
-      windspeed: windspeedMph,
-      humidity,
-      sunrise: sunrise ? sunrise.format('HH:mm') : 'N/A',
-      sunset: sunset ? sunset.format('HH:mm') : 'N/A',
-      weatherIcon: getWeatherIcon(weatherCode),
-      description: getWeatherDescription(weatherCode),
-      weatherCode
-    };
-  } catch (err) {
-    error = err.message;
-    console.error("[WeatherModule] Error fetching weather data:", err);
-  }
-}
-
 
   function getWeatherDescription(code) {
     const descriptions = {
@@ -165,22 +138,16 @@ async function fetchWeatherData() {
     return descriptions[code] || descriptions["default"];
   }
 
-  sunriseSunsetStore.subscribe(({ sunrise: newSunrise, sunset: newSunset }) => {
-    sunrise = newSunrise ? dayjs(newSunrise) : null;
-    sunset = newSunset ? dayjs(newSunset) : null;
-    const currentIsDaytime = isDaytime;
+  onMount(() => {
+    fetchWeatherData(); // Initial fetch
+    setModuleReady("WeatherModule");
 
-    if (previousIsDaytime === null) {
-      previousIsDaytime = currentIsDaytime;
-    } else if (currentIsDaytime !== previousIsDaytime) {
-      previousIsDaytime = currentIsDaytime;
-      fetchWeatherData();
-    }
+    // Set up interval to fetch data every 10 minutes (600,000 milliseconds)
+    intervalId = setInterval(fetchWeatherData, 600000);
   });
 
-  onMount(async () => {
-    await fetchWeatherData();
-    setModuleReady("WeatherModule");
+  onDestroy(() => {
+    clearInterval(intervalId); // Clear the interval when the component is destroyed
   });
 </script>
 
@@ -189,16 +156,22 @@ async function fetchWeatherData() {
     <p>{error}</p>
   {:else if weatherData}
     <div class="top-info">
-      <span class="wind-info">
-        <i class="wi wi-strong-wind"></i> {weatherData.windspeed} mph
-      </span>
-      <span class="humidity-info">
-        <i class="wi wi-humidity"></i> {weatherData.humidity}
-      </span>
-      <span class="sunrise-sunset">
-        <i class="wi wi-sunrise"></i> {weatherData.sunrise}
-        <i class="wi wi-sunset"></i> {weatherData.sunset}
-      </span>
+      <div class="sunrise-sunset">
+        <div class="sunrise">
+          <i class="wi wi-sunrise"></i> {weatherData.sunrise}
+        </div>
+        <div class="sunset">
+          <i class="wi wi-sunset"></i> {weatherData.sunset}
+        </div>
+      </div>
+      <div class="wind-humidity">
+        <div class="wind-info">
+          <i class="wi wi-strong-wind"></i> {weatherData.windspeed} mph
+        </div>
+        <div class="humidity-info">
+          <i class="wi wi-humidity"></i> {weatherData.humidity}
+        </div>
+      </div>
     </div>
     <div class="current-weather">
       <img src={weatherData.weatherIcon} alt="Weather Icon" class="weather-icon"/>
@@ -211,3 +184,7 @@ async function fetchWeatherData() {
     <p>Loading weather...</p>
   {/if}
 </div>
+
+
+
+

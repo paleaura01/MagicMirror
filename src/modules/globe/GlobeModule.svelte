@@ -1,3 +1,6 @@
+<!-- ./src/modules/globe/GlobeModule.svelte -->
+
+
 <script>
     import { onMount, onDestroy } from "svelte";
     import dayjs from 'dayjs';
@@ -119,7 +122,7 @@
     // Refresh images every 2 minutes
     function startImageRefresh() {
         refreshInterval = setInterval(async () => {
-            console.log("[Debug] Refreshing images...");
+            // console.log("[Debug] Refreshing images...");
             await fetchImages();
             currentFrame = 0; // Reset to the first frame after refreshing images
         }, refreshDelay);

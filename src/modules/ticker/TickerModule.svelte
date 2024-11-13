@@ -1,5 +1,3 @@
-<!-- ./src/modules/ticker/TickerModule.svelte -->
-
 <script>
   import { onMount, onDestroy } from 'svelte';
   import './ticker_styles.css';
@@ -36,7 +34,9 @@
         throw new Error(`Failed to fetch from server for URL: ${url}`);
       }
       const items = await response.json();
-      return items;
+
+      // Filter out the unwanted entry
+      return items.filter(item => !item.title.includes("New sidebar rule! Keep it Civil!"));
     } catch (error) {
       console.error(`Failed to fetch RSS feed from server: ${url}`, error);
       return [];
@@ -61,37 +61,32 @@
       const currentItemsSet = new Set(currentFeedItems.map(item => item.title));
 
       if (newItemsSet.size !== currentItemsSet.size || [...newItemsSet].some(item => !currentItemsSet.has(item))) {
-        // console.log(`Updating news items from source: ${feed.url}`);
-        // console.log(`New items from ${feed.url}:`, feedNewsItems.map(item => item.title));
         hasUpdates = true;
       }
 
       allNewsItems = [...allNewsItems, ...feedNewsItems];
     }
 
-    // Only update the ticker if there are new or changed items
     if (hasUpdates) {
       newsItems = [...allNewsItems];
       updateImage();
-      updateTickerText(); // Update the ticker text content
-      // Do not call updateAnimation()
+      updateTickerText();
     } else {
       console.log("No new items to update in ticker.");
     }
   }
 
   function updateImage() {
-  if (newsItems.length > 0) {
-    const currentNewsItem = newsItems[currentNewsIndex];
-    currentImage = currentNewsItem.logo || logoPNG;
-    currentNewsIndex = (currentNewsIndex + 1) % newsItems.length;
+    if (newsItems.length > 0) {
+      const currentNewsItem = newsItems[currentNewsIndex];
+      currentImage = currentNewsItem.logo || logoPNG;
+      currentNewsIndex = (currentNewsIndex + 1) % newsItems.length;
+    }
   }
-}
 
   function updateTickerText() {
     if (scrollingTextEl && newsItems.length > 0) {
       const newTickerText = newsItems.map(item => item.title).join(' • ') + ' • ';
-      // Append the text twice for continuous scroll
       scrollingTextEl.innerHTML = newTickerText + newTickerText;
     } else {
       scrollingTextEl.innerHTML = 'No news available.';
@@ -101,7 +96,7 @@
   function updateAnimation() {
     setTimeout(() => {
       if (scrollingTextEl) {
-        const animationDuration = 3000; // Fixed duration in seconds
+        const animationDuration = 3000;
         scrollingTextEl.style.animationDuration = `${animationDuration}s`;
       }
     }, 0);
@@ -113,10 +108,10 @@
       fetchNewsItems();
 
       imageCycleInterval = setInterval(updateImage, 5000);
-      apiUpdateInterval = setInterval(fetchNewsItems, 180000); // Update every 3 minutes
+      apiUpdateInterval = setInterval(fetchNewsItems, 180000);
 
       window.addEventListener('resize', updateAnimation);
-      updateAnimation(); // Call it here
+      updateAnimation();
     }, 500);
   });
 

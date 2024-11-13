@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "predev": "node generateModuleMap.js",
-    "dev": "vite",
+    "dev": "concurrently \"vite\" \"node server.js\" \"node gaserver.js\" \"node verserver.js\" \"node deliveryserver.js\"",
     "build": "vite build",
     "preview": "vite preview"
   },
@@ -26,6 +26,7 @@
     "axios": "^1.7.7",
     "cors": "^2.8.5",
     "dayjs": "^1.11.13",
+    "dockerode": "^4.0.2",
     "docx": "^9.0.2",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",

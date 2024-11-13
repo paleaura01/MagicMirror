@@ -1,10 +1,10 @@
-// ./deliveryserver.js
+// deliveryserver.js
 
 import express from 'express';
 import Imap from 'imap';
 import { config } from 'dotenv';
-import iconv from 'iconv-lite';
 import cors from 'cors';
+import { simpleParser } from 'mailparser';
 
 config();
 
@@ -70,7 +70,7 @@ function fetchEmailsForEachSender(imap, cb) {
     { email: 'auto-reply@usps.com', logo: '/src/modules/delivery/pics/United-States-Postal-Service-Logo.png' },
     { email: 'order-update@amazon.com', logo: '/src/modules/delivery/pics/Amazon-Logo.png' },
     { email: 'shipment-tracking@amazon.com', logo: '/src/modules/delivery/pics/Amazon-Logo.png' },
-    { email: 'help@walmart.com', logo: '/src/modules/delivery/pics/Walmart-Logo.png' }
+    { email: 'help@walmart.com', logo: '/src/modules/delivery/pics/Walmart-Logo.png' },
   ];
   const emails = [];
 
@@ -92,50 +92,62 @@ function fetchEmailsForEachSender(imap, cb) {
 
       console.log(`Found ${results.length} emails for sender ${email}. Fetching headers...`);
 
-      const fetch = imap.fetch(results.slice(-8), { bodies: 'HEADER.FIELDS (SUBJECT DATE)' });
+      const fetch = imap.fetch(results.slice(-8), { bodies: '' }); // Fetch the entire message
 
       fetch.on('message', (msg) => {
-        let fullSubject = '';
-        let dateHeader = '';
+        let emailData = {
+          sender: email,
+          subject: '',
+          date: null,
+          logo,
+        };
 
         msg.on('body', (stream) => {
+          let buffer = '';
           stream.on('data', (chunk) => {
-            const text = chunk.toString('utf8');
-            const subjectMatch = text.match(/Subject: (.*)/i);
-            if (subjectMatch) {
-              fullSubject += subjectMatch[1].trim();
-            }
-            const dateMatch = text.match(/Date: (.*)/i);
-            if (dateMatch) {
-              dateHeader = dateMatch[1].trim();
-            }
+            buffer += chunk.toString('utf8');
           });
-
           stream.once('end', () => {
-            // Decode subject
-            const matches = fullSubject.match(/=\?UTF-8\?Q\?(.+?)\?=/gi);
-            const subject = matches
-              ? matches.map((part) =>
-                  iconv.decode(Buffer.from(part.replace(/=\?UTF-8\?Q\?/i, '').replace(/\?=/, '').replace(/_/g, ' '), 'utf8'), 'utf8')
-                ).join('')
-              : fullSubject;
+            // Log raw email headers for debugging
+            // console.log('Raw email headers:', buffer);
 
-            // Parse the date, or set to null if invalid
-            let emailDate = null;
-            try {
-              const parsedDate = new Date(dateHeader);
-              if (!isNaN(parsedDate)) {
-                emailDate = parsedDate.toISOString();
-              } else {
-                console.warn(`Invalid date format for email from ${email}: ${dateHeader}`);
+            simpleParser(buffer, (err, parsed) => {
+              if (err) {
+                console.error('Error parsing email:', err);
+                return;
               }
-            } catch (err) {
-              console.warn(`Error parsing date for email from ${email}: ${dateHeader}`, err);
-            }
 
-            console.log(`Fetched email - Date: ${emailDate}, Sender: ${email}, Subject: ${subject}`);
+              // Access subject from headers
+              let subject = parsed.subject;
 
-            emails.push({ sender: email, subject, date: emailDate, logo });
+              if (!subject || subject.trim() === '') {
+                // Try to get the subject from headers directly
+                subject = parsed.headers.get('subject');
+              }
+
+              if (!subject || subject.trim() === '') {
+                // Attempt to extract the subject manually
+                const subjectMatch = buffer.match(/Subject: (.*)/i);
+                if (subjectMatch && subjectMatch[1]) {
+                  subject = subjectMatch[1].trim();
+                } else {
+                  subject = 'No Subject';
+                }
+              }
+
+              emailData.subject = subject;
+
+              // Handle date parsing with validation
+              if (parsed.date && !isNaN(new Date(parsed.date))) {
+                emailData.date = new Date(parsed.date).toISOString();
+              } else {
+                emailData.date = null; // Or you can assign a default date
+                console.warn(`Invalid date format for email from ${email}: ${parsed.date}`);
+              }
+
+              emails.push(emailData);
+              console.log(`Fetched email - Date: ${emailData.date}, Sender: ${emailData.sender}, Subject: ${emailData.subject}`);
+            });
           });
         });
       });
