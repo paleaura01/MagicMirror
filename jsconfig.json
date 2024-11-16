@@ -31,5 +31,5 @@
    * Use global.d.ts instead of compilerOptions.types
    * to avoid limiting type declarations.
    */
-  "include": ["src/**/*.d.ts", "src/**/*.js", "src/**/*.svelte", "src/modules/bibleverse/server.cjs", "src/modules/bibleverse/server.cjs", "verseserver.js", "verseserver.js"]
+  "include": ["src/**/*.d.ts", "src/**/*.js", "src/**/*.svelte", "src/modules/bibleverse/server.cjs", "src/modules/bibleverse/server.cjs", "verseserver.js", "verseserver.js", "src/modules/fuelprices/fuelMap.json"]
 }

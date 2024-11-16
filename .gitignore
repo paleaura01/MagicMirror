@@ -25,4 +25,6 @@ dist-ssr
 *.sln
 *.sw?
 
+
 src/modules/weather/animatedweathericons
+src/modules/weatherforecast/animatedweathericons

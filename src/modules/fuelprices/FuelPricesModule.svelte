@@ -1,3 +1,7 @@
+<!-- ./src/modules/fuelprices/FuelPricesModule.svelte -->
+
+
+
 <script>
   import { onMount } from "svelte";
   import { writable } from "svelte/store";

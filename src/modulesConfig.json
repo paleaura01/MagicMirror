@@ -162,13 +162,13 @@
   {
     "name": "DeliveryModule",
     "path": "@/modules/delivery/DeliveryModule",
-    "region": "",
+    "region": "bottom_center",
     "props": {}
   },
   {
     "name": "AssistantModule",
     "path": "@/modules/assistant/AssistantModule",
-    "region": "bottom_center",
+    "region": "",
     "props": {}
   },
   {

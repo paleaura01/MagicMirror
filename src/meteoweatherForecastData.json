@@ -1,0 +1,68 @@
+{
+  "timestamp": "2024-11-16T00:56:23.762Z",
+  "forecast": [
+    {
+      "date": "2024-11-15",
+      "precipitation": 0,
+      "temperature_max": 62.9,
+      "temperature_min": 39.8,
+      "windspeed_max": 10.8,
+      "weather_condition": "Fog",
+      "weather_code": 45
+    },
+    {
+      "date": "2024-11-16",
+      "precipitation": 0,
+      "temperature_max": 61.1,
+      "temperature_min": 40.6,
+      "windspeed_max": 4.6,
+      "weather_condition": "Clear Skies",
+      "weather_code": 0
+    },
+    {
+      "date": "2024-11-17",
+      "precipitation": 0,
+      "temperature_max": 63.8,
+      "temperature_min": 41,
+      "windspeed_max": 7.2,
+      "weather_condition": "Overcast",
+      "weather_code": 3
+    },
+    {
+      "date": "2024-11-18",
+      "precipitation": 0,
+      "temperature_max": 68,
+      "temperature_min": 46.9,
+      "windspeed_max": 4.9,
+      "weather_condition": "Overcast",
+      "weather_code": 3
+    },
+    {
+      "date": "2024-11-19",
+      "precipitation": 0.008,
+      "temperature_max": 70.3,
+      "temperature_min": 51.7,
+      "windspeed_max": 13.4,
+      "weather_condition": "Light Drizzle",
+      "weather_code": 51
+    },
+    {
+      "date": "2024-11-20",
+      "precipitation": 0,
+      "temperature_max": 67.6,
+      "temperature_min": 57.5,
+      "windspeed_max": 15.7,
+      "weather_condition": "Overcast",
+      "weather_code": 3
+    },
+    {
+      "date": "2024-11-21",
+      "precipitation": 0,
+      "temperature_max": 51.9,
+      "temperature_min": 36.4,
+      "windspeed_max": 17.5,
+      "weather_condition": "Overcast",
+      "weather_code": 3
+    }
+  ]
+}

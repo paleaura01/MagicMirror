@@ -1,143 +1,109 @@
-<!-- ./src/modules/weatherforecast/WeatherForecastModule.svelte -->
-
 <script>
-    import { onMount, onDestroy } from 'svelte';
+    import { onMount } from 'svelte';
     import './weatherforecast_styles.css';
+    import MeteoconsWindFill from './icons/MeteoconsWindFill.svelte';
+    import MeteoconsHumidityFill from './icons/MeteoconsHumidityFill.svelte';
+    import MeteoconsRaindropsFill from './icons/MeteoconsRaindropsFill.svelte';
+    import MeteoconsSnowflakeFill from './icons/MeteoconsSnowflakeFill.svelte';
+    import MeteoconsThermometerColderFill from './icons/MeteoconsThermometerColderFill.svelte';
+    import MeteoconsHurricaneFill from './icons/MeteoconsHurricaneFill.svelte';
+    import { updateWeatherData, weatherDataStore, isWeatherDataStale } from '../../stores/weatherStore';
+    import { get } from 'svelte/store';
     import dayjs from 'dayjs';
-    import utc from 'dayjs/plugin/utc';
-    import timezone from 'dayjs/plugin/timezone';
-    import { sunriseSunsetStore, isDaytimeStore, updateSunriseSunset, setModuleReady } from '../../stores/weatherStore.js';
-    import { modulesToReload } from '../../stores/reloadStore';
 
-    dayjs.extend(utc);
-    dayjs.extend(timezone);
-
-    export let lat = 35.2080;
-    export let lon = -81.3673;
+    export let lat;
+    export let lon;
 
     let forecastData = [];
     let error = null;
-    let sunrise = null;
-    let sunset = null;
-    let previousIsDaytime = null;
-    let reloadCount = 0;
+    const basePath = 'src/modules/weatherforecast/animatedicons';
+    let currentType = 'precipitation';
+    let interval;
 
-    const userTimezone = dayjs.tz.guess();
+    const probabilityTypes = ['precipitation', 'thunderstorm', 'rain', 'snow', 'ice'];
+
+    function startProbabilityCycle() {
+        let index = 0;
+        clearInterval(interval);
+        interval = setInterval(() => {
+            currentType = probabilityTypes[index];
+            index = (index + 1) % probabilityTypes.length;
+        }, 10000);
+    }
 
     const iconMap = {
-        "0": { day: "/src/modules/weatherforecast/icons/32.png", night: "/src/modules/weatherforecast/icons/31.png" },
-        "1": { day: "/src/modules/weatherforecast/icons/34.png", night: "/src/modules/weatherforecast/icons/33.png" },
-        "2": { day: "/src/modules/weatherforecast/icons/30.png", night: "/src/modules/weatherforecast/icons/29.png" },
-        "3": { day: "/src/modules/weatherforecast/icons/28.png", night: "/src/modules/weatherforecast/icons/27.png" },
-        "45": { day: "/src/modules/weatherforecast/icons/20.png", night: "/src/modules/weatherforecast/icons/20.png" },
-        "48": { day: "/src/modules/weatherforecast/icons/20.png", night: "/src/modules/weatherforecast/icons/20.png" },
-        "51": { day: "/src/modules/weatherforecast/icons/9.png", night: "/src/modules/weatherforecast/icons/9.png" },
-        "53": { day: "/src/modules/weatherforecast/icons/9.png", night: "/src/modules/weatherforecast/icons/9.png" },
-        "55": { day: "/src/modules/weatherforecast/icons/9.png", night: "/src/modules/weatherforecast/icons/9.png" },
-        "56": { day: "/src/modules/weatherforecast/icons/8.png", night: "/src/modules/weatherforecast/icons/8.png" },
-        "57": { day: "/src/modules/weatherforecast/icons/8.png", night: "/src/modules/weatherforecast/icons/8.png" },
-        "61": { day: "/src/modules/weatherforecast/icons/11.png", night: "/src/modules/weatherforecast/icons/11.png" },
-        "63": { day: "/src/modules/weatherforecast/icons/12.png", night: "/src/modules/weatherforecast/icons/12.png" },
-        "65": { day: "/src/modules/weatherforecast/icons/12.png", night: "/src/modules/weatherforecast/icons/12.png" },
-        "66": { day: "/src/modules/weatherforecast/icons/10.png", night: "/src/modules/weatherforecast/icons/10.png" },
-        "67": { day: "/src/modules/weatherforecast/icons/10.png", night: "/src/modules/weatherforecast/icons/10.png" },
-        "71": { day: "/src/modules/weatherforecast/icons/14.png", night: "/src/modules/weatherforecast/icons/14.png" },
-        "73": { day: "/src/modules/weatherforecast/icons/16.png", night: "/src/modules/weatherforecast/icons/16.png" },
-        "75": { day: "/src/modules/weatherforecast/icons/41.png", night: "/src/modules/weatherforecast/icons/41.png" },
-        "77": { day: "/src/modules/weatherforecast/icons/13.png", night: "/src/modules/weatherforecast/icons/13.png" },
-        "80": { day: "/src/modules/weatherforecast/icons/11.png", night: "/src/modules/weatherforecast/icons/11.png" },
-        "81": { day: "/src/modules/weatherforecast/icons/12.png", night: "/src/modules/weatherforecast/icons/12.png" },
-        "82": { day: "/src/modules/weatherforecast/icons/12.png", night: "/src/modules/weatherforecast/icons/12.png" },
-        "85": { day: "/src/modules/weatherforecast/icons/14.png", night: "/src/modules/weatherforecast/icons/14.png" },
-        "86": { day: "/src/modules/weatherforecast/icons/42.png", night: "/src/modules/weatherforecast/icons/42.png" },
-        "95": { day: "/src/modules/weatherforecast/icons/4.png", night: "/src/modules/weatherforecast/icons/4.png" },
-        "96": { day: "/src/modules/weatherforecast/icons/4.png", night: "/src/modules/weatherforecast/icons/4.png" },
-        "99": { day: "/src/modules/weatherforecast/icons/3.png", night: "/src/modules/weatherforecast/icons/3.png" },
-        "default": { day: "/src/modules/weatherforecast/icons/na.png", night: "/src/modules/weatherforecast/icons/na.png" }
+        clear: { animation: 'Clear Skies.mp4' },
+        cloudy: { animation: 'Overcast.mp4' },
+        partly_cloudy: { animation: 'Partly Cloudy.mp4' },
+        rain: { animation: 'Rain.mp4' },
+        showers: { animation: 'Rain Shower.mp4' },
+        snow: { animation: 'Snow.mp4' },
+        thunderstorm: { animation: 'Thunderstorm.mp4' },
+        fog: { animation: 'Fog.mp4' },
+        default: { animation: 'Sun.mp4' },
     };
 
-    let isDaytime;
-
-    isDaytimeStore.subscribe(value => {
-        isDaytime = value;
-        // console.log(`[WeatherForecastModule] Current daytime status:`, isDaytime ? 'Day' : 'Night');
-        if (forecastData.length > 0) {
-            forecastData = forecastData.map(day => ({
-                ...day,
-                icon: getWeatherIcon(day.weatherCode)
-            }));
-        }
-    });
-
-    function getWeatherIcon(code) {
-        return iconMap[code] ? (isDaytime ? iconMap[code].day : iconMap[code].night) : iconMap["default"][isDaytime ? "day" : "night"];
+    function getWeatherIcon(condition) {
+        return `${basePath}/${iconMap[condition]?.animation || iconMap['default'].animation}`;
     }
 
     async function fetchWeatherData() {
+        if (!get(isWeatherDataStale)) {
+            console.log('[WeatherForecastModule] Using cached data.');
+            forecastData = get(weatherDataStore).forecast;
+            return;
+        }
+
         try {
-            const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=temperature_2m_max,temperature_2m_min,weathercode,sunrise,sunset&timezone=auto`);
+            const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,weathercode,windspeed_10m_max&timezone=auto`);
             const data = await response.json();
 
             if (!data.daily) {
-                throw new Error("Forecast data not available");
+                throw new Error('Forecast data not available');
             }
 
-            // Update sunrise and sunset times in the store
-            sunrise = dayjs(data.daily.sunrise[0]).tz(userTimezone);
-            sunset = dayjs(data.daily.sunset[0]).tz(userTimezone);
-            // console.log(`[WeatherForecastModule] Parsed Sunrise: ${sunrise.format()}, Sunset: ${sunset.format()}`);
-            updateSunriseSunset(sunrise, sunset);
-
             forecastData = data.daily.time.map((date, index) => {
-                const maxTempC = data.daily.temperature_2m_max[index];
-                const minTempC = data.daily.temperature_2m_min[index];
-                const maxTempF = (maxTempC * 9 / 5) + 32;
-                const minTempF = (minTempC * 9 / 5) + 32;
-                const weatherCode = data.daily.weathercode[index].toString();
+                const weatherCode = data.daily.weathercode[index];
+                const weatherCondition = getConditionFromCode(weatherCode);
 
                 return {
                     day: dayjs(date).format('ddd'),
-                    maxTemp: maxTempF.toFixed(1),
-                    minTemp: minTempF.toFixed(1),
-                    icon: getWeatherIcon(weatherCode),
-                    weatherCode
+                    icon: getWeatherIcon(weatherCondition),
+                    maxTemp: data.daily.temperature_2m_max[index],
+                    minTemp: data.daily.temperature_2m_min[index],
+                    windspeed: data.daily.windspeed_10m_max[index],
+                    probabilities: {
+                        precipitation: data.daily.precipitation_sum[index],
+                    },
                 };
             });
+
+            forecastData = forecastData.slice(0, 7); // Show only 7 days
+            updateWeatherData(forecastData);
         } catch (err) {
             error = err.message;
-            console.error("[WeatherForecastModule] Error fetching forecast data:", err);
+            console.error('[WeatherForecastModule] Error fetching data:', err);
         }
     }
 
-    function reload() {
+    function getConditionFromCode(code) {
+        if ([0, 1].includes(code)) return 'clear';
+        if ([2].includes(code)) return 'partly_cloudy';
+        if ([3].includes(code)) return 'cloudy';
+        if ([51, 61].includes(code)) return 'showers';
+        if ([71, 73].includes(code)) return 'snow';
+        if ([95, 99].includes(code)) return 'thunderstorm';
+        return 'default';
+    }
+
+    onMount(() => {
+        startProbabilityCycle();
         fetchWeatherData();
-    }
-
-    sunriseSunsetStore.subscribe(({ sunrise: newSunrise, sunset: newSunset }) => {
-        sunrise = dayjs(newSunrise).tz(userTimezone);
-        sunset = dayjs(newSunset).tz(userTimezone);
-        const currentIsDaytime = isDaytime;
-
-        if (previousIsDaytime === null) {
-            previousIsDaytime = currentIsDaytime;
-        } else if (currentIsDaytime !== previousIsDaytime) {
-            previousIsDaytime = currentIsDaytime;
-            fetchWeatherData();
-        }
-    });
-
-    const unsubscribe = modulesToReload.subscribe((state) => {
-        if (state.WeatherForecastModule !== reloadCount) {
-            reloadCount = state.WeatherForecastModule;
-            reload();
-        }
-    });
-
-    onDestroy(unsubscribe);
-
-    onMount(async () => {
-        await fetchWeatherData();
-        setModuleReady("WeatherForecastModule");
+        const hourlyFetch = setInterval(fetchWeatherData, 3600000);
+        return () => {
+            clearInterval(hourlyFetch);
+            clearInterval(interval);
+        };
     });
 </script>
 
@@ -147,18 +113,34 @@
     {:else if forecastData.length > 0}
         <div class="forecast-wrapper">
             <div class="forecast-header">
-                <h2>King's Mountain, NC</h2>
+                <h2>7-Day Forecast</h2>
             </div>
             <div class="forecast-container">
                 {#each forecastData as dayForecast}
                     <div class="forecast-day">
                         <div class="forecast-day-name">{dayForecast.day}</div>
                         <div class="icon-container">
-                            <img src={dayForecast.icon} alt="Weather Icon" class="forecast-icon" />
+                            <video
+                                src={dayForecast.icon}
+                                autoplay
+                                muted
+                                loop
+                                class="forecast-icon"
+                                playsinline
+                                type="video/mp4"
+                            ></video>
                         </div>
                         <div class="forecast-temp">
                             <div class="max-temp">{dayForecast.maxTemp}°</div>
                             <div class="min-temp">{dayForecast.minTemp}°</div>
+                        </div>
+                        <div class="forecast-details">
+                            <div class="wind">
+                                <MeteoconsWindFill /> {dayForecast.windspeed} km/h
+                            </div>
+                            <div class="probabilities">
+                                <MeteoconsRaindropsFill /> {dayForecast.probabilities.precipitation} mm
+                            </div>
                         </div>
                     </div>
                 {/each}

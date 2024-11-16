@@ -8,10 +8,11 @@ import timezone from 'dayjs/plugin/timezone';
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
+// Store for sunrise and sunset times
 export const sunriseSunsetStore = writable({
   sunrise: null,
   sunset: null,
-  ready: false,  // Track if both times are set
+  ready: false,
 });
 
 export const isDaytimeStore = derived(sunriseSunsetStore, ($sunriseSunsetStore) => {
@@ -21,10 +22,28 @@ export const isDaytimeStore = derived(sunriseSunsetStore, ($sunriseSunsetStore) 
   if (ready && sunrise && sunset) {
     return now.isAfter(sunrise) && now.isBefore(sunset);
   }
-  return false; // Default to false if not ready or times are missing
+  return false;
 });
 
-// Function to update sunrise and sunset times
+export const weatherDataStore = writable({
+  forecast: [],
+  lastUpdated: null,
+});
+
+// Add derived store to check if weather data is stale (older than 30 minutes)
+export const isWeatherDataStale = derived(weatherDataStore, ($weatherDataStore) => {
+  if (!$weatherDataStore.lastUpdated) return true;
+  return dayjs().diff($weatherDataStore.lastUpdated, 'minute') >= 30;
+});
+
+export function updateWeatherData(forecast) {
+  weatherDataStore.set({
+    forecast,
+    lastUpdated: dayjs(),
+  });
+  console.log('[updateWeatherData] Weather data updated at:', dayjs().format());
+}
+
 export function updateSunriseSunset(sunrise, sunset) {
   if (sunrise && sunset) {
     sunriseSunsetStore.set({
@@ -32,21 +51,11 @@ export function updateSunriseSunset(sunrise, sunset) {
       sunset: dayjs(sunset),
       ready: true,
     });
-    // console.log(`[updateSunriseSunset] Updated sunrise: ${dayjs(sunrise).format()} and sunset: ${dayjs(sunset).format()}`);
   } else {
     sunriseSunsetStore.update((state) => ({
       ...state,
-      ready: false, // Mark as not ready if any value is missing
+      ready: false,
     }));
-    console.warn("[updateSunriseSunset] Missing sunrise or sunset time; readiness flag set to false.");
+    console.warn("[updateSunriseSunset] Missing sunrise or sunset time.");
   }
-}
-
-// Store to track module readiness
-export const moduleReadyStore = writable({});
-
-// Function to set module as ready
-export function setModuleReady(moduleName) {
-  moduleReadyStore.update(state => ({ ...state, [moduleName]: true }));
- // console.log(`[setModuleReady] ${moduleName} is now marked as ready`);
 }

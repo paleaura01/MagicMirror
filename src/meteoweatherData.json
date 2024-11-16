@@ -1,0 +1,12 @@
+{
+  "timestamp": "2024-11-16T02:10:49.481Z",
+  "temperature": 10.2,
+  "feelsLike": 4.4,
+  "humidity": 93,
+  "windSpeed": 12.2,
+  "windDirection": 360,
+  "weatherCode": 0,
+  "weatherDescription": "Clear Skies",
+  "sunrise": "2024-11-15T07:01",
+  "sunset": "2024-11-15T17:18"
+}
