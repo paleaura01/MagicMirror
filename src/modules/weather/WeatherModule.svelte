@@ -97,7 +97,7 @@
 
   onMount(() => {
     refreshData();
-    intervalId = setInterval(refreshData, 600000); // Refresh every 10 minutes
+    intervalId = setInterval(refreshData, 30000); // Refresh every 30 seconds
 
     // Rotate pollen display every 10 seconds
     pollenIntervalId = setInterval(() => {

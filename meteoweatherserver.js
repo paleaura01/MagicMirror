@@ -5,7 +5,7 @@ import path from 'path';
 
 dotenv.config(); // Load environment variables
 
-const dataFilePath = path.resolve('/src/modules/weather/meteoweatherData.json');
+const dataFilePath = path.resolve('src/modules/weather/meteoweatherData.json');
 
 // Helper function to read JSON data from the file
 const readJsonFile = async (filePath) => {
@@ -126,7 +126,7 @@ const mapWeatherDescription = (code) => {
 // Function to start periodic updates
 const startWeatherUpdate = () => {
   fetchAndUpdateWeatherData();
-  setInterval(fetchAndUpdateWeatherData, 10 * 60 * 1000); // Update every 10 minutes
+  setInterval(fetchAndUpdateWeatherData, 5 * 60 * 1000); // Update every 5 minutes
 };
 
 // Ensure data file is created or valid on script start

@@ -2,10 +2,33 @@ import fetch from 'node-fetch';
 import dotenv from 'dotenv';
 import fs from 'fs/promises';
 import path from 'path';
+import dayjs from 'dayjs';
 
 dotenv.config(); // Load environment variables
 
-const dataFilePath = path.resolve('/src/modules/weather/accuweatherData.json');
+const dataFilePath = path.resolve('src/modules/weather/accuweatherData.json');
+const apiKeys = [
+  process.env.ACCU_WEATHER_API_KEY1,
+  process.env.ACCU_WEATHER_API_KEY2,
+  process.env.ACCU_WEATHER_API_KEY3,
+  process.env.ACCU_WEATHER_API_KEY4,
+  process.env.ACCU_WEATHER_API_KEY5,
+].filter(Boolean); // Filter out any undefined keys
+let currentApiKeyIndex = 0;
+
+if (apiKeys.length === 0) {
+  console.error('No API keys loaded. Please check your .env file.');
+  process.exit(1);
+}
+
+// Helper function to get the current API key
+const getCurrentApiKey = () => apiKeys[currentApiKeyIndex];
+
+// Helper function to switch to the next API key
+const switchToNextApiKey = () => {
+  currentApiKeyIndex = (currentApiKeyIndex + 1) % apiKeys.length;
+  console.log(`Switched to API key: ${getCurrentApiKey()}`);
+};
 
 // Helper function to read JSON data from the file
 const readJsonFile = async (filePath) => {
@@ -33,12 +56,24 @@ const writeJsonFile = async (filePath, data) => {
   await fs.writeFile(filePath, JSON.stringify(data, null, 2));
 };
 
-// Schedule the next API call based on a specific time
-const scheduleNextCall = (timestamp, callback) => {
-  const delay = new Date(timestamp) - new Date();
-  if (delay > 0) {
-    setTimeout(callback, delay);
-  }
+// Schedule the next API call based on specific times
+const scheduleDailyUpdates = (callback) => {
+  const scheduleTimes = ['06:00', '12:00', '18:00'];
+
+  scheduleTimes.forEach((time) => {
+    const now = dayjs();
+    let nextTime = dayjs(`${now.format('YYYY-MM-DD')}T${time}`);
+    if (nextTime.isBefore(now)) {
+      nextTime = nextTime.add(1, 'day');
+    }
+
+    const delay = nextTime.diff(now);
+    console.log(`Scheduled update for: ${nextTime.format('YYYY-MM-DD HH:mm:ss')}`);
+
+    setTimeout(() => {
+      callback().then(() => scheduleDailyUpdates(callback)); // Reschedule after execution
+    }, delay);
+  });
 };
 
 // Function to map pollen categories based on value
@@ -90,81 +125,85 @@ const fetchAndUpdateWeatherData = async () => {
     return;
   }
 
-  const apiKey = process.env.ACCU_WEATHER_API_KEY;
-  if (!apiKey) {
-    console.error('AccuWeather API key is not set. Aborting.');
-    return;
-  }
+  let retryCount = 0;
 
-  try {
-    // Get Location Key
-    const locationUrl = `https://dataservice.accuweather.com/locations/v1/cities/geoposition/search?apikey=${apiKey}&q=${lat},${lon}`;
-    const locationResponse = await fetch(locationUrl);
-    if (!locationResponse.ok) {
-      throw new Error(`Failed to fetch location data: ${locationResponse.status} - ${locationResponse.statusText}`);
+  while (retryCount < apiKeys.length) {
+    try {
+      const apiKey = getCurrentApiKey();
+      console.log(`Using API key: ${apiKey}`);
+      const locationUrl = `https://dataservice.accuweather.com/locations/v1/cities/geoposition/search?apikey=${apiKey}&q=${lat},${lon}`;
+      const locationResponse = await fetch(locationUrl);
+
+      if (!locationResponse.ok) {
+        if (locationResponse.status === 403 || locationResponse.status === 401) {
+          console.error(`API key failed: ${apiKey} (${locationResponse.status})`);
+          switchToNextApiKey();
+          retryCount++;
+          continue;
+        }
+        throw new Error(`Failed to fetch location data: ${locationResponse.status} - ${locationResponse.statusText}`);
+      }
+
+      const locationData = await locationResponse.json();
+      const locationKey = locationData.Key;
+
+      const currentConditionsUrl = `https://dataservice.accuweather.com/currentconditions/v1/${locationKey}?apikey=${apiKey}&details=true`;
+      const currentConditionsResponse = await fetch(currentConditionsUrl);
+
+      if (!currentConditionsResponse.ok) {
+        throw new Error(`Failed to fetch current conditions: ${currentConditionsResponse.status} - ${currentConditionsResponse.statusText}`);
+      }
+
+      const currentConditions = await currentConditionsResponse.json();
+
+      const forecastUrl = `https://dataservice.accuweather.com/forecasts/v1/daily/1day/${locationKey}?apikey=${apiKey}&details=true`;
+      const forecastResponse = await fetch(forecastUrl);
+
+      if (!forecastResponse.ok) {
+        throw new Error(`Failed to fetch forecast data: ${forecastResponse.status} - ${forecastResponse.statusText}`);
+      }
+
+      const forecastData = await forecastResponse.json();
+      const airAndPollen = forecastData.DailyForecasts[0].AirAndPollen || [];
+
+      const pollenData = airAndPollen
+        .filter((item) => ['Grass', 'Tree', 'Ragweed', 'Mold'].includes(item.Name))
+        .map((item) => ({
+          ...item,
+          Category: mapPollenCategory(item.Name, item.Value),
+        }));
+
+      const aqiData = airAndPollen.find((item) => item.Name === 'AirQuality');
+      const sunrise = forecastData.DailyForecasts[0].Sun.Rise || 'N/A';
+      const sunset = forecastData.DailyForecasts[0].Sun.Set || 'N/A';
+
+      const weatherData = {
+        timestamp: new Date().toISOString(),
+        sunrise,
+        sunset,
+        currentConditions,
+        pollenData,
+        airQuality: aqiData ? { category: aqiData.Category, value: aqiData.Value } : { category: 'N/A', value: 'N/A' },
+      };
+
+      await writeJsonFile(dataFilePath, weatherData);
+      console.log('Weather and AQI data updated successfully.');
+      return; // Exit on success
+    } catch (error) {
+      console.error(`Error fetching data: ${error.message}`);
+      if (retryCount === apiKeys.length - 1) console.error('All API keys have been exhausted.');
+      switchToNextApiKey();
+      retryCount++;
     }
-    const locationData = await locationResponse.json();
-    const locationKey = locationData.Key;
-
-    // Get Current Conditions
-    const currentConditionsUrl = `https://dataservice.accuweather.com/currentconditions/v1/${locationKey}?apikey=${apiKey}&details=true`;
-    const currentConditionsResponse = await fetch(currentConditionsUrl);
-    if (!currentConditionsResponse.ok) {
-      throw new Error(`Failed to fetch current conditions: ${currentConditionsResponse.status} - ${currentConditionsResponse.statusText}`);
-    }
-    const currentConditions = await currentConditionsResponse.json();
-
-    // Get 1-Day Forecast to Extract AirAndPollen
-    const forecastUrl = `https://dataservice.accuweather.com/forecasts/v1/daily/1day/${locationKey}?apikey=${apiKey}&details=true`;
-    const forecastResponse = await fetch(forecastUrl);
-    if (!forecastResponse.ok) {
-      throw new Error(`Failed to fetch forecast data: ${forecastResponse.status} - ${forecastResponse.statusText}`);
-    }
-    const forecastData = await forecastResponse.json();
-    const airAndPollen = forecastData.DailyForecasts[0].AirAndPollen || [];
-
-    const pollenData = airAndPollen
-      .filter((item) => ['Grass', 'Tree', 'Ragweed', 'Mold'].includes(item.Name))
-      .map((item) => ({
-        ...item,
-        Category: mapPollenCategory(item.Name, item.Value),
-      }));
-
-    const aqiData = airAndPollen.find((item) => item.Name === 'AirQuality');
-    const sunrise = forecastData.DailyForecasts[0].Sun.Rise || 'N/A';
-    const sunset = forecastData.DailyForecasts[0].Sun.Set || 'N/A';
-
-    const weatherData = {
-      timestamp: new Date().toISOString(),
-      sunrise,
-      sunset,
-      currentConditions,
-      pollenData,
-      airQuality: aqiData ? { category: aqiData.Category, value: aqiData.Value } : { category: 'N/A', value: 'N/A' },
-    };
-
-    await writeJsonFile(dataFilePath, weatherData);
-    console.log('Weather and AQI data updated successfully.');
-    if (sunrise !== 'N/A') scheduleNextCall(sunrise, fetchAndUpdateWeatherData);
-    if (sunset !== 'N/A') scheduleNextCall(sunset, fetchAndUpdateWeatherData);
-  } catch (error) {
-    console.error(`Error fetching AccuWeather data: ${error.message}`);
   }
 };
 
 // Initialize weather data on script start
 const initializeWeatherData = async () => {
-  const existingData = await readJsonFile(dataFilePath);
-  if (!existingData) {
-    console.log('No valid data found. Fetching initial data.');
-    await fetchAndUpdateWeatherData();
-  } else {
-    console.log('Existing valid data found. Scheduling next updates.');
-    const { sunrise, sunset } = existingData;
-    scheduleNextCall(sunrise, fetchAndUpdateWeatherData);
-    scheduleNextCall(sunset, fetchAndUpdateWeatherData);
-  }
+  await fetchAndUpdateWeatherData();
+  scheduleDailyUpdates(fetchAndUpdateWeatherData);
 };
 
 // Start the process
 initializeWeatherData();
+setInterval(() => console.log('Server is running...'), 60000); // Keep script running
