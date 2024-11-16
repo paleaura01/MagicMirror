@@ -41,6 +41,45 @@ const scheduleNextCall = (timestamp, callback) => {
   }
 };
 
+// Function to map pollen categories based on value
+const mapPollenCategory = (name, value) => {
+  const ranges = {
+    Grass: [
+      { category: 'Low', min: 0, max: 4.99 },
+      { category: 'Moderate', min: 5, max: 19.99 },
+      { category: 'High', min: 20, max: 199.99 },
+      { category: 'Very High', min: 200, max: 299.99 },
+      { category: 'Extreme', min: 300, max: 1000000 },
+    ],
+    Mold: [
+      { category: 'Low', min: 0, max: 6499.99 },
+      { category: 'Moderate', min: 6500, max: 12999.99 },
+      { category: 'High', min: 13000, max: 49999.99 },
+      { category: 'Very High', min: 50000, max: 64999.99 },
+      { category: 'Extreme', min: 65000, max: 1000000 },
+    ],
+    Ragweed: [
+      { category: 'Low', min: 0, max: 9.99 },
+      { category: 'Moderate', min: 10, max: 49.99 },
+      { category: 'High', min: 50, max: 499.99 },
+      { category: 'Very High', min: 500, max: 649.99 },
+      { category: 'Extreme', min: 650, max: 1000000 },
+    ],
+    Tree: [
+      { category: 'Low', min: 0, max: 14.99 },
+      { category: 'Moderate', min: 15, max: 89.99 },
+      { category: 'High', min: 90, max: 1499.99 },
+      { category: 'Very High', min: 1500, max: 2999.99 },
+      { category: 'Extreme', min: 3000, max: 1000000 },
+    ],
+  };
+
+  const categoryRange = ranges[name]?.find(
+    (range) => value >= range.min && value <= range.max
+  );
+  return categoryRange ? categoryRange.category : 'Unknown';
+};
+
 // Function to fetch and update weather data along with AQI
 const fetchAndUpdateWeatherData = async () => {
   const lat = process.env.DEFAULT_LATITUDE;
@@ -61,42 +100,37 @@ const fetchAndUpdateWeatherData = async () => {
     // Get Location Key
     const locationUrl = `https://dataservice.accuweather.com/locations/v1/cities/geoposition/search?apikey=${apiKey}&q=${lat},${lon}`;
     const locationResponse = await fetch(locationUrl);
-
     if (!locationResponse.ok) {
       throw new Error(`Failed to fetch location data: ${locationResponse.status} - ${locationResponse.statusText}`);
     }
-
     const locationData = await locationResponse.json();
     const locationKey = locationData.Key;
 
     // Get Current Conditions
     const currentConditionsUrl = `https://dataservice.accuweather.com/currentconditions/v1/${locationKey}?apikey=${apiKey}&details=true`;
     const currentConditionsResponse = await fetch(currentConditionsUrl);
-
     if (!currentConditionsResponse.ok) {
       throw new Error(`Failed to fetch current conditions: ${currentConditionsResponse.status} - ${currentConditionsResponse.statusText}`);
     }
-
     const currentConditions = await currentConditionsResponse.json();
 
     // Get 1-Day Forecast to Extract AirAndPollen
     const forecastUrl = `https://dataservice.accuweather.com/forecasts/v1/daily/1day/${locationKey}?apikey=${apiKey}&details=true`;
     const forecastResponse = await fetch(forecastUrl);
-
     if (!forecastResponse.ok) {
       throw new Error(`Failed to fetch forecast data: ${forecastResponse.status} - ${forecastResponse.statusText}`);
     }
-
     const forecastData = await forecastResponse.json();
     const airAndPollen = forecastData.DailyForecasts[0].AirAndPollen || [];
 
-    const pollenData = airAndPollen.filter(item =>
-      ['Grass', 'Tree', 'Ragweed', 'Mold'].includes(item.Name)
-    );
+    const pollenData = airAndPollen
+      .filter((item) => ['Grass', 'Tree', 'Ragweed', 'Mold'].includes(item.Name))
+      .map((item) => ({
+        ...item,
+        Category: mapPollenCategory(item.Name, item.Value),
+      }));
 
-    // Extract AQI data from AirAndPollen
-    const aqiData = airAndPollen.find(item => item.Name === 'AirQuality');
-
+    const aqiData = airAndPollen.find((item) => item.Name === 'AirQuality');
     const sunrise = forecastData.DailyForecasts[0].Sun.Rise || 'N/A';
     const sunset = forecastData.DailyForecasts[0].Sun.Set || 'N/A';
 
@@ -106,24 +140,19 @@ const fetchAndUpdateWeatherData = async () => {
       sunset,
       currentConditions,
       pollenData,
-      airQuality: aqiData ? { category: aqiData.Category, value: aqiData.Value } : { category: 'N/A', value: 'N/A' }
+      airQuality: aqiData ? { category: aqiData.Category, value: aqiData.Value } : { category: 'N/A', value: 'N/A' },
     };
 
     await writeJsonFile(dataFilePath, weatherData);
     console.log('Weather and AQI data updated successfully.');
-
-    if (sunrise !== 'N/A') {
-      scheduleNextCall(sunrise, fetchAndUpdateWeatherData);
-    }
-    if (sunset !== 'N/A') {
-      scheduleNextCall(sunset, fetchAndUpdateWeatherData);
-    }
+    if (sunrise !== 'N/A') scheduleNextCall(sunrise, fetchAndUpdateWeatherData);
+    if (sunset !== 'N/A') scheduleNextCall(sunset, fetchAndUpdateWeatherData);
   } catch (error) {
     console.error(`Error fetching AccuWeather data: ${error.message}`);
   }
 };
 
-// Ensure data file is created or valid on script start
+// Initialize weather data on script start
 const initializeWeatherData = async () => {
   const existingData = await readJsonFile(dataFilePath);
   if (!existingData) {

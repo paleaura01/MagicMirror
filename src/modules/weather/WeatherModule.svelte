@@ -30,20 +30,13 @@
     Mold: MeteoconsPollenFill,
   };
 
-  const mapWeatherDescription = (code) => {
-    const descriptions = {
-      0: 'Clear Skies.mp4',
-      1: 'Mostly Clear.mp4',
-      2: 'Partly Cloudy.mp4',
-      3: 'Overcast.mp4',
-      45: 'Fog.mp4',
-      48: 'Rime Fog.mp4',
-      51: 'Light Drizzle.mp4',
-      61: 'Light Rain.mp4',
-      95: 'Thunderstorm.mp4',
-    };
-    return descriptions[code] || 'Unknown';
-  };
+  const basePath = '/src/modules/weather/animatedicons';
+
+  // Simplified getWeatherIcon to use the description as-is
+  function getWeatherIcon(description) {
+    if (!description) return `${basePath}/Clear Skies.mp4`; // Fallback to default
+    return `${basePath}/${description}.mp4`;
+  }
 
   const convertToStandard = (value, fromUnit, toUnit) => {
     if (fromUnit === 'C' && toUnit === 'F') {
@@ -65,7 +58,7 @@
         humidity: data.humidity,
         windSpeed: convertToStandard(data.windSpeed, 'km/h', 'mi/h').toFixed(1),
         windDirection: data.windDirection,
-        weatherDescription: mapWeatherDescription(data.weatherCode),
+        weatherDescription: data.weatherDescription, // Use description as-is
         sunrise: dayjs(data.sunrise).format('h:mm A'),
         sunset: dayjs(data.sunset).format('h:mm A'),
         isHurricane: data.windSpeed >= 119, // 119 km/h ~ 74 mi/h
@@ -125,59 +118,60 @@
   {#if error}
     <p>{error}</p>
   {:else if weatherData}
-  <div class="top-info">
-    <div class="left-column">
-      <div class="pollen-info">
-        {#if displayedPollen}
-          <svelte:component this={displayedPollen.icon} class="symbol" />
-          <div>{displayedPollen.name}: {displayedPollen.category}</div>
-        {/if}
-      </div>
+    <div class="top-info">
+      <div class="left-column">
+        <div class="pollen-info">
+          {#if displayedPollen}
+            <svelte:component this={displayedPollen.icon} class="symbol" />
+            <div>{displayedPollen.name}: {displayedPollen.category}</div>
+          {/if}
+        </div>
 
-      <div class="air-quality">
-        <svelte:component this={MeteoconsWindOnshore} class="symbol" />
-        AQI: {airQualityData.category} ({airQualityData.value})
+        <div class="air-quality">
+          <svelte:component this={MeteoconsWindOnshore} class="symbol" />
+          AQI: {airQualityData.category} ({airQualityData.value})
+        </div>
       </div>
-
+    
+      <div class="right-column">
+        <div class="wind-info">
+          {#if weatherData.isHurricane}
+            <MeteoconsHurricaneFill class="symbol" />
+            <div>Hurricane Winds: {weatherData.windSpeed} mi/h</div>
+          {:else}
+            <MeteoconsWindFill class="symbol" />
+            <div>
+              Wind: {weatherData.windSpeed} mi/h {weatherData.windDirection.compass}
+              <span style="margin-left: 4px;">
+                <Fa6SolidArrowUp style="transform: rotate({weatherData.windDirection.degrees}deg);" />
+              </span>
+            </div>
+          {/if}
+        </div>
+        
+        <div class="humidity-info">
+          <MeteoconsHumidityFill class="symbol" />
+          Humidity: {weatherData.humidity}%
+        </div>
+      </div>
+  
+      <div class="sunrise-sunset">
+        <div class="sunrise">
+          <MeteoconsSunriseFill class="symbol" />
+          <span class="text">Sunrise: {weatherData.sunrise}</span>
+        </div>
+        <div class="sunset">
+          <MeteoconsMoonsetFill class="symbol" />
+          <span class="text">Sunset: {weatherData.sunset}</span>
+        </div>
+      </div>
     </div>
-  
-    <div class="right-column">
-      <div class="wind-info">
-        {#if weatherData.isHurricane}
-          <MeteoconsHurricaneFill class="symbol" />
-          <div>Hurricane Winds: {weatherData.windSpeed} mi/h</div>
-        {:else}
-          <MeteoconsWindFill class="symbol" />
-          <div>
-            Wind: {weatherData.windSpeed} mi/h {weatherData.windDirection.compass}
-            <span style="margin-left: 4px;">
-              <Fa6SolidArrowUp style="transform: rotate({weatherData.windDirection.degrees}deg);" />
-            </span>
-          </div>
-        {/if}
-      </div>
-      
-      <div class="humidity-info">
-        <MeteoconsHumidityFill class="symbol" />
-        Humidity: {weatherData.humidity}%
-      </div>
-    </div>
-  
-<div class="sunrise-sunset">
-  <div class="sunrise">
-    <MeteoconsSunriseFill class="symbol" />
-    <span class="text">Sunrise: {weatherData.sunrise}</span>
-  </div>
-  <div class="sunset">
-    <MeteoconsMoonsetFill class="symbol" />
-    <span class="text">Sunset: {weatherData.sunset}</span>
-  </div>
-</div>
-  </div>
-  
-  
-  
+    
     <div class="current-weather">
+      <video autoplay loop muted class="weather-icon">
+        <source src={getWeatherIcon(weatherData.weatherDescription)} type="video/mp4" />
+        Your browser does not support the video tag.
+      </video>
       <div class="temperature">{weatherData.temperature}°F</div>
       <div class="feels-like">Feels Like: {weatherData.feelsLike}°F</div>
       <div class="description">{weatherData.weatherDescription}</div>
