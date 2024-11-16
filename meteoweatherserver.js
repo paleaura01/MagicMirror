@@ -5,7 +5,7 @@ import path from 'path';
 
 dotenv.config(); // Load environment variables
 
-const dataFilePath = path.resolve('src/meteoweatherData.json');
+const dataFilePath = path.resolve('/src/modules/weather/meteoweatherData.json');
 
 // Helper function to read JSON data from the file
 const readJsonFile = async (filePath) => {

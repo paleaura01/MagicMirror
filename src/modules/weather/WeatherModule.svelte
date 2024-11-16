@@ -49,7 +49,7 @@
 
   const fetchWeatherData = async () => {
     try {
-      const response = await fetch('/src/meteoweatherData.json');
+      const response = await fetch('/src/modules/weather/meteoweatherData.json');
       if (!response.ok) throw new Error('Failed to fetch weather');
       const data = await response.json();
       weatherData = {
@@ -70,7 +70,7 @@
 
   const fetchPollenAQIData = async () => {
     try {
-      const response = await fetch('/src/accuweatherData.json');
+      const response = await fetch('/src/modules/weather/accuweatherData.json');
       if (!response.ok) throw new Error('Failed to fetch pollen and AQI');
       const data = await response.json();
       airQualityData = data.airQuality || { value: 'N/A', category: 'Unknown' };

@@ -97,7 +97,7 @@
   {
     "name": "JeopardyModule",
     "path": "@/modules/jeopardy/Jeopardy",
-    "region": "right",
+    "region": "",
     "props": {}
   },
   {
