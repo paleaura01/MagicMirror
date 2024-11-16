@@ -33,6 +33,13 @@ const writeJsonFile = async (filePath, data) => {
   await fs.writeFile(filePath, JSON.stringify(data, null, 2));
 };
 
+// Function to convert wind direction to compass letter
+const getCompassDirection = (degrees) => {
+  const directions = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW', 'N'];
+  const index = Math.round((degrees % 360) / 22.5);
+  return directions[index];
+};
+
 // Function to fetch and update weather data
 const fetchAndUpdateWeatherData = async () => {
   const lat = process.env.DEFAULT_LATITUDE;
@@ -57,14 +64,20 @@ const fetchAndUpdateWeatherData = async () => {
     const weatherData = await weatherResponse.json();
     const { current_weather, daily, hourly } = weatherData;
 
+    const windDirectionCode = current_weather.winddirection;
+    const windDirectionLetter = getCompassDirection(windDirectionCode);
+
     const weatherInfo = {
       timestamp: new Date().toISOString(),
       temperature: current_weather.temperature,
       feelsLike: hourly.apparent_temperature[0], // First hourly value for apparent temperature
       humidity: hourly.relative_humidity_2m[0], // First hourly value for relative humidity
       windSpeed: current_weather.windspeed,
-      windDirection: current_weather.winddirection,
-      weatherCode: current_weather.weathercode, // Weather condition code
+      windDirection: {
+        degrees: windDirectionCode,
+        compass: windDirectionLetter
+      },
+      weatherCode: current_weather.weathercode,
       weatherDescription: mapWeatherDescription(current_weather.weathercode),
       sunrise: daily.sunrise[0], // First daily value for sunrise
       sunset: daily.sunset[0], // First daily value for sunset

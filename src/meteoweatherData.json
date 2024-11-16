@@ -1,10 +1,13 @@
 {
-  "timestamp": "2024-11-16T02:10:49.481Z",
-  "temperature": 10.2,
+  "timestamp": "2024-11-16T03:30:05.947Z",
+  "temperature": 9.2,
   "feelsLike": 4.4,
   "humidity": 93,
-  "windSpeed": 12.2,
-  "windDirection": 360,
+  "windSpeed": 8.3,
+  "windDirection": {
+    "degrees": 355,
+    "compass": "N"
+  },
   "weatherCode": 0,
   "weatherDescription": "Clear Skies",
   "sunrise": "2024-11-15T07:01",

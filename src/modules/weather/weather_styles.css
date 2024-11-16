@@ -1,70 +1,83 @@
 /* ./src/modules/weather/weather_styles.css */
 
-.weather {
-  right: 20px;
-  margin-top: 25px;
-  color: white;
-  font-family: Arial, sans-serif;
-  text-align: right;
-}
-
 .top-info {
-  display: flex;
-  flex-direction: row;
-  align-items: flex-start;
-  justify-content: flex-end;
-  font-size: 0.9em;
-  margin-bottom: 15px;
-  gap: 15px; /* Space between each section */
+  font-family: Arial, sans-serif;
+
+  display: grid;
+  grid-template-columns: auto auto auto; /* Three sections: left, middle, right */
+  justify-content: right; /* Align the entire grid to the right side of the container */
+  align-items: flex-start; /* Align items to the top */
+  gap: 15px; /* Space between columns */
+  padding-top: 20px; /* Add 20px padding at the top */
+  width: max-content; /* Shrink the grid to fit its content */
+  margin-left: auto; /* Push the grid to the right */
 }
 
-.pollen-info, .air-quality, .wind-info, .humidity-info, .sunrise-sunset {
-  display: flex;
-  align-items: center; /* Align icon and text horizontally */
-  gap: 6px;
-}
 
-.sunrise, .sunset {
+.left-column,
+.right-column {
   display: flex;
-  align-items: center;
-  gap: 6px;
+  flex-direction: column;
 }
 
 .sunrise-sunset {
   display: flex;
   flex-direction: column;
+  align-items: flex-start; /* Align sunrise/sunset content to the left */
 }
 
-.current-weather {
+.sunrise, .sunset {
   display: flex;
-  flex-direction: column;
-  align-items: flex-end; /* Align content to the right */
-  margin-top: 20px;
+  align-items: center; /* Align icons and text horizontally */
+}
+
+.pollen-info,
+.air-quality,
+.wind-info,
+.humidity-info {
+  display: flex;
+  align-items: center; /* Icon and text aligned */
 }
 
 .weather-icon {
   width: 120px;
   height: 120px;
-  margin-bottom: 10px;
+}
+
+.current-weather {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  margin-top: 20px;
 }
 
 .temperature {
   font-size: 2.8em;
   font-weight: 300;
-  margin: 0;
-  line-height: 1;
 }
 
-.feels-like {
-  font-size: 1.2em;
-  color: rgba(255, 255, 255, 0.7);
-  margin-top: 5px;
-  text-align: right; /* Align text to the right */
-}
-
+.feels-like,
 .description {
-  font-size: 1em;
-  color: rgba(255, 255, 255, 0.6);
-  margin-top: 5px;
-  text-align: right; /* Align text to the right */
+  text-align: right;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.symbol {
+  width: 24px; /* Set the desired width */
+  height: 24px; /* Set the desired height */
+  flex-shrink: 0; /* Prevent shrinking */
+}
+
+.pollen-info .symbol,
+.air-quality .symbol,
+.wind-info .symbol,
+.humidity-info .symbol,
+.sunrise .symbol,
+.sunset .symbol {
+  width: 36px; /* Example for larger size */
+  height: 36px;
+}
+
+.icon-with-space {
+  margin-left: 3px; /* Adjust the spacing as needed */
 }
