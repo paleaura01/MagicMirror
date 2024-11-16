@@ -42,7 +42,10 @@
 .weather-icon {
   width: 180px;
   height: 180px;
+  position: relative; /* Enable positioning relative to its normal flow */
+  right: -15px; /* Move 15 pixels to the right beyond the grid/container */
 }
+
 
 .current-weather {
   font-family: Arial, sans-serif;
