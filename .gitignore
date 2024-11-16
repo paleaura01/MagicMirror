@@ -24,8 +24,4 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-
-
-src/modules/weather/animatedweathericons
-src/modules/weatherforecast/animatedweathericons
 /src/modules/weather/animatedicons
