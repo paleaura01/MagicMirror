@@ -6,7 +6,7 @@ import dayjs from 'dayjs';
 
 dotenv.config(); // Load environment variables
 
-const dataFilePath = path.resolve('src/modules/weather/accuweatherData.json');
+const dataFilePath = path.resolve('data/accuweatherData.json');
 const apiKeys = [
   process.env.ACCU_WEATHER_API_KEY1,
   process.env.ACCU_WEATHER_API_KEY2,

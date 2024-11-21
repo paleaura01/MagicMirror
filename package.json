@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "predev": "node generateModuleMap.js",
-    "dev": "concurrently \"vite\" \"node server.js\" \"node gaserver.js\" \"node verserver.js\" \"node deliveryserver.js\"",
+    "dev": "concurrently \"vite\" \"node server.js\" \"node gaserver.js\" \"node verserver.js\" \"node deliveryserver.js\" \"node accuweatherserver.js\" \"node meteoweatherserver.js\"",
     "build": "vite build",
     "preview": "vite preview"
   },

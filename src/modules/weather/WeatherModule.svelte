@@ -30,7 +30,7 @@
     Mold: MeteoconsPollenFill,
   };
 
-  const basePath = '/src/modules/weather/animatedicons';
+  const basePath = '/src/modules/weather/weathericons';
 
   // Simplified getWeatherIcon to use the description as-is
   function getWeatherIcon(description) {
@@ -49,7 +49,7 @@
 
   const fetchWeatherData = async () => {
     try {
-      const response = await fetch('/src/modules/weather/meteoweatherData.json');
+      const response = await fetch('/data/meteoweatherData.json', { cache: 'no-cache' });
       if (!response.ok) throw new Error('Failed to fetch weather');
       const data = await response.json();
       weatherData = {
@@ -70,7 +70,7 @@
 
   const fetchPollenAQIData = async () => {
     try {
-      const response = await fetch('/src/modules/weather/accuweatherData.json');
+      const response = await fetch('data/accuweatherData.json', { cache: 'no-cache' });
       if (!response.ok) throw new Error('Failed to fetch pollen and AQI');
       const data = await response.json();
       airQualityData = data.airQuality || { value: 'N/A', category: 'Unknown' };
