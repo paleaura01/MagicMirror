@@ -31,3 +31,4 @@ dist-ssr
 *.mp4
 src/modules/weatherforecast/animatedicons/Sorted/4 - Intermittent Clouds/Intermittent Clouds.mp4
 src/modules/weatherforecast/animatedicons/Sorted/6 - Mostly Cloudy/Mostly Cloudy.mp4
+/data
