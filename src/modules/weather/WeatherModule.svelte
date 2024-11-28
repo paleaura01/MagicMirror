@@ -43,6 +43,8 @@
   let videoElement;
 
   let moonPhaseData = null;
+  let previousWeatherDescription = null; // New variable to track the last weather condition
+
   moonPhaseStore.subscribe((value) => {
     moonPhaseData = value;
     if (!get(isDaytimeStore) && weatherData) {
@@ -127,6 +129,15 @@
       return;
     }
 
+    // Check if the weather description has changed
+    if (weatherData.weatherDescription === previousWeatherDescription) {
+      console.log('Weather description has not changed. Skipping icon update.');
+      return;
+    }
+
+    // Update the previous weather description
+    previousWeatherDescription = weatherData.weatherDescription;
+
     iconPaths = getWeatherIconPaths(
       weatherData.weatherDescription,
       get(isDaytimeStore)
@@ -176,59 +187,17 @@
     }
   };
 
-  const fetchPollenAQIData = async () => {
-    try {
-      const response = await fetch('/data/accuweatherData.json', {
-        cache: 'no-cache',
-      });
-      if (!response.ok) throw new Error('Failed to fetch pollen and AQI');
-      const data = await response.json();
-      airQualityData = data.airQuality || { value: 'N/A', category: 'Unknown' };
-      pollenData =
-        data.pollenData?.map((item) => ({
-          name: item.Name,
-          category: item.Category || 'Unknown',
-          icon: pollenIcons[item.Name],
-        })) || [];
-
-      // Set the initial pollen display
-      if (pollenData.length > 0) {
-        displayedPollen = pollenData[0];
-      }
-    } catch (err) {
-      error = `Pollen/AQI error: ${err.message}`;
-    }
-  };
-
   const refreshData = async () => {
     await fetchWeatherData();
-    await fetchPollenAQIData();
-    await updateMoonPhase(); // Fetch the latest moon phase data
   };
 
   onMount(() => {
     refreshData();
     intervalId = setInterval(refreshData, 30000); // Refresh every 30 seconds
-
-    // Rotate pollen display every 10 seconds
-    pollenIntervalId = setInterval(() => {
-      if (pollenData.length > 0) {
-        currentPollenIndex = (currentPollenIndex + 1) % pollenData.length;
-        displayedPollen = pollenData[currentPollenIndex];
-      }
-    }, 10000);
-
-    // Update video source when day/night changes
-    isDaytimeStore.subscribe(() => {
-      if (weatherData) {
-        updateVideoSrc();
-      }
-    });
   });
 
   onDestroy(() => {
     clearInterval(intervalId);
-    clearInterval(pollenIntervalId);
   });
 </script>
 

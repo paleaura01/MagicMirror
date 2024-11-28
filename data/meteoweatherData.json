@@ -1,11 +1,11 @@
 {
-  "timestamp": "2024-11-28T03:43:24.405Z",
+  "timestamp": "2024-11-28T04:33:24.509Z",
   "temperature": 9.2,
   "feelsLike": 3.2,
   "humidity": 59,
-  "windSpeed": 10.2,
+  "windSpeed": 8.3,
   "windDirection": {
-    "degrees": 212,
+    "degrees": 198,
     "compass": "SSW"
   },
   "weatherCode": 3,
