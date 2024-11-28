@@ -75,35 +75,15 @@
   color: rgba(255, 255, 255, 0.6);
 }
 
+.forecast-details {
+  font-size: .8rem; /* Keep the text smaller compared to icons */
+  --icon-offset: 5px;
+}
+
 /* Additional styles */
 .forecast-day-name {
   font-size: 14px;
   margin-bottom: 5px;
-}
-
-.alert-icon {
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 20px;
-  height: 20px;
-  color: red;
-}
-
-.probabilities {
-  display: flex;
-  align-items: center;
-  font-size: 12px;
-}
-
-.probabilities svg {
-  width: 15px;
-  height: 15px;
-  margin-right: 5px;
-}
-
-.small-text {
-  font-size: 0.8rem; /* Adjust font size to be smaller */
 }
 
 .forecast-details .wind,
@@ -111,20 +91,21 @@
   display: flex;
   align-items: center;
   gap: 0.1rem; /* Adjust spacing between icon and text */
+  
 }
 
 /* Updated styles for larger icons */
-.forecast-details .wind svg,
-.forecast-details .precipitation svg {
+.forecast-details svg,
+.forecast-details svg {
   width: 25px; /* Larger size for wind and rain icons */
   height: 25px; /* Keep the same aspect ratio */
+  transform: translateY(var(--icon-offset, 0));
 }
 
 /* Optional: Ensure text aligns well with larger icons */
 .forecast-details .wind,
 .forecast-details .precipitation {
-  font-size: 0.7rem; /* Keep the text smaller compared to icons */
+  font-size: .8rem; /* Keep the text smaller compared to icons */
   align-items: center;
-  gap: 0.1rem; /* Slightly larger gap for better spacing */
-  padding-right: 4px;
+  padding-left: 28px;
 }
