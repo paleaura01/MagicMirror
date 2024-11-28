@@ -1,37 +1,37 @@
 {
-  "timestamp": "2024-11-21T17:00:01.066Z",
-  "sunrise": "2024-11-21T07:07:00-05:00",
-  "sunset": "2024-11-21T17:15:00-05:00",
+  "timestamp": "2024-11-28T00:05:50.208Z",
+  "sunrise": "2024-11-27T07:13:00-05:00",
+  "sunset": "2024-11-27T17:13:00-05:00",
   "currentConditions": [
     {
-      "LocalObservationDateTime": "2024-11-21T11:48:00-05:00",
-      "EpochTime": 1732207680,
-      "WeatherText": "Sunny",
-      "WeatherIcon": 1,
+      "LocalObservationDateTime": "2024-11-27T18:47:00-05:00",
+      "EpochTime": 1732751220,
+      "WeatherText": "Mostly clear",
+      "WeatherIcon": 34,
       "HasPrecipitation": false,
       "PrecipitationType": null,
-      "IsDayTime": true,
+      "IsDayTime": false,
       "Temperature": {
         "Metric": {
-          "Value": 12,
+          "Value": 10.4,
           "Unit": "C",
           "UnitType": 17
         },
         "Imperial": {
-          "Value": 54,
+          "Value": 51,
           "Unit": "F",
           "UnitType": 18
         }
       },
       "RealFeelTemperature": {
         "Metric": {
-          "Value": 13.4,
+          "Value": 11.6,
           "Unit": "C",
           "UnitType": 17,
           "Phrase": "Cool"
         },
         "Imperial": {
-          "Value": 56,
+          "Value": 53,
           "Unit": "F",
           "UnitType": 18,
           "Phrase": "Cool"
@@ -39,46 +39,46 @@
       },
       "RealFeelTemperatureShade": {
         "Metric": {
-          "Value": 10.5,
+          "Value": 11.6,
           "Unit": "C",
           "UnitType": 17,
           "Phrase": "Cool"
         },
         "Imperial": {
-          "Value": 51,
+          "Value": 53,
           "Unit": "F",
           "UnitType": 18,
-          "Phrase": "Chilly"
+          "Phrase": "Cool"
         }
       },
-      "RelativeHumidity": 35,
-      "IndoorRelativeHumidity": 36,
+      "RelativeHumidity": 59,
+      "IndoorRelativeHumidity": 32,
       "DewPoint": {
         "Metric": {
-          "Value": -2.9,
+          "Value": 2.8,
           "Unit": "C",
           "UnitType": 17
         },
         "Imperial": {
-          "Value": 27,
+          "Value": 37,
           "Unit": "F",
           "UnitType": 18
         }
       },
       "Wind": {
         "Direction": {
-          "Degrees": 248,
-          "Localized": "WSW",
-          "English": "WSW"
+          "Degrees": 158,
+          "Localized": "SSE",
+          "English": "SSE"
         },
         "Speed": {
           "Metric": {
-            "Value": 10.7,
+            "Value": 1.9,
             "Unit": "km/h",
             "UnitType": 7
           },
           "Imperial": {
-            "Value": 6.6,
+            "Value": 1.2,
             "Unit": "mi/h",
             "UnitType": 9
           }
@@ -87,33 +87,33 @@
       "WindGust": {
         "Speed": {
           "Metric": {
-            "Value": 21.6,
+            "Value": 2,
             "Unit": "km/h",
             "UnitType": 7
           },
           "Imperial": {
-            "Value": 13.4,
+            "Value": 1.2,
             "Unit": "mi/h",
             "UnitType": 9
           }
         }
       },
-      "UVIndex": 3,
-      "UVIndexText": "Moderate",
+      "UVIndex": 0,
+      "UVIndexText": "Low",
       "Visibility": {
         "Metric": {
-          "Value": 33.8,
+          "Value": 24.1,
           "Unit": "km",
           "UnitType": 6
         },
         "Imperial": {
-          "Value": 21,
+          "Value": 15,
           "Unit": "mi",
           "UnitType": 2
         }
       },
       "ObstructionsToVisibility": "",
-      "CloudCover": 0,
+      "CloudCover": 11,
       "Ceiling": {
         "Metric": {
           "Value": 12192,
@@ -128,45 +128,33 @@
       },
       "Pressure": {
         "Metric": {
-          "Value": 1008,
+          "Value": 1013.6,
           "Unit": "mb",
           "UnitType": 14
         },
         "Imperial": {
-          "Value": 29.77,
+          "Value": 29.93,
           "Unit": "inHg",
           "UnitType": 12
         }
       },
       "PressureTendency": {
-        "LocalizedText": "Falling",
-        "Code": "F"
+        "LocalizedText": "Steady",
+        "Code": "S"
       },
       "Past24HourTemperatureDeparture": {
         "Metric": {
-          "Value": -5.5,
+          "Value": -0.4,
           "Unit": "C",
           "UnitType": 17
         },
         "Imperial": {
-          "Value": -10,
+          "Value": -1,
           "Unit": "F",
           "UnitType": 18
         }
       },
       "ApparentTemperature": {
-        "Metric": {
-          "Value": 12.8,
-          "Unit": "C",
-          "UnitType": 17
-        },
-        "Imperial": {
-          "Value": 55,
-          "Unit": "F",
-          "UnitType": 18
-        }
-      },
-      "WindChillTemperature": {
         "Metric": {
           "Value": 12.2,
           "Unit": "C",
@@ -178,26 +166,38 @@
           "UnitType": 18
         }
       },
-      "WetBulbTemperature": {
+      "WindChillTemperature": {
         "Metric": {
-          "Value": 5.5,
+          "Value": 10.6,
           "Unit": "C",
           "UnitType": 17
         },
         "Imperial": {
-          "Value": 42,
+          "Value": 51,
+          "Unit": "F",
+          "UnitType": 18
+        }
+      },
+      "WetBulbTemperature": {
+        "Metric": {
+          "Value": 6.8,
+          "Unit": "C",
+          "UnitType": 17
+        },
+        "Imperial": {
+          "Value": 44,
           "Unit": "F",
           "UnitType": 18
         }
       },
       "WetBulbGlobeTemperature": {
         "Metric": {
-          "Value": 9.9,
+          "Value": 8,
           "Unit": "C",
           "UnitType": 17
         },
         "Imperial": {
-          "Value": 50,
+          "Value": 46,
           "Unit": "F",
           "UnitType": 18
         }
@@ -316,24 +316,24 @@
         "Past6HourRange": {
           "Minimum": {
             "Metric": {
-              "Value": 1,
+              "Value": 10.4,
               "Unit": "C",
               "UnitType": 17
             },
             "Imperial": {
-              "Value": 34,
+              "Value": 51,
               "Unit": "F",
               "UnitType": 18
             }
           },
           "Maximum": {
             "Metric": {
-              "Value": 12,
+              "Value": 17,
               "Unit": "C",
               "UnitType": 17
             },
             "Imperial": {
-              "Value": 54,
+              "Value": 63,
               "Unit": "F",
               "UnitType": 18
             }
@@ -354,12 +354,12 @@
           },
           "Maximum": {
             "Metric": {
-              "Value": 12,
+              "Value": 17,
               "Unit": "C",
               "UnitType": 17
             },
             "Imperial": {
-              "Value": 54,
+              "Value": 63,
               "Unit": "F",
               "UnitType": 18
             }
@@ -368,7 +368,7 @@
         "Past24HourRange": {
           "Minimum": {
             "Metric": {
-              "Value": 1,
+              "Value": 0.9,
               "Unit": "C",
               "UnitType": 17
             },
@@ -380,12 +380,12 @@
           },
           "Maximum": {
             "Metric": {
-              "Value": 17.5,
+              "Value": 17,
               "Unit": "C",
               "UnitType": 17
             },
             "Imperial": {
-              "Value": 64,
+              "Value": 63,
               "Unit": "F",
               "UnitType": 18
             }
@@ -405,7 +405,7 @@
     },
     {
       "Name": "Mold",
-      "Value": 7108,
+      "Value": 6581,
       "Category": "Moderate",
       "CategoryValue": 2
     },
@@ -424,6 +424,6 @@
   ],
   "airQuality": {
     "category": "Good",
-    "value": 34
+    "value": 50
   }
 }

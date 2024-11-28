@@ -25,3 +25,9 @@ dist-ssr
 *.sln
 *.sw?
 /src/modules/weather/animatedicons
+*.mp4
+*.jpg
+*.mp4
+*.mp4
+src/modules/weatherforecast/animatedicons/Sorted/4 - Intermittent Clouds/Intermittent Clouds.mp4
+src/modules/weatherforecast/animatedicons/Sorted/6 - Mostly Cloudy/Mostly Cloudy.mp4

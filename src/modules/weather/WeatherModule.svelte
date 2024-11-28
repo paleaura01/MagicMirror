@@ -32,10 +32,11 @@
 
   const basePath = '/src/modules/weather/weathericons';
 
-  // Simplified getWeatherIcon to use the description as-is
+  // Updated getWeatherIcon to handle spaces directly
   function getWeatherIcon(description) {
-    if (!description) return `${basePath}/Clear Skies.mp4`; // Fallback to default
-    return `${basePath}/${description}.mp4`;
+    if (!description) return `${basePath}/Clear Skies/Clear Skies.mp4`; // Fallback to default
+    const sanitizedDescription = description.trim(); // Trim extra spaces
+    return `${basePath}/${sanitizedDescription}/${sanitizedDescription}.mp4`;
   }
 
   const convertToStandard = (value, fromUnit, toUnit) => {
@@ -113,6 +114,7 @@
     clearInterval(pollenIntervalId);
   });
 </script>
+
 
 <div class="weather">
   {#if error}

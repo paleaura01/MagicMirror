@@ -1,0 +1,88 @@
+{
+  "timestamp": 1732597200,
+  "datestamp": "Tue, 26 Nov 2024 06:00:00 +0100",
+  "phase": 0.8379076299804034,
+  "illumination": "24%",
+  "age_days": 25,
+  "lunar_cycle": "83.79%",
+  "phase_name": "Waning Crescent",
+  "stage": "waning",
+  "emoji": "🌘",
+  "moonrise": "01:11",
+  "moonset": "13:43",
+  "moon_altitude": -28.029334124820647,
+  "moon_distance": 405196.5796881314,
+  "moon_azimuth": 53.464127644604446,
+  "sun": {
+    "sunrise": 1732602900,
+    "sunrise_timestamp": "07:35",
+    "sunset": 1732633080,
+    "sunset_timestamp": "15:58",
+    "solar_noon": "11:46",
+    "day_length": "08:23",
+    "sun_altitude": -58.131258197703175,
+    "sun_distance": 147673107.51504117,
+    "sun_azimuth": 338.8842842351421,
+    "next_solar_eclipse": {
+      "timestamp": 1743241716,
+      "datestamp": "Sat, 29 Mar 2025 10:48:36 +0100",
+      "type": "Partial Solar Eclipse",
+      "visibility_regions": "nw Africa, Europe, n Russia"
+    }
+  },
+  "moon_phases": {
+    "new_moon": {
+      "last": {
+        "timestamp": 1730415600,
+        "datestamp": "Fri, 01 Nov 2024 00:00:00 +0100",
+        "days_ago": 25
+      },
+      "next": {
+        "timestamp": 1733007600,
+        "datestamp": "Sun, 01 Dec 2024 00:00:00 +0100",
+        "days_ahead": 4
+      }
+    },
+    "first_quarter": {
+      "last": {
+        "timestamp": 1731106800,
+        "datestamp": "Sat, 09 Nov 2024 00:00:00 +0100",
+        "days_ago": 17
+      },
+      "next": {
+        "timestamp": 1733612400,
+        "datestamp": "Sun, 08 Dec 2024 00:00:00 +0100",
+        "days_ahead": 11
+      }
+    },
+    "full_moon": {
+      "last": {
+        "timestamp": 1731625200,
+        "datestamp": "Fri, 15 Nov 2024 00:00:00 +0100",
+        "days_ago": 11,
+        "name": "Beaver Moon",
+        "description": "Indicates the time to set beaver traps before the swamps freeze."
+      },
+      "next": {
+        "timestamp": 1734217200,
+        "datestamp": "Sun, 15 Dec 2024 00:00:00 +0100",
+        "days_ahead": 18,
+        "name": "Cold Moon",
+        "description": "Reflects the cold and long nights of winter."
+      }
+    },
+    "last_quarter": {
+      "last": {
+        "timestamp": 1732316400,
+        "datestamp": "Sat, 23 Nov 2024 00:00:00 +0100",
+        "days_ago": 3
+      },
+      "next": {
+        "timestamp": 1734822000,
+        "datestamp": "Sun, 22 Dec 2024 00:00:00 +0100",
+        "days_ahead": 25
+      }
+    }
+  },
+  "lastUpdated": "2024-11-26T05:00:00.649Z"
+}
