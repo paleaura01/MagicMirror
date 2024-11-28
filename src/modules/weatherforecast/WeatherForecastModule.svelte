@@ -19,7 +19,7 @@
 
     let forecastData = [];
     let error = null;
-    const basePath = '/src/modules/weather/weathericons';
+    const basePath = '/src/modules/weatherforecast/weathericons';
 
     let moonPhaseData = null;
     let isDaytime = true; // Default value

@@ -43,7 +43,7 @@
   let videoElement;
 
   let moonPhaseData = null;
-  let previousWeatherDescription = null; // New variable to track the last weather condition
+  let previousWeatherDescription = null;
 
   moonPhaseStore.subscribe((value) => {
     moonPhaseData = value;
@@ -54,102 +54,103 @@
 
   function getWeatherIconPaths(description, isDaytime) {
     if (!description) {
-      console.warn('No weather description provided.');
-      return [];
+        console.warn('No weather description provided.');
+        return [];
     }
 
     const sanitizedDescription = description.trim();
 
     // List of conditions that only have the general icon
     const generalIconOnlyConditions = [
-      'Fog',
-      'Depositing Rime Fog',
-      'Heavy Freezing Rain',
-      'Heavy Rain',
-      'Heavy Snow Fall',
-      'Heavy Snow Showers',
-      'Light Freezing Rain',
-      'Moderate Rain',
-      'Moderate Rain Showers',
-      'Moderate Snow Fall',
-      'Overcast',
-      'Slight Rain',
-      'Slight Rain Showers',
-      'Slight Snow Fall',
-      'Slight Snow Showers',
-      'Snow Grains',
-      'Thunderstorm',
-      'Thunderstorm With Heavy Hail',
-      'Thunderstorm With Slight Hail',
-      'Violent Rain Showers'
+        'Fog', 'Depositing Rime Fog', 'Heavy Freezing Rain', 'Heavy Rain',
+        'Heavy Snow Fall', 'Heavy Snow Showers', 'Light Freezing Rain',
+        'Moderate Rain', 'Moderate Rain Showers', 'Moderate Snow Fall',
+        'Overcast', 'Slight Rain', 'Slight Rain Showers', 'Slight Snow Fall',
+        'Slight Snow Showers', 'Snow Grains', 'Thunderstorm',
+        'Thunderstorm With Heavy Hail', 'Thunderstorm With Slight Hail',
+        'Violent Rain Showers'
     ];
 
     const paths = [];
 
     if (generalIconOnlyConditions.includes(sanitizedDescription)) {
-      // Only general icon exists for this condition
-      paths.push(
-        encodeURI(`${basePath}/${sanitizedDescription}/${sanitizedDescription}.mp4`)
-      );
+        // Only general icon exists for this condition
+        paths.push(
+            encodeURI(`${basePath}/${sanitizedDescription}/${sanitizedDescription}.mp4`)
+        );
     } else {
-      if (isDaytime) {
-        paths.push(
-          encodeURI(
-            `${basePath}/${sanitizedDescription}/${sanitizedDescription} - Day.mp4`
-          )
-        );
-      } else {
-        if (moonPhaseData?.phase_name) {
-          const phaseName = moonPhaseData.phase_name.replace(/\s+/g, ' ');
-          paths.push(
-            encodeURI(
-              `${basePath}/${sanitizedDescription}/${sanitizedDescription} - Night - ${phaseName}.mp4`
-            )
-          );
+        if (isDaytime) {
+            paths.push(
+                encodeURI(
+                    `${basePath}/${sanitizedDescription}/${sanitizedDescription} - Day.mp4`
+                )
+            );
+        } else {
+            // Handle night-time with moon phase data
+            if (moonPhaseData?.phase_name) {
+                const phaseName = moonPhaseData.phase_name.replace(/\s+/g, ' ');
+                paths.push(
+                    encodeURI(
+                        `${basePath}/${sanitizedDescription}/${sanitizedDescription} - Night - ${phaseName}.mp4`
+                    )
+                );
+            }
+            paths.push(
+                encodeURI(
+                    `${basePath}/${sanitizedDescription}/${sanitizedDescription} - Night.mp4`
+                )
+            );
         }
+        // Add the general icon as a fallback
         paths.push(
-          encodeURI(
-            `${basePath}/${sanitizedDescription}/${sanitizedDescription} - Night.mp4`
-          )
+            encodeURI(`${basePath}/${sanitizedDescription}/${sanitizedDescription}.mp4`)
         );
-      }
-      // Add the general icon as a fallback
-      paths.push(
-        encodeURI(`${basePath}/${sanitizedDescription}/${sanitizedDescription}.mp4`)
-      );
     }
 
     console.log('Generated icon paths:', paths);
     return paths;
-  }
+}
 
-  function updateVideoSrc() {
+
+const refreshData = async () => {
+    try {
+        await updateMoonPhase();
+        await fetchWeatherData();
+        await fetchPollenAQIData();
+    } catch (err) {
+        console.error('Error refreshing data:', err);
+    }
+};
+
+function updateVideoSrc(forceUpdate = false) {
     if (!weatherData || !weatherData.weatherDescription) {
-      console.warn('Weather data is not available.');
-      return;
+        console.warn('Weather data is not available.');
+        return;
     }
 
-    // Check if the weather description has changed
-    if (weatherData.weatherDescription === previousWeatherDescription) {
-      console.log('Weather description has not changed. Skipping icon update.');
-      return;
+    if (!forceUpdate && weatherData.weatherDescription === previousWeatherDescription) {
+        console.log('Weather description has not changed. Skipping icon update.');
+        return;
     }
 
-    // Update the previous weather description
     previousWeatherDescription = weatherData.weatherDescription;
 
     iconPaths = getWeatherIconPaths(
-      weatherData.weatherDescription,
-      get(isDaytimeStore)
+        weatherData.weatherDescription,
+        get(isDaytimeStore)
     );
-    iconIndex = 0;
+    console.log('Moon phase data:', moonPhaseData);
+    console.log('Computed icon paths:', iconPaths);
 
+    iconIndex = 0;
     currentVideoSrc = iconPaths[iconIndex];
     console.log(`Video source set to: ${currentVideoSrc}`);
     if (videoElement) {
-      videoElement.load();
+        videoElement.load();
     }
-  }
+}
+
+
 
   function handleVideoError() {
     console.warn(`Video failed to load: ${currentVideoSrc}`);
@@ -162,7 +163,7 @@
       }
     } else {
       console.error('No icons available for the current weather condition.');
-      currentVideoSrc = ''; // This will remove the video source
+      currentVideoSrc = '';
     }
   }
 
@@ -187,17 +188,50 @@
     }
   };
 
-  const refreshData = async () => {
-    await fetchWeatherData();
+  const fetchPollenAQIData = async () => {
+    try {
+      const response = await fetch('/data/accuweatherData.json', {
+        cache: 'no-cache',
+      });
+      if (!response.ok) throw new Error('Failed to fetch pollen and AQI');
+      const data = await response.json();
+      airQualityData = data.airQuality || { value: 'N/A', category: 'Unknown' };
+      pollenData =
+        data.pollenData?.map((item) => ({
+          name: item.Name,
+          category: item.Category || 'Unknown',
+          icon: pollenIcons[item.Name],
+        })) || [];
+
+      if (pollenData.length > 0) {
+        displayedPollen = pollenData[0];
+      }
+    } catch (err) {
+      error = `Pollen/AQI error: ${err.message}`;
+    }
   };
 
   onMount(() => {
     refreshData();
-    intervalId = setInterval(refreshData, 30000); // Refresh every 30 seconds
+    intervalId = setInterval(refreshData, 30000);
+
+    pollenIntervalId = setInterval(() => {
+      if (pollenData.length > 0) {
+        currentPollenIndex = (currentPollenIndex + 1) % pollenData.length;
+        displayedPollen = pollenData[currentPollenIndex];
+      }
+    }, 10000);
+
+    isDaytimeStore.subscribe(() => {
+      if (weatherData) {
+        updateVideoSrc();
+      }
+    });
   });
 
   onDestroy(() => {
     clearInterval(intervalId);
+    clearInterval(pollenIntervalId);
   });
 </script>
 
