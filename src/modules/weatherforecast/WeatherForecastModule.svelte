@@ -132,7 +132,7 @@
         if (isDaytime) {
           paths.push(
             encodeURI(
-              `${basePath}/${sanitizedCondition}/${sanitizedCondition} - Day.mp4`
+              `${basePath}/${sanitizedCondition}/${sanitizedCondition}.mp4`
             )
           );
         } else {
@@ -146,7 +146,7 @@
           }
           paths.push(
             encodeURI(
-              `${basePath}/${sanitizedCondition}/${sanitizedCondition} - Night.mp4`
+              `${basePath}/${sanitizedCondition}/${sanitizedCondition}.mp4`
             )
           );
         }

@@ -1,15 +1,15 @@
 {
-  "timestamp": "2024-11-28T07:48:00.567Z",
-  "temperature": 10.3,
-  "feelsLike": 7,
-  "humidity": 84,
-  "windSpeed": 18.2,
+  "timestamp": "2024-11-28T12:51:12.105Z",
+  "temperature": 10.9,
+  "feelsLike": 6.2,
+  "humidity": 81,
+  "windSpeed": 19.4,
   "windDirection": {
-    "degrees": 205,
-    "compass": "SSW"
+    "degrees": 220,
+    "compass": "SW"
   },
-  "weatherCode": 2,
-  "weatherDescription": "Partly Cloudy",
+  "weatherCode": 3,
+  "weatherDescription": "Overcast",
   "sunrise": "2024-11-28T07:13",
   "sunset": "2024-11-28T17:13"
 }
