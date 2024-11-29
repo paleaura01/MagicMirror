@@ -2,16 +2,12 @@
 
 
 .calendar-header {
-    text-align: center;
-    font-size: 14px;
-    font-weight: bold;
-    margin-bottom: 0px;
-    margin-top: 10px;
-    color: rgba(255, 255, 255, 0.6); /* Grey with 0.6 opacity */
-    position: relative; /* Position relative to allow pseudo-element positioning */
-    font-family: 'Arial', sans-serif;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px; /* Add spacing between the month name and arrows */
 }
-
 .calendar-header::after {
     content: '';
     position: absolute;
@@ -147,10 +143,22 @@
     cursor: pointer;
     margin: 0 15px;
     font-size: 16px;
-    color: rgba(255, 255, 255, 0.6);
+    color: rgba(255, 255, 255, 0.6); /* Ensure arrows are visible */
     user-select: none;
+    position: relative; /* Ensure they are positioned correctly */
+    z-index: 10; /* Ensure they are above other elements */
 }
 
 .prev-month:hover, .next-month:hover {
-    color: rgba(255, 255, 255, 0.9);
+    color: rgba(255, 255, 255, 0.9); /* Change color on hover for better feedback */
 }
+
+.prev-month, .next-month {
+    display: inline-block; /* Ensure arrows are properly rendered */
+    width: 20px; /* Add width for better click area */
+    height: 20px; /* Add height for better click area */
+    text-align: center; /* Center the arrow inside */
+    line-height: 20px; /* Vertically center the arrow */
+    background-color: transparent; /* Ensure no background blocks interaction */
+}
+

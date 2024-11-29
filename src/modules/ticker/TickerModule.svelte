@@ -72,7 +72,7 @@
       updateImage();
       updateTickerText();
     } else {
-      console.log("No new items to update in ticker.");
+      // console.log("No new items to update in ticker.");
     }
   }
 

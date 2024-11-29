@@ -18,26 +18,25 @@
     const fadeDuration = 500; // Fade duration in milliseconds
     const maxConcurrentRequests = 100; // Maximum number of concurrent image requests
 
+    const LAST_IMAGE_KEY = 'lastGlobeImage'; // Key for localStorage
+
     // Generate GOES-16 image URL for a specific hour, minute, and second
     function getGOES16ImageUrl(hourIndex, minute, second) {
-        const now = dayjs().utc().startOf('hour'); // Current hour in UTC
-        const frameTime = now.subtract(numImages - hourIndex, 'hour'); // Load from oldest to newest
+        const now = dayjs().utc().startOf('hour');
+        const frameTime = now.subtract(numImages - hourIndex, 'hour');
         const year = frameTime.format("YYYY");
         const month = frameTime.format("MM");
         const day = frameTime.format("DD");
         const hour = frameTime.format("HH");
         const minuteStr = minute.toString().padStart(2, '0');
         const secondStr = second.toString().padStart(2, '0');
-        const timestamp = `${year}${month}${day}${hour}${minuteStr}${secondStr}`; // Format timestamp for URL
-
+        const timestamp = `${year}${month}${day}${hour}${minuteStr}${secondStr}`;
         return `https://rammb-slider.cira.colostate.edu/data/imagery/${year}/${month}/${day}/goes-19---full_disk/geocolor/${timestamp}/00/000_000.png`;
     }
 
-    // Fetch image URLs for animation by checking past minutes and seconds concurrently
+    // Fetch image URLs for animation
     async function fetchImages() {
-        images = []; // Clear previous images
-
-        // Start from the current hour and count backwards
+        images = [];
         for (let i = 0; i < numImages; i++) {
             let loaded = false;
             const now = dayjs().utc();
@@ -45,18 +44,16 @@
             let currentSecond = now.second();
             const requests = [];
 
-            // Generate all combinations of minutes and seconds to check, starting from the current time
             for (let minute = currentMinute; minute >= 0; minute--) {
                 for (let second = currentSecond; second >= 0; second--) {
                     const imageUrl = getGOES16ImageUrl(i, minute, second);
                     requests.push({ imageUrl, minute, second });
                 }
-                currentSecond = 59; // Reset seconds for the next minute iteration
+                currentSecond = 59;
             }
 
-            // Process requests in batches to limit concurrent requests
             while (requests.length > 0 && !loaded) {
-                const batch = requests.splice(0, maxConcurrentRequests); // Get a batch of requests
+                const batch = requests.splice(0, maxConcurrentRequests);
                 const loadPromises = batch.map(({ imageUrl }) => {
                     return new Promise((resolve) => {
                         const img = new Image();
@@ -66,19 +63,20 @@
                     });
                 });
 
-                // Await results of the batch
                 const results = await Promise.all(loadPromises);
                 for (const result of results) {
                     if (result.success) {
                         images.push(result.img);
                         loaded = true;
-                        break; // Break out of the loop once an image is loaded
+
+                        // Save the last loaded image URL to local storage
+                        localStorage.setItem(LAST_IMAGE_KEY, result.imageUrl);
+                        break;
                     }
                 }
 
-                // If no image loaded, just log a warning
                 if (!loaded && requests.length === 0) {
-                    console.warn(`[Warning] Could not load an image for hour index ${i}. Retrying later...`);
+                    console.warn(`[Warning] Could not load an image for hour index ${i}.`);
                 }
             }
         }
@@ -87,28 +85,24 @@
     // Start animation loop with crossfade effect
     function startAnimation() {
         animationInterval = setInterval(() => {
-            if (images.length > 0 && mapDiv) { // Check if mapDiv is not null
+            if (images.length > 0 && mapDiv) {
                 const currentImageUrl = images[currentFrame].src;
                 const nextFrame = (currentFrame + 1) % images.length;
                 const nextImageUrl = images[nextFrame].src;
 
-                // Create fade-in effect for the next frame
                 const fadeOverlay = document.createElement("div");
                 fadeOverlay.className = "fade-overlay";
                 fadeOverlay.style.backgroundImage = `url(${nextImageUrl})`;
                 mapDiv.appendChild(fadeOverlay);
 
-                // Update the background image
                 mapDiv.style.backgroundImage = `url(${currentImageUrl})`;
 
-                // Remove fade overlay after animation ends
                 setTimeout(() => {
-                    if (mapDiv.contains(fadeOverlay)) { // Ensure fadeOverlay exists before removing
+                    if (mapDiv.contains(fadeOverlay)) {
                         mapDiv.removeChild(fadeOverlay);
                     }
                 }, fadeDuration);
 
-                // Move to the next frame
                 currentFrame = nextFrame;
             }
         }, frameDelay);
@@ -122,9 +116,8 @@
     // Refresh images every 2 minutes
     function startImageRefresh() {
         refreshInterval = setInterval(async () => {
-            // console.log("[Debug] Refreshing images...");
             await fetchImages();
-            currentFrame = 0; // Reset to the first frame after refreshing images
+            currentFrame = 0;
         }, refreshDelay);
     }
 
@@ -133,8 +126,17 @@
         clearInterval(refreshInterval);
     }
 
+    // Load the last saved image
+    function loadLastImage() {
+        const lastImageUrl = localStorage.getItem(LAST_IMAGE_KEY);
+        if (lastImageUrl && mapDiv) {
+            mapDiv.style.backgroundImage = `url(${lastImageUrl})`;
+        }
+    }
+
     // Lifecycle hooks
     onMount(async () => {
+        loadLastImage();
         await fetchImages();
         startAnimation();
         startImageRefresh();

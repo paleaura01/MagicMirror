@@ -1,24 +1,21 @@
-<!-- ./src/modules/calendar/CalendarModule.svelte -->
-
-
 <script>
     import { onMount } from 'svelte';
     import dayjs from 'dayjs';
     import './calendar_styles.css';
 
     import Fa from 'svelte-fa';
-    import { 
-        faMedal, 
-        faDrumstickBite, 
-        faTree, 
-        faGlassCheers, 
-        faUserTie, 
-        faMonument, 
-        faPray, 
-        faChurch, 
+    import {
+        faMedal,
+        faDrumstickBite,
+        faTree,
+        faGlassCheers,
+        faUserTie,
+        faMonument,
+        faPray,
+        faChurch,
         faFlagUsa,
         faHandHoldingHeart,
-        faCalendarAlt 
+        faCalendarAlt,
     } from '@fortawesome/free-solid-svg-icons';
 
     export let maximumEntries = 10;
@@ -27,6 +24,11 @@
     let currentMonth = dayjs().month();
     let currentYear = dayjs().year();
     let days = [];
+
+    // Debugging: Log changes to the current month and year
+    function logMonthChange(action) {
+        console.log(`[CalendarModule] ${action}: ${dayjs().month(currentMonth).year(currentYear).format('MMMM YYYY')}`);
+    }
 
     onMount(() => {
         loadCalendarData();
@@ -52,7 +54,7 @@
         let currentEvent = null;
         let inEvent = false;
 
-        lines.forEach(line => {
+        lines.forEach((line) => {
             line = line.trim();
             if (line.startsWith('BEGIN:VEVENT')) {
                 inEvent = true;
@@ -74,7 +76,7 @@
         });
 
         events = events
-            .filter(event => dayjs(event.start).isAfter(dayjs()))
+            .filter((event) => dayjs(event.start).isAfter(dayjs()))
             .sort((a, b) => dayjs(a.start).diff(dayjs(b.start)))
             .slice(0, maximumEntries);
     }
@@ -83,6 +85,7 @@
         const startOfMonth = dayjs(`${currentYear}-${currentMonth + 1}-01`).startOf('month');
         const startDay = startOfMonth.day();
         const daysInMonth = startOfMonth.daysInMonth();
+
         days = Array.from({ length: daysInMonth + startDay }, (_, i) => {
             return i >= startDay ? i - startDay + 1 : null;
         });
@@ -112,6 +115,7 @@
             currentMonth = 11;
             currentYear -= 1;
         }
+        logMonthChange("Moved to previous month");
         generateCalendarDays();
     }
 
@@ -121,63 +125,62 @@
             currentMonth = 0;
             currentYear += 1;
         }
+        logMonthChange("Moved to next month");
         generateCalendarDays();
     }
 
     function getEventIcon(title) {
-    switch (title) {
-        case 'Veterans Day':
-            return faMedal;
-        case 'Thanksgiving Day':
-            return faDrumstickBite;
-        case 'Christmas':
-            return faTree;
-        case "New Year's Day":
-            return faGlassCheers;
-        case 'M L King Day': // Updated to match iCal data
-            return faUserTie;
-        case "Presidents' Day":
-            return faMonument;
-        case 'Good Friday':
-            return faPray;
-        case 'Easter Sunday': // Updated to match iCal data
-            return faChurch;
-        case 'Memorial Day':
-            return faFlagUsa;
-        case 'Juneteenth':
-            return faFlagUsa;
-        case 'Independence Day':
-            return faFlagUsa;
-        case "Labor Day":
-            return faUserTie;
-        case "Columbus Day":
-            return faMonument;
-        default:
-            return faCalendarAlt;
+        switch (title) {
+            case 'Veterans Day':
+                return faMedal;
+            case 'Thanksgiving Day':
+                return faDrumstickBite;
+            case 'Christmas':
+                return faTree;
+            case "New Year's Day":
+                return faGlassCheers;
+            case 'M L King Day':
+                return faUserTie;
+            case "Presidents' Day":
+                return faMonument;
+            case 'Good Friday':
+                return faPray;
+            case 'Easter Sunday':
+                return faChurch;
+            case 'Memorial Day':
+                return faFlagUsa;
+            case 'Juneteenth':
+                return faFlagUsa;
+            case 'Independence Day':
+                return faFlagUsa;
+            case 'Labor Day':
+                return faUserTie;
+            case 'Columbus Day':
+                return faMonument;
+            default:
+                return faCalendarAlt;
+        }
     }
-}
-
 </script>
-
 
 <div class="calendar-module-wrapper">
     <div class="calendar-container">
         <div class="calendar-header">
-            <span 
-                role="button" 
-                tabindex="0" 
-                class="prev-month" 
-                on:click={goToPreviousMonth} 
+            <span
+                role="button"
+                tabindex="0"
+                class="prev-month"
+                on:click={goToPreviousMonth}
                 on:keydown={(e) => e.key === 'Enter' && goToPreviousMonth()}
             >
                 &lt;
             </span>
             {dayjs().month(currentMonth).year(currentYear).format('MMMM YYYY')}
-            <span 
-                role="button" 
-                tabindex="0" 
-                class="next-month" 
-                on:click={goToNextMonth} 
+            <span
+                role="button"
+                tabindex="0"
+                class="next-month"
+                on:click={goToNextMonth}
                 on:keydown={(e) => e.key === 'Enter' && goToNextMonth()}
             >
                 &gt;
@@ -196,7 +199,9 @@
                 <div class="calendar-day-name">Fri</div>
                 <div class="calendar-day-name">Sat</div>
                 {#each days as day}
-                    <div class="calendar-day {isToday(day) ? 'today' : ''} {isPastDay(day) ? 'past-day' : ''}">
+                    <div
+                        class="calendar-day {isToday(day) ? 'today' : ''} {isPastDay(day) ? 'past-day' : ''}"
+                    >
                         {day || ''}
                     </div>
                 {/each}

@@ -60,10 +60,7 @@ export function updateSunriseSunset(sunrise, sunset) {
       sunset: dayjs(sunset),
       ready: true,
     });
-    console.log('[updateSunriseSunset] Sunrise and sunset updated:', {
-      sunrise: dayjs(sunrise).format(),
-      sunset: dayjs(sunset).format(),
-    });
+    // console.log('[updateSunriseSunset] Sunrise and sunset updated:', {sunrise: dayjs(sunrise).format(),sunset: dayjs(sunset).format(),});
   } else {
     sunriseSunsetStore.update((state) => ({
       ...state,

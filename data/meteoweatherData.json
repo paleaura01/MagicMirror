@@ -1,12 +1,12 @@
 {
-  "timestamp": "2024-11-29T12:34:59.148Z",
-  "temperature": 1.6,
+  "timestamp": "2024-11-29T23:36:32.807Z",
+  "temperature": 3.5,
   "feelsLike": 1.1,
   "humidity": 77,
-  "windSpeed": 6.2,
+  "windSpeed": 22.9,
   "windDirection": {
-    "degrees": 21,
-    "compass": "NNE"
+    "degrees": 318,
+    "compass": "NW"
   },
   "weatherCode": 0,
   "weatherDescription": "Clear Skies",
