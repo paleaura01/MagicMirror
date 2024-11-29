@@ -1,3 +1,5 @@
+// meteoweatherforecastserver.js
+
 import fetch from 'node-fetch';
 import dotenv from 'dotenv';
 import fs from 'fs/promises';
@@ -5,7 +7,7 @@ import path from 'path';
 
 dotenv.config(); // Load environment variables
 
-const dataFilePath = path.resolve('data/meteoweatherData.json');
+const dataFilePath = path.resolve('data/meteoweatherForecastData.json');
 
 // Helper function to read JSON data from the file
 const readJsonFile = async (filePath) => {
@@ -44,7 +46,7 @@ const fetchAndUpdateWeatherData = async () => {
   }
 
   try {
-    const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&timezone=auto&daily=sunrise,sunset&hourly=apparent_temperature,relative_humidity_2m`;
+    const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&timezone=auto&daily=temperature_2m_max,temperature_2m_min,windspeed_10m_max,precipitation_sum,weathercode`;
 
     console.log(`Fetching weather data from: ${weatherUrl}`);
 
@@ -55,23 +57,25 @@ const fetchAndUpdateWeatherData = async () => {
     }
 
     const weatherData = await weatherResponse.json();
-    const { current_weather, daily, hourly } = weatherData;
+    const { daily } = weatherData;
+
+    const dailyForecast = daily.time.map((date, index) => ({
+      date,
+      precipitation: daily.precipitation_sum[index], // mm
+      temperature_max: daily.temperature_2m_max[index], // Celsius
+      temperature_min: daily.temperature_2m_min[index], // Celsius
+      windspeed_max: daily.windspeed_10m_max[index], // km/h
+      weather_condition: mapWeatherDescription(daily.weathercode[index]),
+      weather_code: daily.weathercode[index],
+    }));
 
     const weatherInfo = {
       timestamp: new Date().toISOString(),
-      temperature: current_weather.temperature, // Celsius
-      feelsLike: hourly.apparent_temperature[0], // Celsius
-      humidity: hourly.relative_humidity_2m[0], // Percentage
-      windSpeed: current_weather.windspeed, // km/h
-      windDirection: current_weather.winddirection, // Degrees
-      weatherCode: current_weather.weathercode, // Weather condition code
-      weatherDescription: mapWeatherDescription(current_weather.weathercode),
-      sunrise: daily.sunrise[0], // ISO string
-      sunset: daily.sunset[0],  // ISO string
+      dailyForecast,
     };
 
     await writeJsonFile(dataFilePath, weatherInfo);
-    console.log('Weather data updated successfully:', weatherInfo);
+    console.log('Weather data updated successfully for 7 days:', weatherInfo);
   } catch (error) {
     console.error(`Error fetching weather data: ${error.message}`);
   }
@@ -113,7 +117,7 @@ const mapWeatherDescription = (code) => {
 // Function to start periodic updates
 const startWeatherUpdate = () => {
   fetchAndUpdateWeatherData();
-  setInterval(fetchAndUpdateWeatherData, 10 * 60 * 1000); // Update every 10 minutes
+  setInterval(fetchAndUpdateWeatherData, 10 * 60 * 1000); // Update every 5 minutes
 };
 
 // Ensure data file is created or valid on script start

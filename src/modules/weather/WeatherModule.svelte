@@ -1,3 +1,5 @@
+<!-- ./src/modules/weather/WeatherModule.svelte -->
+
 <script>
   import MeteoconsWindFill from './icons/MeteoconsWindFill.svelte';
   import MeteoconsHumidityFill from './icons/MeteoconsHumidityFill.svelte';

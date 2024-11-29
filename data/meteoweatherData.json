@@ -1,15 +1,15 @@
 {
-  "timestamp": "2024-11-28T12:51:12.105Z",
-  "temperature": 10.9,
-  "feelsLike": 6.2,
-  "humidity": 81,
-  "windSpeed": 19.4,
+  "timestamp": "2024-11-29T12:34:59.148Z",
+  "temperature": 1.6,
+  "feelsLike": 1.1,
+  "humidity": 77,
+  "windSpeed": 6.2,
   "windDirection": {
-    "degrees": 220,
-    "compass": "SW"
+    "degrees": 21,
+    "compass": "NNE"
   },
-  "weatherCode": 3,
-  "weatherDescription": "Overcast",
-  "sunrise": "2024-11-28T07:13",
-  "sunset": "2024-11-28T17:13"
+  "weatherCode": 0,
+  "weatherDescription": "Clear Skies",
+  "sunrise": "2024-11-29T07:14",
+  "sunset": "2024-11-29T17:13"
 }

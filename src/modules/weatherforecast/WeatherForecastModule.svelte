@@ -1,174 +1,173 @@
+<!-- ./src/modules/weather/WeatherForecastModule.svelte -->
+
 <script>
-    import { onMount } from 'svelte';
-    import './weatherforecast_styles.css';
-    import MeteoconsWindFill from './icons/MeteoconsWindFill.svelte';
-    import MeteoconsRaindropsFill from './icons/MeteoconsRaindropsFill.svelte';
-    import dayjs from 'dayjs';
-    import utc from 'dayjs/plugin/utc';
-    import timezone from 'dayjs/plugin/timezone';
-    import { moonPhaseStore, updateMoonPhase } from '../../stores/moonphaseStore.js';
-    import {
-      sunriseSunsetStore,
-      isDaytimeStore,
-      updateSunriseSunset,
-    } from '../../stores/weatherStore.js';
-    import { get } from 'svelte/store';
+  import { onMount } from 'svelte';
+  import './weatherforecast_styles.css';
+  import MeteoconsWindFill from './icons/MeteoconsWindFill.svelte';
+  import MeteoconsRaindropsFill from './icons/MeteoconsRaindropsFill.svelte';
+  import dayjs from 'dayjs';
+  import utc from 'dayjs/plugin/utc';
+  import timezone from 'dayjs/plugin/timezone';
+  import { moonPhaseStore, updateMoonPhase } from '../../stores/moonphaseStore.js';
+  import {
+    sunriseSunsetStore,
+    isDaytimeStore,
+    updateSunriseSunset,
+  } from '../../stores/weatherStore.js';
+  import { get } from 'svelte/store';
 
-    dayjs.extend(utc);
-    dayjs.extend(timezone);
+  // Export props
+  export let lat;
+  export let lon;
 
-    let forecastData = [];
-    let error = null;
-    const basePath = '/src/modules/weatherforecast/weathericons';
+  dayjs.extend(utc);
+  dayjs.extend(timezone);
 
-    let moonPhaseData = null;
-    let isDaytime = true; // Default value
+  let forecastData = [];
+  let error = null;
+  const basePath = '/src/modules/weatherforecast/weathericons';
 
-    // List of conditions that only have the general icon
-    const generalIconOnlyConditions = [
-      'Fog',
-      'Depositing Rime Fog',
-      'Heavy Freezing Rain',
-      'Heavy Rain',
-      'Heavy Snow Fall',
-      'Heavy Snow Showers',
-      'Light Freezing Rain',
-      'Moderate Rain',
-      'Moderate Rain Showers',
-      'Moderate Snow Fall',
-      'Overcast',
-      'Slight Rain',
-      'Slight Rain Showers',
-      'Slight Snow Fall',
-      'Slight Snow Showers',
-      'Snow Grains',
-      'Thunderstorm',
-      'Thunderstorm With Heavy Hail',
-      'Thunderstorm With Slight Hail',
-      'Violent Rain Showers'
-    ];
+  let moonPhaseData = null;
+  let isDaytime = true; // Default value
 
-    async function fetchForecastData() {
-      try {
-        const response = await fetch('/data/meteoweatherForecastData.json', {
-          cache: 'no-cache',
-        });
-        const data = await response.json();
+  // List of conditions that only have the general icon
+  const generalIconOnlyConditions = [
+    'Fog',
+    'Depositing Rime Fog',
+    'Heavy Freezing Rain',
+    'Heavy Rain',
+    'Heavy Snow Fall',
+    'Heavy Snow Showers',
+    'Light Freezing Rain',
+    'Moderate Rain',
+    'Moderate Rain Showers',
+    'Moderate Snow Fall',
+    'Overcast',
+    'Slight Rain',
+    'Slight Rain Showers',
+    'Slight Snow Fall',
+    'Slight Snow Showers',
+    'Snow Grains',
+    'Thunderstorm',
+    'Thunderstorm With Heavy Hail',
+    'Thunderstorm With Slight Hail',
+    'Violent Rain Showers',
+  ];
 
-        if (!data.forecast) {
-          throw new Error('Forecast data not available');
-        }
+  // Fetch the weather forecast data
+  async function fetchForecastData(latitude, longitude) {
+    try {
+      const url = `/data/meteoweatherForecastData.json?lat=${latitude}&lon=${longitude}`;
+      const response = await fetch(url, { cache: 'no-cache' });
+      const data = await response.json();
 
-        // Update moon phase data
-        await updateMoonPhase();
-        moonPhaseData = get(moonPhaseStore);
-
-        // Update sunrise and sunset times from meteoweatherData.json
-        await fetchSunriseSunset();
-
-        // Get the isDaytime value
-        isDaytime = get(isDaytimeStore);
-
-        // Process forecast data
-        forecastData = data.forecast.map((day) => {
-          const date = dayjs(day.date);
-
-          const icon = getWeatherIconPaths(
-            day.weather_condition,
-            isDaytime,
-            moonPhaseData ? moonPhaseData.phase_name : null
-          );
-
-          return {
-            day: date.format('ddd'), // Format date as day of the week
-            icon,
-            maxTemp: day.temperature_max.toFixed(1), // Show one decimal place for temperature
-            minTemp: day.temperature_min.toFixed(1), // Show one decimal place for temperature
-            windspeed: day.windspeed_max.toFixed(1), // Use one decimal place for wind speed
-            precipitation: day.precipitation.toFixed(2), // Keep precipitation in millimeters with two decimal places
-          };
-        });
-      } catch (err) {
-        error = `Error loading forecast data: ${err.message}`;
-        console.error('[WeatherForecastModule] Error:', err);
+      if (!data.dailyForecast) {
+        throw new Error('Forecast data not available');
       }
+
+      // Map and process the forecast data
+      forecastData = data.dailyForecast.map((day) => {
+        const date = dayjs(day.date);
+
+        const icon = getWeatherIconPaths(
+          day.weather_condition,
+          isDaytime,
+          moonPhaseData ? moonPhaseData.phase_name : null
+        );
+
+        return {
+          day: date.format('ddd'), // Format date as day of the week
+          icon,
+          maxTemp: ((day.temperature_max * 9) / 5 + 32).toFixed(1), // Convert to Fahrenheit
+          minTemp: ((day.temperature_min * 9) / 5 + 32).toFixed(1), // Convert to Fahrenheit
+          windspeed: day.windspeed_max.toFixed(1), // One decimal place for wind speed
+          precipitation: day.precipitation.toFixed(2), // Two decimal places for precipitation
+        };
+      });
+    } catch (err) {
+      error = `Error loading forecast data: ${err.message}`;
+      console.error('[WeatherForecastModule] Error:', err);
+    }
+  }
+
+  // Fetch sunrise and sunset times
+  async function fetchSunriseSunset() {
+    try {
+      const response = await fetch('/data/meteoweatherData.json', {
+        cache: 'no-cache',
+      });
+      if (!response.ok) throw new Error('Failed to fetch meteoweather data');
+      const data = await response.json();
+
+      const { sunrise, sunset } = data;
+
+      if (sunrise && sunset) {
+        updateSunriseSunset(sunrise, sunset);
+      } else {
+        console.warn('[fetchSunriseSunset] Missing sunrise or sunset times.');
+      }
+    } catch (err) {
+      console.error('[fetchSunriseSunset] Error fetching sunrise/sunset data:', err);
+    }
+  }
+
+  // Generate paths to weather icons
+  function getWeatherIconPaths(condition, isDaytime, moonPhaseName) {
+    if (!condition) {
+      console.warn('No weather description provided.');
+      return `${basePath}/Clear Skies/Clear Skies.mp4`; // Default fallback
     }
 
-    async function fetchSunriseSunset() {
-      try {
-        const response = await fetch('/data/meteoweatherData.json', {
-          cache: 'no-cache',
-        });
-        if (!response.ok) throw new Error('Failed to fetch meteoweather data');
-        const data = await response.json();
+    const sanitizedCondition = condition.trim();
+    const paths = [];
 
-        const { sunrise, sunset } = data;
-
-        if (sunrise && sunset) {
-          updateSunriseSunset(sunrise, sunset);
-        } else {
-          console.warn('[fetchSunriseSunset] Missing sunrise or sunset times.');
-        }
-      } catch (err) {
-        console.error('[fetchSunriseSunset] Error fetching sunrise/sunset data:', err);
-      }
-    }
-
-    function getWeatherIconPaths(condition, isDaytime, moonPhaseName) {
-      if (!condition) {
-        console.warn('No weather description provided.');
-        return `${basePath}/Clear Skies/Clear Skies.mp4`; // Default fallback
-      }
-
-      const sanitizedCondition = condition.trim();
-      const paths = [];
-
-      if (generalIconOnlyConditions.includes(sanitizedCondition)) {
-        // Only general icon exists for this condition
+    if (generalIconOnlyConditions.includes(sanitizedCondition)) {
+      // Only general icon exists for this condition
+      paths.push(
+        encodeURI(`${basePath}/${sanitizedCondition}/${sanitizedCondition}.mp4`)
+      );
+    } else {
+      if (isDaytime) {
         paths.push(
-          encodeURI(`${basePath}/${sanitizedCondition}/${sanitizedCondition}.mp4`)
+          encodeURI(
+            `${basePath}/${sanitizedCondition}/${sanitizedCondition}.mp4`
+          )
         );
       } else {
-        if (isDaytime) {
+        if (moonPhaseName) {
+          const phaseName = moonPhaseName.replace(/\s+/g, ' ');
           paths.push(
             encodeURI(
-              `${basePath}/${sanitizedCondition}/${sanitizedCondition}.mp4`
-            )
-          );
-        } else {
-          if (moonPhaseName) {
-            const phaseName = moonPhaseName.replace(/\s+/g, ' ');
-            paths.push(
-              encodeURI(
-                `${basePath}/${sanitizedCondition}/${sanitizedCondition} - Night - ${phaseName}.mp4`
-              )
-            );
-          }
-          paths.push(
-            encodeURI(
-              `${basePath}/${sanitizedCondition}/${sanitizedCondition}.mp4`
+              `${basePath}/${sanitizedCondition}/${sanitizedCondition} - Night - ${phaseName}.mp4`
             )
           );
         }
         paths.push(
-          encodeURI(`${basePath}/${sanitizedCondition}/${sanitizedCondition}.mp4`)
+          encodeURI(
+            `${basePath}/${sanitizedCondition}/${sanitizedCondition}.mp4`
+          )
         );
       }
-
-      console.log('Generated icon paths:', paths);
-      return paths.find(async (path) => {
-        try {
-          const response = await fetch(path, { method: 'HEAD' });
-          return response.ok;
-        } catch {
-          return false;
-        }
-      }) || '';
+      paths.push(
+        encodeURI(`${basePath}/${sanitizedCondition}/${sanitizedCondition}.mp4`)
+      );
     }
 
-    onMount(() => {
-      fetchForecastData();
-    });
+    console.log('Generated icon paths:', paths);
+    return paths.find(async (path) => {
+      try {
+        const response = await fetch(path, { method: 'HEAD' });
+        return response.ok;
+      } catch {
+        return false;
+      }
+    }) || '';
+  }
+
+  onMount(() => {
+    // Pass lat and lon to fetchForecastData
+    fetchForecastData(lat, lon);
+  });
 </script>
 
 <div class="weather-forecast">
@@ -201,14 +200,10 @@
             <div class="forecast-details">
               <MeteoconsWindFill />
               {dayForecast.windspeed}
-              <div class="wind small-text">
-                mph
-              </div>
+              <div class="wind small-text">mph</div>
               <MeteoconsRaindropsFill />
               {dayForecast.precipitation}
-              <div class="precipitation small-text">
-                mm
-              </div>
+              <div class="precipitation small-text">mm</div>
             </div>
           </div>
         {/each}
