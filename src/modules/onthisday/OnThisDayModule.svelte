@@ -1,5 +1,7 @@
 <!-- ./src/modules/onthisday/OnThisDayModule.svelte -->
 
+<!-- ./src/modules/onthisday/OnThisDayModule.svelte -->
+
 <script>
     import dayjs from 'dayjs';
     import './onthisday_styles.css';
@@ -13,8 +15,36 @@
     let title = null;
     let currentDay = dayjs().format('MMMM D'); // Track the current day (without leading zero in day)
 
+    const EVENTS_STORAGE_KEY = 'onThisDayEvents';
+    const TITLE_STORAGE_KEY = 'onThisDayTitle';
+    const DATE_STORAGE_KEY = 'onThisDayDate';
+
     // Regex to match events that start with a 4-digit year followed by a description
-    const yearEventRegex = /^\d{4}\s*–/;
+    const yearEventRegex = /^\d{4}\s*\u2013/;
+
+    // Function to save events and title to localStorage
+    function saveEventsToLocalStorage() {
+        try {
+            localStorage.setItem(EVENTS_STORAGE_KEY, JSON.stringify(events));
+            localStorage.setItem(TITLE_STORAGE_KEY, title);
+            localStorage.setItem(DATE_STORAGE_KEY, currentDay);
+        } catch (error) {
+            console.error('Error saving events to localStorage:', error);
+        }
+    }
+
+    // Function to load events and title from localStorage
+    function loadEventsFromLocalStorage() {
+        try {
+            const savedDate = localStorage.getItem(DATE_STORAGE_KEY);
+            if (savedDate === currentDay) {
+                events = JSON.parse(localStorage.getItem(EVENTS_STORAGE_KEY));
+                title = localStorage.getItem(TITLE_STORAGE_KEY);
+            }
+        } catch (error) {
+            console.error('Error loading events from localStorage:', error);
+        }
+    }
 
     // Function to fetch and parse "On This Day" events from Wikipedia
     async function loadEvents() {
@@ -25,8 +55,6 @@
             const wikiUrl = `https://en.wikipedia.org/wiki/Wikipedia:Selected_anniversaries/${month}_${day}`;
             const proxyUrl = `http://localhost:8080/proxy?url=${encodeURIComponent(wikiUrl)}`;
 
-            // console.log("Requesting data from:", proxyUrl);  // Log the full URL
-
             const response = await fetch(proxyUrl);
             
             if (!response.ok) {
@@ -35,8 +63,6 @@
             }
             
             const html = await response.text();
-            // console.log("Fetched HTML:", html);  // Log the HTML to confirm it’s fetched correctly
-
             const parser = new DOMParser();
             const doc = parser.parseFromString(html, "text/html");
             
@@ -47,6 +73,7 @@
                 .slice(0, 6);
 
             title = `On This Day • ${currentDay}`;
+            saveEventsToLocalStorage(); // Save fetched events to localStorage
         } catch (error) {
             console.error('Error loading events:', error);
         }
@@ -61,8 +88,13 @@
         }
     }
 
-    // Call loadEvents on component mount
-    loadEvents();
+    // Load events from localStorage initially
+    loadEventsFromLocalStorage();
+
+    // Fetch new events if not already loaded
+    if (!events) {
+        loadEvents();
+    }
 
     // Set an interval to reload events based on the update interval
     setInterval(loadEvents, updateInterval * 1000);

@@ -14,6 +14,35 @@
     let verseReference = null; // For storing the formatted reference
     let errorMessage = null;
 
+    const STORAGE_KEY = 'lastTranslatedVerse';
+
+    // Save the last translated verse and related data to localStorage
+    function saveToLocalStorage() {
+        const data = {
+            verse,
+            bookName,
+            translatedVerse,
+            verseReference
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    }
+
+    // Load the last translated verse and related data from localStorage
+    function loadFromLocalStorage() {
+        const data = localStorage.getItem(STORAGE_KEY);
+        if (data) {
+            try {
+                const parsedData = JSON.parse(data);
+                verse = parsedData.verse;
+                bookName = parsedData.bookName;
+                translatedVerse = parsedData.translatedVerse;
+                verseReference = parsedData.verseReference;
+            } catch (error) {
+                console.error('Failed to parse localStorage data:', error);
+            }
+        }
+    }
+
     async function fetchVerse() {
         if (!textpath) {
             console.error('Textpath is undefined or empty');
@@ -39,6 +68,7 @@
             extractReference(); // Extract the verse reference
             if (verse) {
                 await translateVerse(verse);
+                saveToLocalStorage(); // Save data to localStorage after translation
             }
         } catch (error) {
             console.error('Error fetching verse:', error);
@@ -77,8 +107,8 @@
     }
 
     onMount(() => {
-        // console.log('Textpath:', textpath); // Log to check if it's correct
-        fetchVerse();
+        loadFromLocalStorage(); // Load the last translated verse on mount
+        fetchVerse(); // Fetch the latest verse
         const interval = setInterval(fetchVerse, 120000);
 
         return () => clearInterval(interval);
