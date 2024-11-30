@@ -35,3 +35,7 @@ src/modules/weatherforecast/animatedicons/Sorted/6 - Mostly Cloudy/Mostly Cloudy
 *.json
 data/meteoweatherData.json
 data/meteoweatherForecastData.json
+*.json
+data/meteoweatherData.json
+data/meteoweatherForecastData.json
+data/meteoweatherData.json

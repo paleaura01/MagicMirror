@@ -1,5 +1,7 @@
 <!-- ./src/modules/Delivery/DeliveryModule.svelte -->
 
+<!-- ./src/modules/Delivery/DeliveryModule.svelte -->
+
 <script>
   import { onMount, onDestroy } from 'svelte';
   import './delivery_styles.css';
@@ -12,6 +14,9 @@
   const EMAIL_STORAGE_KEY = 'lastEmails'; // Key for localStorage
   const LAST_UPDATED_KEY = 'lastEmailFetchTime'; // Key to track last update time
   const LOGO_CACHE_KEY = 'emailLogosCache'; // Key for caching email logos in localStorage
+
+  const MAX_RETRIES = 3; // Maximum retry attempts for fetching emails
+  const RETRY_DELAY = 3000; // Delay between retries in milliseconds
 
   // Preload and cache email logos
   async function preloadLogos(emailList) {
@@ -65,18 +70,27 @@
       }
   }
 
-  // Fetch emails from the server
-  async function fetchEmails() {
+  // Fetch emails from the server with retry logic
+  async function fetchEmails(retries = MAX_RETRIES) {
       try {
           loading = true; // Show loading indicator during fetch
           const res = await fetch('http://localhost:8002/api/fetch_emails');
+          if (!res.ok) {
+              throw new Error(`Failed to fetch emails: ${res.status} ${res.statusText}`);
+          }
           const data = await res.json();
           emails = data.emails || [];
           preloadLogos(emails); // Preload logos from fetched emails
           saveEmailsToLocalStorage(emails); // Save fetched emails to localStorage
+          error = ''; // Clear any previous errors
       } catch (err) {
-          error = 'Failed to fetch emails';
-          console.error(err);
+          console.error('[Fetch Error]', err);
+          if (retries > 0) {
+              console.log(`Retrying... (${MAX_RETRIES - retries + 1}/${MAX_RETRIES})`);
+              await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
+              return fetchEmails(retries - 1);
+          }
+          error = 'Failed to fetch emails. Please try again later.';
       } finally {
           loading = false; // Hide loading indicator after fetch
       }
@@ -105,7 +119,7 @@
 
   {#if loading && emails.length === 0}
       <p class="loading-text">Loading emails...</p>
-  {:else if error}
+  {:else if error && emails.length === 0}
       <p class="error">{error}</p>
   {:else}
       <div class="delivery-list-container">
