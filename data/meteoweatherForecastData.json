@@ -1,21 +1,12 @@
 {
-  "timestamp": "2024-11-29T23:36:31.518Z",
+  "timestamp": "2024-11-30T05:26:31.731Z",
   "dailyForecast": [
-    {
-      "date": "2024-11-29",
-      "precipitation": 0,
-      "temperature_max": 10.2,
-      "temperature_min": 0.1,
-      "windspeed_max": 25,
-      "weather_condition": "Overcast",
-      "weather_code": 3
-    },
     {
       "date": "2024-11-30",
       "precipitation": 0,
       "temperature_max": 8.2,
       "temperature_min": -1.7,
-      "windspeed_max": 16.7,
+      "windspeed_max": 16.3,
       "weather_condition": "Overcast",
       "weather_code": 3
     },
@@ -24,7 +15,7 @@
       "precipitation": 0,
       "temperature_max": 10.4,
       "temperature_min": -0.1,
-      "windspeed_max": 19.2,
+      "windspeed_max": 22.6,
       "weather_condition": "Overcast",
       "weather_code": 3
     },
@@ -33,7 +24,7 @@
       "precipitation": 0,
       "temperature_max": 5.5,
       "temperature_min": -3.7,
-      "windspeed_max": 18.1,
+      "windspeed_max": 18.4,
       "weather_condition": "Overcast",
       "weather_code": 3
     },
@@ -42,7 +33,7 @@
       "precipitation": 0,
       "temperature_max": 5.1,
       "temperature_min": -4.2,
-      "windspeed_max": 10.7,
+      "windspeed_max": 11.6,
       "weather_condition": "Clear Skies",
       "weather_code": 0
     },
@@ -51,7 +42,7 @@
       "precipitation": 0,
       "temperature_max": 10.5,
       "temperature_min": -2.9,
-      "windspeed_max": 32.6,
+      "windspeed_max": 31.3,
       "weather_condition": "Partly Cloudy",
       "weather_code": 2
     },
@@ -60,9 +51,18 @@
       "precipitation": 0,
       "temperature_max": 12.9,
       "temperature_min": 4.5,
-      "windspeed_max": 24.5,
+      "windspeed_max": 23,
       "weather_condition": "Partly Cloudy",
       "weather_code": 2
+    },
+    {
+      "date": "2024-12-06",
+      "precipitation": 0,
+      "temperature_max": 8.4,
+      "temperature_min": -3.7,
+      "windspeed_max": 17.7,
+      "weather_condition": "Overcast",
+      "weather_code": 3
     }
   ]
 }

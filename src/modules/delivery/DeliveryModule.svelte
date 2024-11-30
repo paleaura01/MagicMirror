@@ -48,7 +48,7 @@
       try {
           localStorage.setItem(EMAIL_STORAGE_KEY, JSON.stringify(emailList));
           localStorage.setItem(LAST_UPDATED_KEY, new Date().toISOString());
-          console.log(`[Save] Emails saved to localStorage at ${new Date().toISOString()}`);
+          // console.log(`[Save] Emails saved to localStorage at ${new Date().toISOString()}`);
       } catch (err) {
           console.error('[Save Error] Failed to save emails to localStorage', err);
       }
@@ -61,7 +61,7 @@
           const lastUpdated = localStorage.getItem(LAST_UPDATED_KEY);
           if (storedEmails) {
               emails = JSON.parse(storedEmails);
-              console.log(`[Load] Emails loaded from localStorage, last updated at ${lastUpdated}`);
+              // console.log(`[Load] Emails loaded from localStorage, last updated at ${lastUpdated}`);
               preloadLogos(emails); // Preload logos from loaded emails
               loading = false; // Immediately display loaded emails
           }

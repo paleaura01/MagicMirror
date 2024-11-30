@@ -17,7 +17,7 @@
       try {
         localStorage.setItem(FUEL_STORAGE_KEY, JSON.stringify(stations));
         localStorage.setItem(LAST_UPDATED_KEY, new Date().toISOString());
-        console.log(`[Save] Fuel prices saved to localStorage at ${new Date().toISOString()}`);
+        // console.log(`[Save] Fuel prices saved to localStorage at ${new Date().toISOString()}`);
       } catch (err) {
         console.error("[Save Error] Failed to save fuel prices to localStorage", err);
       }
@@ -30,7 +30,7 @@
         const lastUpdated = localStorage.getItem(LAST_UPDATED_KEY);
         if (storedStations) {
           stations.set(JSON.parse(storedStations));
-          console.log(`[Load] Fuel prices loaded from localStorage, last updated at ${lastUpdated}`);
+          // console.log(`[Load] Fuel prices loaded from localStorage, last updated at ${lastUpdated}`);
           loading.set(false); // Immediately display stored stations
         }
       } catch (err) {
