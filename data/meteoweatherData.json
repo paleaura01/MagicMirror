@@ -1,11 +1,11 @@
 {
-  "timestamp": "2024-11-30T05:26:33.786Z",
-  "temperature": 0.4,
-  "feelsLike": -5.1,
-  "humidity": 47,
-  "windSpeed": 15.6,
+  "timestamp": "2024-11-30T07:21:33.972Z",
+  "temperature": -0.1,
+  "feelsLike": -4.4,
+  "humidity": 50,
+  "windSpeed": 14.5,
   "windDirection": {
-    "degrees": 322,
+    "degrees": 305,
     "compass": "NW"
   },
   "weatherCode": 0,

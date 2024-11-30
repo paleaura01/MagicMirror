@@ -2,6 +2,7 @@
 
 
 .calendar-header {
+    font-family: 'Arial', sans-serif;
     position: relative;
     display: flex;
     justify-content: center;
@@ -26,6 +27,8 @@
     margin: 0 auto 10px; /* Center the border and add space below */
 }
 .calendar-wrapper {
+    font-family: 'Arial', sans-serif;
+
     max-width: 300px;
     margin: 0 auto;
     position: relative;
